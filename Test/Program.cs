@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using LiteGraph;
 
 namespace Test
@@ -8,6 +9,7 @@ namespace Test
     {
         static bool _RunForever = true;
         static LiteGraphClient _Graph = null;
+        static Formatting _JsonFormatting = Formatting.Indented;
 
         static void Main(string[] args)
         {
@@ -34,6 +36,10 @@ namespace Test
                         break;
                     case "debug results":
                         _Graph.Logger.LogResults = !_Graph.Logger.LogResults;
+                        break;
+                    case "formatting":
+                        if (_JsonFormatting == Formatting.Indented) _JsonFormatting = Formatting.None;
+                        else _JsonFormatting = Formatting.Indented;
                         break;
                     case "add node":
                         AddNode();
@@ -139,6 +145,14 @@ namespace Test
             }
         }
 
+        static void Enumerate(GraphResult r)
+        {
+            Console.WriteLine(JsonConvert.SerializeObject(r, _JsonFormatting, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            }));
+        }
+
         static void Menu()
         {
             Console.WriteLine("");
@@ -148,6 +162,7 @@ namespace Test
             Console.WriteLine("  cls             clear the screen");
             Console.WriteLine("  debug queries   toggle query debug, currently: " + _Graph.Logger.LogQueries);
             Console.WriteLine("  debug results   toggle results debug, currently: " + _Graph.Logger.LogResults);
+            Console.WriteLine("  formatting      toggle JSON formatting, currently: " + _JsonFormatting.ToString());
             Console.WriteLine("  all nodes       retrieve all nodes from the graph");
             Console.WriteLine("  add node        add a node to the graph");
             Console.WriteLine("  get node        retrieve a node by GUID");
@@ -168,32 +183,31 @@ namespace Test
             Console.WriteLine("Supplied JSON must contain the property '" + _Graph.NodeGuidProperty + "'");
             string json = InputString("JSON:", null, true);
             if (String.IsNullOrEmpty(json)) return;
-            _Graph.AddNode(json);
+            Enumerate(_Graph.AddNode(json));
         }
 
         static void AllNodes()
         {
-            Console.WriteLine("Nodes:" + Environment.NewLine + _Graph.GetAllNodes());
+            Enumerate(_Graph.GetAllNodes());
         }
 
         static void GetNode()
         {
             string guid = InputString("GUID:", null, true);
             if (String.IsNullOrEmpty(guid)) return;
-            string json = _Graph.GetNode(guid);
-            Console.WriteLine("Result:" + Environment.NewLine + json);
+            Enumerate(_Graph.GetNode(guid));
         }
 
         static void UpdateNode()
         {
             string json = InputString("JSON:", null, true);
             if (String.IsNullOrEmpty(json)) return;
-            _Graph.UpdateNode(json);
+            Enumerate(_Graph.UpdateNode(json));
         }
 
         static void AllEdges()
         {
-            Console.WriteLine("Edges:" + Environment.NewLine + _Graph.GetAllEdges());
+            Enumerate(_Graph.GetAllEdges());
         }
 
         static void AddEdge()
@@ -203,54 +217,49 @@ namespace Test
             if (String.IsNullOrEmpty(fromGuid) || String.IsNullOrEmpty(toGuid)) return;
             Console.WriteLine("Supplied JSON must contain the property '" + _Graph.EdgeGuidProperty + "'");
             string json = InputString("     JSON:", null, true);
-            _Graph.AddEdge(fromGuid, toGuid, json);
+            Enumerate(_Graph.AddEdge(fromGuid, toGuid, json));
         }
 
         static void NodeEdges()
         {
             string guid = InputString("GUID:", null, true);
             if (String.IsNullOrEmpty(guid)) return;
-            string json = _Graph.GetEdges(guid);
-            Console.WriteLine("Results:" + Environment.NewLine + json);
+            Enumerate(_Graph.GetEdges(guid));
         }
 
         static void Neighbors()
         {
             string guid = InputString("GUID:", null, true);
             if (String.IsNullOrEmpty(guid)) return;
-            string json = _Graph.GetNeighbors(guid);
-            Console.WriteLine("Results:" + Environment.NewLine + json);
+            Enumerate(_Graph.GetNeighbors(guid));
         }
 
         static void GetEdge()
         {
             string guid = InputString("GUID:", null, true);
             if (String.IsNullOrEmpty(guid)) return;
-            string json = _Graph.GetEdge(guid);
-            Console.WriteLine("Result:" + Environment.NewLine + json);
+            Enumerate(_Graph.GetEdge(guid));
         }
 
         static void UpdateEdge()
         {
             string json = InputString("JSON:", null, true);
             if (String.IsNullOrEmpty(json)) return;
-            _Graph.UpdateEdge(json);
+            Enumerate(_Graph.UpdateEdge(json));
         }
 
         static void SearchNodes()
         {
             List<string> guids = InputStringList("GUID:", true);
             List<SearchFilter> filters = InputSearchFilter();
-            string json = _Graph.SearchNodes(guids, filters);
-            Console.WriteLine("Results:" + Environment.NewLine + json);
+            Enumerate(_Graph.SearchNodes(guids, filters));
         }
 
         static void SearchEdges()
         {
             List<string> guids = InputStringList("GUID:", true);
             List<SearchFilter> filters = InputSearchFilter();
-            string json = _Graph.SearchEdges(guids, filters);
-            Console.WriteLine("Results:" + Environment.NewLine + json);
+            Enumerate(_Graph.SearchEdges(guids, filters));
         }
     }
 }

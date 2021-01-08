@@ -12,19 +12,19 @@ namespace LiteGraph
         [JsonIgnore]
         internal int Id { get; set; } = 0;
 
-        [JsonProperty(PropertyName = "guid")]
+        [JsonProperty(PropertyName = "guid", Order = -3)]
         internal string GUID { get; set; } = null;
 
-        [JsonProperty(PropertyName = "from")]
+        [JsonProperty(PropertyName = "from", Order = -2)]
         internal string FromGUID { get; set; } = null;
 
-        [JsonProperty(PropertyName = "to")]
+        [JsonProperty(PropertyName = "to", Order = -1)]
         internal string ToGUID { get; set; } = null;
 
         [JsonProperty(PropertyName = "created")]
         internal DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
 
-        [JsonProperty(PropertyName = "props")]
+        [JsonProperty(PropertyName = "props", Order = 990)]
         internal JObject Properties { get; set; } = null;
 
         internal Edge()

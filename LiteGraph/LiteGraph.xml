@@ -4,6 +4,122 @@
         <name>LiteGraph</name>
     </assembly>
     <members>
+        <member name="T:LiteGraph.GraphOperation">
+            <summary>
+            Graph operation.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.AddNode">
+            <summary>
+            AddNode.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.UpdateNode">
+            <summary>
+            UpdateNode.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.RemoveNode">
+            <summary>
+            RemoveNode.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.NodeExists">
+            <summary>
+            NodeExists.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.GetAllNodes">
+            <summary>
+            GetAllNodes.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.GetNode">
+            <summary>
+            GetNode.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.GetNeighbors">
+            <summary>
+            BreadthFirstSearch.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.SearchNodes">
+            <summary>
+            SearchNodes.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.AddEdge">
+            <summary>
+            AddEdge.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.UpdateEdge">
+            <summary>
+            UpdateEdge.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.RemoveEdge">
+            <summary>
+            RemoveEdge.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.EdgeExists">
+            <summary>
+            EdgeExists.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.GetAllEdges">
+            <summary>
+            GetAllEdges.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.GetEdges">
+            <summary>
+            GetEdges.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.GetEdge">
+            <summary>
+            GetEdge.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.SearchEdges">
+            <summary>
+            SearchEdges.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.GraphResult">
+            <summary>
+            Result from a graph operation.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GraphResult.Operation">
+            <summary>
+            Type of operation.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GraphResult.Time">
+            <summary>
+            Time-related information for the result.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GraphResult.Result">
+            <summary>
+            Result.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GraphResult.Data">
+            <summary>
+            Data.  Generally a JArray or JObject.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.GraphResult.#ctor(LiteGraph.GraphOperation)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="operation">Type of operation.</param>
+        </member>
         <member name="T:LiteGraph.LiteGraphClient">
             <summary>
             LiteGraph client.
@@ -50,6 +166,7 @@
             The supplied JSON must contain the globally-unique identifier property as specified in GuidProperty.
             </summary>
             <param name="json">JSON object, which must include the globally-unique identifier property as specified in NodeGuidProperty.</param>
+            <returns>Graph result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.UpdateNode(System.String)">
             <summary>
@@ -57,81 +174,34 @@
             The supplied JSON must contain the globally-unique identifier property as specified in GuidProperty.
             </summary>
             <param name="json">JSON object, which must include the globally-unique identifier property as specified in NodeGuidProperty.</param>
+            <returns>Graph result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.RemoveNode(System.String)">
             <summary>
             Remove a node and its edges by the node's globally-unique identifier.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
+            <returns>Graph result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.NodeExists(System.String)">
             <summary>
             Check if a node exists by its globally-unique identifier.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
-            <returns>True if exists.</returns>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.EdgeExists(System.String)">
-            <summary>
-            Check if an edge exists by its globally-unique identifier.
-            </summary>
-            <param name="guid">Globally-unique identifier.</param>
-            <returns>True if exists.</returns>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.AddEdge(System.String,System.String,System.String)">
-            <summary>
-            Add an edge from one node to another.
-            </summary>
-            <param name="fromGuid">Globally-unique identifier of the source node.</param>
-            <param name="toGuid">Globally-unique identifier of the target node.</param>
-            <param name="json">JSON object, which must include the globally-unique identifier property as specified in EdgeGuidProperty.</param>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.RemoveEdge(System.String)">
-            <summary>
-            Remove an edge by its globally-unique identifier.
-            </summary>
-            <param name="guid">Globally-unique identifier.</param>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.UpdateEdge(System.String)">
-            <summary>
-            Update an edge's properties.
-            </summary>
-            <param name="json">JSON object, which must include the globally-unique identifier property as specified in EdgeGuidProperty.</param>
+            <returns>Graph result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.GetAllNodes">
             <summary>
             Retrieve all nodes.
             </summary>
-            <returns>JSON containing all nodes.</returns>
+            <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.GetNode(System.String)">
             <summary>
             Retrieve a node.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
-            <returns>JSON containing the node.</returns>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetAllEdges">
-            <summary>
-            Retrieve all edges.
-            </summary>
-            <returns>JSON containing all edges.</returns>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetEdges(System.String,System.Int32,System.Int32)">
-            <summary>
-            Retrieve all edges to or from a given node.
-            </summary>
-            <param name="guid">Globally-unique identifier.</param>
-            <param name="indexStart">Starting index.</param>
-            <param name="maxResults">Maximum number of results to retrieve.</param>
-            <returns>JSON containing all edges.</returns>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetEdge(System.String)">
-            <summary>
-            Retrieve an edge.
-            </summary>
-            <param name="guid">Globally-unique identifier.</param>
-            <returns>JSON containing the edge.</returns>
+            <returns>Graph result where 'Data' contains a JObject.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.GetNeighbors(System.String,System.Int32,System.Int32)">
             <summary>
@@ -140,7 +210,7 @@
             <param name="guid">Globally-unique identifier.</param>
             <param name="indexStart">Starting index.</param>
             <param name="maxResults">Maximum number of results to retrieve.</param>
-            <returns>JSON containing neighbor nodes.</returns>
+            <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.SearchNodes(System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32)">
             <summary>
@@ -150,7 +220,59 @@
             <param name="filters">Filters to apply against each node's JSON data.</param>
             <param name="indexStart">Starting index.</param>
             <param name="maxResults">Maximum number of results to retrieve.</param>
-            <returns>JSON containing matching nodes.</returns>
+            <returns>Graph result where 'Data' contains a JArray.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.AddEdge(System.String,System.String,System.String)">
+            <summary>
+            Add an edge from one node to another.
+            </summary>
+            <param name="fromGuid">Globally-unique identifier of the source node.</param>
+            <param name="toGuid">Globally-unique identifier of the target node.</param>
+            <param name="json">JSON object, which must include the globally-unique identifier property as specified in EdgeGuidProperty.</param>
+            <returns>Graph result.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.UpdateEdge(System.String)">
+            <summary>
+            Update an edge's properties.
+            </summary>
+            <param name="json">JSON object, which must include the globally-unique identifier property as specified in EdgeGuidProperty.</param>
+            <returns>Graph result.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.RemoveEdge(System.String)">
+            <summary>
+            Remove an edge by its globally-unique identifier.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <returns>Graph result.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.EdgeExists(System.String)">
+            <summary>
+            Check if an edge exists by its globally-unique identifier.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <returns>Graph result.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetAllEdges">
+            <summary>
+            Retrieve all edges.
+            </summary>
+            <returns>Graph result where 'Data' contains a JArray.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetEdges(System.String,System.Int32,System.Int32)">
+            <summary>
+            Retrieve all edges to or from a given node.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <param name="indexStart">Starting index.</param>
+            <param name="maxResults">Maximum number of results to retrieve.</param>
+            <returns>Graph result where 'Data' contains a JArray.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetEdge(System.String)">
+            <summary>
+            Retrieve an edge.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <returns>Graph result where 'Data' contains a JObject.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.SearchEdges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32)">
             <summary>
@@ -160,7 +282,7 @@
             <param name="filters">Filters to apply against each edge's JSON data.</param>
             <param name="indexStart">Starting index.</param>
             <param name="maxResults">Maximum number of results to retrieve.</param>
-            <returns>JSON containing matching edges.</returns>
+            <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.Dispose(System.Boolean)">
             <summary>
@@ -316,6 +438,46 @@
             </summary>
             <param name="value">Value.</param>
             <returns>True if matched.</returns>
+        </member>
+        <member name="T:LiteGraph.Timestamps">
+            <summary>
+            Object used to measure start, end, and total time associated with an operation.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Timestamps.Start">
+            <summary>
+            The time at which the operation started.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Timestamps.End">
+            <summary>
+            The time at which the operation ended.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Timestamps.TotalMs">
+            <summary>
+            The total number of milliseconds that transpired between Start and End.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Timestamps.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.TraversalAlgorithm">
+            <summary>
+            Graph traversal algorithm.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.TraversalAlgorithm.BreadthFirstSearch">
+            <summary>
+            BreadthFirstSearch
+            </summary>
+        </member>
+        <member name="F:LiteGraph.TraversalAlgorithm.DepthFirstSearch">
+            <summary>
+            DepthFirstSearch
+            </summary>
         </member>
     </members>
 </doc>
