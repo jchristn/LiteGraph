@@ -1,0 +1,15 @@
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\LiteGraph.deps.json
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\LiteGraph.dll
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\ref\LiteGraph.dll
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\LiteGraph.pdb
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\net5.0\LiteGraph.csprojAssemblyReference.cache
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\net5.0\LiteGraph.GeneratedMSBuildEditorConfig.editorconfig
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\net5.0\LiteGraph.AssemblyInfoInputs.cache
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\net5.0\LiteGraph.AssemblyInfo.cs
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\net5.0\LiteGraph.csproj.CoreCompileInputs.cache
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\net5.0\LiteGraph.dll
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\net5.0\ref\LiteGraph.dll
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\net5.0\LiteGraph.pdb
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\assets\icon.ico
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\assets\icon.png
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\LICENSE.md

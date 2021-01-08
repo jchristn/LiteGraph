@@ -1,0 +1,321 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LiteGraph</name>
+    </assembly>
+    <members>
+        <member name="T:LiteGraph.LiteGraphClient">
+            <summary>
+            LiteGraph client.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LiteGraphClient.Logger">
+            <summary>
+            Logger settings.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LiteGraphClient.MaxStatementLength">
+            <summary>
+            Maximum supported statement length.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LiteGraphClient.NodeGuidProperty">
+            <summary>
+            GUID property that must be present in every node added to the graph.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LiteGraphClient.EdgeGuidProperty">
+            <summary>
+            GUID property that must be present in every edge added to the graph.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LiteGraphClient.JsonFormatting">
+            <summary>
+            JSON.NET formatting mode.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.#ctor(System.String,LiteGraph.LoggerSettings)">
+            <summary>
+            LiteGraph client.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.Dispose">
+            <summary>
+            Tear down the client and dispose of resources.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.AddNode(System.String)">
+            <summary>
+            Add a node.
+            The supplied JSON must contain the globally-unique identifier property as specified in GuidProperty.
+            </summary>
+            <param name="json">JSON object, which must include the globally-unique identifier property as specified in NodeGuidProperty.</param>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.UpdateNode(System.String)">
+            <summary>
+            Update a node.
+            The supplied JSON must contain the globally-unique identifier property as specified in GuidProperty.
+            </summary>
+            <param name="json">JSON object, which must include the globally-unique identifier property as specified in NodeGuidProperty.</param>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.RemoveNode(System.String)">
+            <summary>
+            Remove a node and its edges by the node's globally-unique identifier.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.NodeExists(System.String)">
+            <summary>
+            Check if a node exists by its globally-unique identifier.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <returns>True if exists.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.EdgeExists(System.String)">
+            <summary>
+            Check if an edge exists by its globally-unique identifier.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <returns>True if exists.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.AddEdge(System.String,System.String,System.String)">
+            <summary>
+            Add an edge from one node to another.
+            </summary>
+            <param name="fromGuid">Globally-unique identifier of the source node.</param>
+            <param name="toGuid">Globally-unique identifier of the target node.</param>
+            <param name="json">JSON object, which must include the globally-unique identifier property as specified in EdgeGuidProperty.</param>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.RemoveEdge(System.String)">
+            <summary>
+            Remove an edge by its globally-unique identifier.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.UpdateEdge(System.String)">
+            <summary>
+            Update an edge's properties.
+            </summary>
+            <param name="json">JSON object, which must include the globally-unique identifier property as specified in EdgeGuidProperty.</param>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetAllNodes">
+            <summary>
+            Retrieve all nodes.
+            </summary>
+            <returns>JSON containing all nodes.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetNode(System.String)">
+            <summary>
+            Retrieve a node.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <returns>JSON containing the node.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetAllEdges">
+            <summary>
+            Retrieve all edges.
+            </summary>
+            <returns>JSON containing all edges.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetEdges(System.String,System.Int32,System.Int32)">
+            <summary>
+            Retrieve all edges to or from a given node.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <param name="indexStart">Starting index.</param>
+            <param name="maxResults">Maximum number of results to retrieve.</param>
+            <returns>JSON containing all edges.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetEdge(System.String)">
+            <summary>
+            Retrieve an edge.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <returns>JSON containing the edge.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetNeighbors(System.String,System.Int32,System.Int32)">
+            <summary>
+            Retrieve a node's neighbors.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <param name="indexStart">Starting index.</param>
+            <param name="maxResults">Maximum number of results to retrieve.</param>
+            <returns>JSON containing neighbor nodes.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.SearchNodes(System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32)">
+            <summary>
+            Search nodes.
+            </summary>
+            <param name="guids">Subset of node GUIDs to search.</param>
+            <param name="filters">Filters to apply against each node's JSON data.</param>
+            <param name="indexStart">Starting index.</param>
+            <param name="maxResults">Maximum number of results to retrieve.</param>
+            <returns>JSON containing matching nodes.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.SearchEdges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32)">
+            <summary>
+            Search edges.
+            </summary>
+            <param name="guids">Subset of edge GUIDs, from node GUIDs, and to node GUIDs to search.</param>
+            <param name="filters">Filters to apply against each edge's JSON data.</param>
+            <param name="indexStart">Starting index.</param>
+            <param name="maxResults">Maximum number of results to retrieve.</param>
+            <returns>JSON containing matching edges.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.Dispose(System.Boolean)">
+            <summary>
+            Dispose of the object.
+            </summary>
+            <param name="disposing">Disposing of resources.</param>
+        </member>
+        <member name="T:LiteGraph.LoggerSettings">
+            <summary>
+            Logging settings.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LoggerSettings.Header">
+            <summary>
+            Header to prepend to all log messages.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LoggerSettings.LogMethod">
+            <summary>
+            Method to invoke to send log messages.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LoggerSettings.LogQueries">
+            <summary>
+            Enable or disable logging of queries.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LoggerSettings.LogResults">
+            <summary>
+            Enable or disable logging of results.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.LoggerSettings.#ctor">
+            <summary>
+            Logging settings.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.ObjectExtensions">
+            <summary>
+            Object extensions.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.ObjectExtensions.ToJson(System.Object,System.Boolean)">
+            <summary>
+            Create a JSON representation of the object.
+            </summary>
+            <param name="obj">Object.</param>
+            <param name="pretty">Enable or disable pretty print.</param>
+            <returns>JSON string.</returns>
+        </member>
+        <member name="T:LiteGraph.SearchCondition">
+            <summary>
+            Available conditions for search filters.
+            </summary> 
+        </member>
+        <member name="F:LiteGraph.SearchCondition.Equals">
+            <summary>
+            The left and right terms are equal to one another.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.NotEquals">
+            <summary>
+            The left and right terms are not equal to one another.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.GreaterThan">
+            <summary>
+            The left term is greater than the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.GreaterThanOrEqualTo">
+            <summary>
+            The left term is greater than or equal to the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.LessThan">
+            <summary>
+            The left term is less than the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.LessThanOrEqualTo">
+            <summary>
+            The left term is less than or equal to the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.IsNull">
+            <summary>
+            The left term is null.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.IsNotNull">
+            <summary>
+            The left term is not null.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.Contains">
+            <summary>
+            The left term is contained within the right term (list).
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.ContainsNot">
+            <summary>
+            The left term is not contained within the right term (list).
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.StartsWith">
+            <summary>
+            The left term starts with the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.EndsWith">
+            <summary>
+            The left term ends with the right term.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.SearchFilter">
+            <summary>
+            A search filter.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.SearchFilter.Field">
+            <summary>
+            The field upon which to match.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchFilter.Condition">
+            <summary>
+            The condition by which the parsed document's content is evaluated against the supplied value.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.SearchFilter.Value">
+            <summary>
+            The value to be evaluated using the specified condition against the parsed document's content.
+            When using GreaterThan, GreaterThanOrEqualTo, LessThan, or LessThanOrEqualTo, the value supplied must be convertible to decimal.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.SearchFilter.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.SearchFilter.#ctor(System.String,LiteGraph.SearchCondition,System.String)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="field">Field.</param>
+            <param name="condition">SearchCondition.</param>
+            <param name="value">Value.</param>
+        </member>
+        <member name="M:LiteGraph.SearchFilter.EvaluateValue(System.Object)">
+            <summary>
+            Evaluates a value against the search filter.
+            </summary>
+            <param name="value">Value.</param>
+            <returns>True if matched.</returns>
+        </member>
+    </members>
+</doc>

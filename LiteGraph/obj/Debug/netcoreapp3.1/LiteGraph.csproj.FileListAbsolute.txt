@@ -1,0 +1,12 @@
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netcoreapp3.1\LiteGraph.deps.json
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netcoreapp3.1\LiteGraph.dll
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netcoreapp3.1\LiteGraph.pdb
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\netcoreapp3.1\LiteGraph.csprojAssemblyReference.cache
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\netcoreapp3.1\LiteGraph.AssemblyInfoInputs.cache
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\netcoreapp3.1\LiteGraph.AssemblyInfo.cs
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\netcoreapp3.1\LiteGraph.csproj.CoreCompileInputs.cache
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\netcoreapp3.1\LiteGraph.dll
+c:\code\misc\LiteGraph\LiteGraph\obj\Debug\netcoreapp3.1\LiteGraph.pdb
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netcoreapp3.1\assets\icon.ico
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netcoreapp3.1\assets\icon.png
+c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netcoreapp3.1\LICENSE.md

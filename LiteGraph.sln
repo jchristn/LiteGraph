@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30711.63
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiteGraph", "LiteGraph\LiteGraph.csproj", "{530AA793-5D92-401D-BF77-4C5199E7C1A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{F30D39C7-B0F1-4FB4-831F-52D49616EACC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{530AA793-5D92-401D-BF77-4C5199E7C1A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{530AA793-5D92-401D-BF77-4C5199E7C1A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{530AA793-5D92-401D-BF77-4C5199E7C1A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{530AA793-5D92-401D-BF77-4C5199E7C1A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F30D39C7-B0F1-4FB4-831F-52D49616EACC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F30D39C7-B0F1-4FB4-831F-52D49616EACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F30D39C7-B0F1-4FB4-831F-52D49616EACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F30D39C7-B0F1-4FB4-831F-52D49616EACC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {67C5ECF8-D65A-4D16-BAC6-EAE63450A728}
+	EndGlobalSection
+EndGlobal
