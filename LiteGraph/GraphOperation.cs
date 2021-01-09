@@ -58,6 +58,11 @@ namespace LiteGraph
         /// </summary>
         [EnumMember(Value = "SearchNodes")]
         SearchNodes,
+        /// <summary>
+        /// GetDescendants.
+        /// </summary>
+        [EnumMember(Value = "GetDescendants")]
+        GetDescendants,
 
         #endregion
 

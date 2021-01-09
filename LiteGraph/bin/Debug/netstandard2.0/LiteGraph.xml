@@ -4,6 +4,51 @@
         <name>LiteGraph</name>
     </assembly>
     <members>
+        <member name="T:LiteGraph.EdgeEventArgs">
+            <summary>
+            Edge event arguments.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.EdgeEventArgs.GUID">
+            <summary>
+            Globally-unique identifier.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.EdgeEventArgs.FromGUID">
+            <summary>
+            Globally-unique identifier of the from node.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.EdgeEventArgs.ToGUID">
+            <summary>
+            Globally-unique identifier of the to node.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.EdgeEventArgs.CreatedUtc">
+            <summary>
+            Timestamp from creation, in UTC.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.EdgeEventArgs.Properties">
+            <summary>
+            JSON properties.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.EdgeEventArgs.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.EdgeEventArgs.#ctor(System.String,System.String,System.String,System.DateTime,Newtonsoft.Json.Linq.JObject)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <param name="fromGuid">Globally-unique identifier of the from node.</param>
+            <param name="toGuid">Globally-unique identifier of the to node.</param>
+            <param name="created">Timestamp from creation, in UTC.</param>
+            <param name="props">JSON properties.</param>
+        </member>
         <member name="T:LiteGraph.GraphOperation">
             <summary>
             Graph operation.
@@ -47,6 +92,11 @@
         <member name="F:LiteGraph.GraphOperation.SearchNodes">
             <summary>
             SearchNodes.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.GraphOperation.GetDescendants">
+            <summary>
+            GetDescendants.
             </summary>
         </member>
         <member name="F:LiteGraph.GraphOperation.AddEdge">
@@ -222,6 +272,14 @@
             <param name="maxResults">Maximum number of results to retrieve.</param>
             <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetDescendants(System.String,System.Int32)">
+            <summary>
+            Retrieve a tree from the supplied node.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <param name="maxDepth">The maximum depth to search.</param>
+            <returns>Graph result.</returns>
+        </member>
         <member name="M:LiteGraph.LiteGraphClient.AddEdge(System.String,System.String,System.String)">
             <summary>
             Add an edge from one node to another.
@@ -290,6 +348,46 @@
             </summary>
             <param name="disposing">Disposing of resources.</param>
         </member>
+        <member name="T:LiteGraph.LiteGraphEvents">
+            <summary>
+            LiteGraph events.
+            </summary>
+        </member>
+        <member name="E:LiteGraph.LiteGraphEvents.NodeAdded">
+            <summary>
+            Event fired when a node is added.
+            </summary>
+        </member>
+        <member name="E:LiteGraph.LiteGraphEvents.NodeUpdated">
+            <summary>
+            Event fired when a node is updated.
+            </summary>
+        </member>
+        <member name="E:LiteGraph.LiteGraphEvents.NodeRemoved">
+            <summary>
+            Event fired when a node is removed.
+            </summary>
+        </member>
+        <member name="E:LiteGraph.LiteGraphEvents.EdgeAdded">
+            <summary>
+            Event fired when an edge is added.
+            </summary>
+        </member>
+        <member name="E:LiteGraph.LiteGraphEvents.EdgeUpdated">
+            <summary>
+            Event fired when an edge is updated.
+            </summary>
+        </member>
+        <member name="E:LiteGraph.LiteGraphEvents.EdgeRemoved">
+            <summary>
+            Event fired when an edge is removed.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.LiteGraphEvents.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
         <member name="T:LiteGraph.LoggerSettings">
             <summary>
             Logging settings.
@@ -319,6 +417,39 @@
             <summary>
             Logging settings.
             </summary>
+        </member>
+        <member name="T:LiteGraph.NodeEventArgs">
+            <summary>
+            Node event arguments.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.NodeEventArgs.GUID">
+            <summary>
+            Globally-unique identifier.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.NodeEventArgs.CreatedUtc">
+            <summary>
+            Timestamp from creation, in UTC.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.NodeEventArgs.Properties">
+            <summary>
+            JSON properties.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.NodeEventArgs.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.NodeEventArgs.#ctor(System.String,System.DateTime,Newtonsoft.Json.Linq.JObject)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="guid">Globally-unique identifier.</param>
+            <param name="created">Timestamp from creation, in UTC.</param>
+            <param name="props">JSON properties.</param>
         </member>
         <member name="T:LiteGraph.ObjectExtensions">
             <summary>

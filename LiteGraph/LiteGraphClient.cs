@@ -125,6 +125,8 @@ namespace LiteGraph
             GC.SuppressFinalize(this);
         }
 
+        #region Node
+
         /// <summary>
         /// Add a node.
         /// The supplied JSON must contain the globally-unique identifier property as specified in GuidProperty.
@@ -144,7 +146,7 @@ namespace LiteGraph
             GraphResult existsResult = NodeExists(guid);
             if ((bool)existsResult.Result) throw new ArgumentException("Node with unique identifier '" + guid + "' already exists.");
 
-            Node n = new Node(0, guid, DateTime.Now.ToUniversalTime(), json);
+            Node n = new Node(0, guid, DateTime.Now.ToUniversalTime(), j);
             Query(DatabaseHelper.Nodes.InsertQuery(n));
              
             r.Time.End = DateTime.Now;
@@ -347,6 +349,33 @@ namespace LiteGraph
             r.Time.End = DateTime.Now;
             return r;
         }
+
+        /// <summary>
+        /// Retrieve a tree from the supplied node.
+        /// </summary>
+        /// <param name="guid">Globally-unique identifier.</param>
+        /// <param name="maxDepth">The maximum depth to search.</param>
+        /// <returns>Graph result.</returns>
+        public GraphResult GetDescendants(string guid, int maxDepth = 5)
+        {
+            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
+            GraphResult r = new GraphResult(GraphOperation.GetDescendants);
+
+            DataTable result = Query(DatabaseHelper.Nodes.SelectByGuid(guid));
+            if (result != null && result.Rows.Count > 0)
+            {
+                Node n = DatabaseHelper.Nodes.FromDataRow(result.Rows[0]);
+                n.Descendents = GetDescendantsFromNode(n, n.GUID, 0, maxDepth);
+                r.Data = JObject.FromObject(n);
+            }
+
+            r.Time.End = DateTime.Now;
+            return r;
+        }
+
+        #endregion
+
+        #region Edge
 
         /// <summary>
         /// Add an edge from one node to another.
@@ -561,7 +590,9 @@ namespace LiteGraph
             r.Time.End = DateTime.Now;
             return r;
         }
-         
+
+        #endregion
+
         #endregion
 
         #region Private-Methods
@@ -627,6 +658,40 @@ namespace LiteGraph
                 e.Data.Add("Query", query);
                 throw;
             }
+        }
+
+        private List<Node> GetDescendantsFromNode(Node n, string startingGuid, int currentDepth, int maxDepth)
+        {
+            List<Node> ret = new List<Node>();
+
+            List<SearchFilter> sf = new List<SearchFilter>();
+            sf.Add(new SearchFilter(DatabaseHelper.Edges.FromGuidField, SearchCondition.Equals, n.GUID));
+
+            DataTable edgeResult = Query(DatabaseHelper.Edges.SelectEdgesFrom(n.GUID, 0, 0));
+            if (edgeResult != null && edgeResult.Rows.Count > 0)
+            { 
+                List<Edge> edges = DatabaseHelper.Edges.FromDataTable(edgeResult);
+                foreach (Edge edge in edges)
+                {
+                    if (edge.ToGUID.Equals(startingGuid))
+                    {
+                        _Logging.Log("cycle detected from starting node " + startingGuid + " with edge " + edge.GUID);
+                        continue;
+                    }
+                    else
+                    {
+                        DataTable nodeResult = Query(DatabaseHelper.Nodes.SelectByGuid(edge.ToGUID));
+                        if (nodeResult != null && nodeResult.Rows.Count > 0)
+                        {
+                            Node node = DatabaseHelper.Nodes.FromDataRow(nodeResult.Rows[0]);
+                            if (currentDepth < maxDepth) node.Descendents = GetDescendantsFromNode(node, startingGuid, (currentDepth + 1), maxDepth);
+                            ret.Add(node);
+                        }
+                    }
+                }
+            }
+
+            return ret;
         }
 
         #endregion

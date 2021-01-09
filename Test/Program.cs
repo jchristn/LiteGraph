@@ -50,6 +50,9 @@ namespace Test
                     case "get node":
                         GetNode();
                         break;
+                    case "get desc":
+                        GetDescendants();
+                        break;
                     case "update node":
                         UpdateNode();
                         break;
@@ -166,6 +169,7 @@ namespace Test
             Console.WriteLine("  all nodes       retrieve all nodes from the graph");
             Console.WriteLine("  add node        add a node to the graph");
             Console.WriteLine("  get node        retrieve a node by GUID");
+            Console.WriteLine("  get desc        retrieve a node's descendants");
             Console.WriteLine("  update node     update a node");
             Console.WriteLine("  all edges       retrieve all edges from the graph");
             Console.WriteLine("  add edge        add an edge between two nodes");
@@ -196,6 +200,13 @@ namespace Test
             string guid = InputString("GUID:", null, true);
             if (String.IsNullOrEmpty(guid)) return;
             Enumerate(_Graph.GetNode(guid));
+        }
+
+        static void GetDescendants()
+        {
+            string guid = InputString("GUID:", null, true);
+            if (String.IsNullOrEmpty(guid)) return;
+            Enumerate(_Graph.GetDescendants(guid));
         }
 
         static void UpdateNode()

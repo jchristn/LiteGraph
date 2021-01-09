@@ -9,6 +9,10 @@ namespace LiteGraph
 {
     internal static class DatabaseHelper
     {
+        // Helpful references for Sqlite JSON:
+        // https://stackoverflow.com/questions/33432421/sqlite-json1-example-for-json-extract-set
+        // https://www.sqlite.org/json1.html
+
         internal static string _TimestampFormat = "yyyy-MM-dd HH:mm:ss.ffffff";
 
         internal static class Nodes
@@ -165,8 +169,16 @@ namespace LiteGraph
 
                     ret += "))";
                 }
-                 
-                ret += "LIMIT " + indexStart + ", " + maxResults;
+
+                if (indexStart >= 0 && maxResults > 0)
+                {
+                    ret += "LIMIT " + indexStart + ", " + maxResults;
+                }
+                else if (maxResults > 0)
+                {
+                    ret += "LIMIT " + maxResults;
+                }
+
                 return ret;
             } 
         }
@@ -390,8 +402,58 @@ namespace LiteGraph
 
                     ret += ")";    
                 }
-                 
-                ret += "LIMIT " + indexStart + ", " + maxResults;
+
+                if (indexStart >= 0 && maxResults > 0)
+                {
+                    ret += "LIMIT " + indexStart + ", " + maxResults;
+                }
+                else if (maxResults > 0)
+                {
+                    ret += "LIMIT " + maxResults;
+                }
+
+                return ret;
+            }
+
+            internal static string SelectEdgesFrom(string guid, int indexStart, int maxResults)
+            {
+                guid = Sanitize(guid);
+
+                string ret =
+                    "SELECT * FROM " + TableName + " " +
+                    "WHERE " + IdField + " > 0 " +
+                    "AND " + FromGuidField + " = '" + guid + "' ";
+
+                if (indexStart >= 0 && maxResults > 0)
+                {
+                    ret += "LIMIT " + indexStart + ", " + maxResults;
+                }
+                else if (maxResults > 0)
+                {
+                    ret += "LIMIT " + maxResults;
+                }
+
+                return ret;
+            }
+
+            internal static string SelectEdgesTo(string guid, int indexStart, int maxResults)
+            {
+                guid = Sanitize(guid);
+
+                string ret =
+                    "SELECT * FROM " + TableName + " " +
+                    "WHERE " + IdField + " > 0 " +
+                    "AND " + ToGuidField + " = '" + guid + "' ";
+
+                if (indexStart >= 0 && maxResults > 0)
+                {
+                    ret += "LIMIT " + indexStart + ", " + maxResults;
+                }
+                else if (maxResults > 0)
+                {
+                    ret += "LIMIT " + maxResults;
+                }
+
                 return ret;
             }
         }
