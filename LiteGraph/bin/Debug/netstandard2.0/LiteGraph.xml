@@ -24,6 +24,11 @@
             Globally-unique identifier of the to node.
             </summary>
         </member>
+        <member name="P:LiteGraph.EdgeEventArgs.EdgeType">
+            <summary>
+            Edge type.
+            </summary>
+        </member>
         <member name="P:LiteGraph.EdgeEventArgs.CreatedUtc">
             <summary>
             Timestamp from creation, in UTC.
@@ -39,13 +44,14 @@
             Instantiate the object.
             </summary>
         </member>
-        <member name="M:LiteGraph.EdgeEventArgs.#ctor(System.String,System.String,System.String,System.DateTime,Newtonsoft.Json.Linq.JObject)">
+        <member name="M:LiteGraph.EdgeEventArgs.#ctor(System.String,System.String,System.String,System.String,System.DateTime,Newtonsoft.Json.Linq.JObject)">
             <summary>
             Instantiate the object.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
             <param name="fromGuid">Globally-unique identifier of the from node.</param>
             <param name="toGuid">Globally-unique identifier of the to node.</param>
+            <param name="type">Edge type.</param>
             <param name="created">Timestamp from creation, in UTC.</param>
             <param name="props">JSON properties.</param>
         </member>
@@ -190,14 +196,29 @@
             GUID property that must be present in every node added to the graph.
             </summary>
         </member>
+        <member name="P:LiteGraph.LiteGraphClient.NodeTypeProperty">
+            <summary>
+            Type property that must be present in every node added to the graph.
+            </summary>
+        </member>
         <member name="P:LiteGraph.LiteGraphClient.EdgeGuidProperty">
             <summary>
             GUID property that must be present in every edge added to the graph.
             </summary>
         </member>
+        <member name="P:LiteGraph.LiteGraphClient.EdgeTypeProperty">
+            <summary>
+            Type property that must be present in every edge added to the graph.
+            </summary>
+        </member>
         <member name="P:LiteGraph.LiteGraphClient.JsonFormatting">
             <summary>
             JSON.NET formatting mode.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LiteGraphClient.Events">
+            <summary>
+            LiteGraph events.
             </summary>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.#ctor(System.String,LiteGraph.LoggerSettings)">
@@ -213,17 +234,19 @@
         <member name="M:LiteGraph.LiteGraphClient.AddNode(System.String)">
             <summary>
             Add a node.
-            The supplied JSON must contain the globally-unique identifier property as specified in GuidProperty.
+            The supplied JSON must contain the globally-unique identifier property as specified in NodeGuidProperty.
+            The supplied JSON must contain the type identifier property as specified in NodeTypeProperty.
             </summary>
-            <param name="json">JSON object, which must include the globally-unique identifier property as specified in NodeGuidProperty.</param>
+            <param name="json">JSON object</param>
             <returns>Graph result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.UpdateNode(System.String)">
             <summary>
             Update a node.
             The supplied JSON must contain the globally-unique identifier property as specified in GuidProperty.
+            The supplied JSON must contain the type identifier property as specified in NodeTypeProperty.
             </summary>
-            <param name="json">JSON object, which must include the globally-unique identifier property as specified in NodeGuidProperty.</param>
+            <param name="json">JSON object.</param>
             <returns>Graph result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.RemoveNode(System.String)">
@@ -240,10 +263,13 @@
             <param name="guid">Globally-unique identifier.</param>
             <returns>Graph result.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetAllNodes">
+        <member name="M:LiteGraph.LiteGraphClient.GetAllNodes(System.Collections.Generic.List{System.String},System.Int32,System.Int32)">
             <summary>
             Retrieve all nodes.
             </summary>
+            <param name="types">Types of nodes on which to filter.</param>
+            <param name="indexStart">Starting index.</param>
+            <param name="maxResults">Maximum number of results to retrieve.</param>
             <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.GetNode(System.String)">
@@ -253,47 +279,57 @@
             <param name="guid">Globally-unique identifier.</param>
             <returns>Graph result where 'Data' contains a JObject.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetNeighbors(System.String,System.Int32,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.GetNeighbors(System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32)">
             <summary>
             Retrieve a node's neighbors.
+            If supplied, edge filters are evaluated before node filters are evaluated.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
+            <param name="types">Types of edges on which to filter.</param>
+            <param name="edgeFilters">Filters to apply against edges when searching for connected nodes.</param>
+            <param name="nodeFilters">Filters to apply against nodes that are connected via matching edge filters.</param>
             <param name="indexStart">Starting index.</param>
             <param name="maxResults">Maximum number of results to retrieve.</param>
             <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.SearchNodes(System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.SearchNodes(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32)">
             <summary>
             Search nodes.
             </summary>
             <param name="guids">Subset of node GUIDs to search.</param>
+            <param name="types">Types of nodes on which to filter.</param>
             <param name="filters">Filters to apply against each node's JSON data.</param>
             <param name="indexStart">Starting index.</param>
             <param name="maxResults">Maximum number of results to retrieve.</param>
             <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetDescendants(System.String,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.GetDescendants(System.String,System.Collections.Generic.List{System.String},System.Int32)">
             <summary>
             Retrieve a tree from the supplied node.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
+            <param name="types">Types of edges on which to filter.</param>
             <param name="maxDepth">The maximum depth to search.</param>
             <returns>Graph result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.AddEdge(System.String,System.String,System.String)">
             <summary>
             Add an edge from one node to another.
+            The supplied JSON must contain the globally-unique identifier property as specified in EdgeGuidProperty.
+            The supplied JSON must contain the type identifier property as specified in EdgeTypeProperty.
             </summary>
             <param name="fromGuid">Globally-unique identifier of the source node.</param>
             <param name="toGuid">Globally-unique identifier of the target node.</param>
-            <param name="json">JSON object, which must include the globally-unique identifier property as specified in EdgeGuidProperty.</param>
+            <param name="json">JSON object.</param>
             <returns>Graph result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.UpdateEdge(System.String)">
             <summary>
             Update an edge's properties.
+            The supplied JSON must contain the globally-unique identifier property as specified in EdgeGuidProperty.
+            The supplied JSON must contain the type identifier property as specified in EdgeTypeProperty.
             </summary>
-            <param name="json">JSON object, which must include the globally-unique identifier property as specified in EdgeGuidProperty.</param>
+            <param name="json">JSON object.</param>
             <returns>Graph result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.RemoveEdge(System.String)">
@@ -310,17 +346,21 @@
             <param name="guid">Globally-unique identifier.</param>
             <returns>Graph result.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetAllEdges">
+        <member name="M:LiteGraph.LiteGraphClient.GetAllEdges(System.Collections.Generic.List{System.String},System.Int32,System.Int32)">
             <summary>
             Retrieve all edges.
             </summary>
+            <param name="types">Types of nodes on which to filter.</param>
+            <param name="indexStart">Starting index.</param>
+            <param name="maxResults">Maximum number of results to retrieve.</param>
             <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetEdges(System.String,System.Int32,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.GetEdges(System.String,System.Collections.Generic.List{System.String},System.Int32,System.Int32)">
             <summary>
             Retrieve all edges to or from a given node.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
+            <param name="types">Types of edges on which to filter.</param>
             <param name="indexStart">Starting index.</param>
             <param name="maxResults">Maximum number of results to retrieve.</param>
             <returns>Graph result where 'Data' contains a JArray.</returns>
@@ -332,11 +372,12 @@
             <param name="guid">Globally-unique identifier.</param>
             <returns>Graph result where 'Data' contains a JObject.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.SearchEdges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.SearchEdges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32)">
             <summary>
             Search edges.
             </summary>
             <param name="guids">Subset of edge GUIDs, from node GUIDs, and to node GUIDs to search.</param>
+            <param name="types">Subset of edge types in which to search.</param>
             <param name="filters">Filters to apply against each edge's JSON data.</param>
             <param name="indexStart">Starting index.</param>
             <param name="maxResults">Maximum number of results to retrieve.</param>
@@ -428,6 +469,11 @@
             Globally-unique identifier.
             </summary>
         </member>
+        <member name="P:LiteGraph.NodeEventArgs.NodeType">
+            <summary>
+            Node type.
+            </summary>
+        </member>
         <member name="P:LiteGraph.NodeEventArgs.CreatedUtc">
             <summary>
             Timestamp from creation, in UTC.
@@ -443,11 +489,12 @@
             Instantiate the object.
             </summary>
         </member>
-        <member name="M:LiteGraph.NodeEventArgs.#ctor(System.String,System.DateTime,Newtonsoft.Json.Linq.JObject)">
+        <member name="M:LiteGraph.NodeEventArgs.#ctor(System.String,System.String,System.DateTime,Newtonsoft.Json.Linq.JObject)">
             <summary>
             Instantiate the object.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
+            <param name="type">Node type.</param>
             <param name="created">Timestamp from creation, in UTC.</param>
             <param name="props">JSON properties.</param>
         </member>
@@ -529,6 +576,11 @@
             The left term ends with the right term.
             </summary>
         </member>
+        <member name="F:LiteGraph.SearchCondition.In">
+            <summary>
+            The left term can be found within the list in the right terme.
+            </summary>
+        </member>
         <member name="T:LiteGraph.SearchFilter">
             <summary>
             A search filter.
@@ -541,13 +593,14 @@
         </member>
         <member name="F:LiteGraph.SearchFilter.Condition">
             <summary>
-            The condition by which the parsed document's content is evaluated against the supplied value.
+            The condition by which the graph is evaluated against the supplied value.
             </summary>
         </member>
         <member name="P:LiteGraph.SearchFilter.Value">
             <summary>
-            The value to be evaluated using the specified condition against the parsed document's content.
+            The value to be evaluated using the specified condition.
             When using GreaterThan, GreaterThanOrEqualTo, LessThan, or LessThanOrEqualTo, the value supplied must be convertible to decimal.
+            When using In, the value supplied 
             </summary>
         </member>
         <member name="M:LiteGraph.SearchFilter.#ctor">
@@ -555,20 +608,13 @@
             Instantiate the object.
             </summary>
         </member>
-        <member name="M:LiteGraph.SearchFilter.#ctor(System.String,LiteGraph.SearchCondition,System.String)">
+        <member name="M:LiteGraph.SearchFilter.#ctor(System.String,LiteGraph.SearchCondition,System.Object)">
             <summary>
             Instantiate the object.
             </summary>
             <param name="field">Field.</param>
             <param name="condition">SearchCondition.</param>
             <param name="value">Value.</param>
-        </member>
-        <member name="M:LiteGraph.SearchFilter.EvaluateValue(System.Object)">
-            <summary>
-            Evaluates a value against the search filter.
-            </summary>
-            <param name="value">Value.</param>
-            <returns>True if matched.</returns>
         </member>
         <member name="T:LiteGraph.Timestamps">
             <summary>

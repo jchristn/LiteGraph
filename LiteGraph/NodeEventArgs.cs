@@ -16,20 +16,26 @@ namespace LiteGraph
         /// <summary>
         /// Globally-unique identifier.
         /// </summary>
-        [JsonProperty(PropertyName = "guid", Order = -1)]
+        [JsonProperty(PropertyName = "guid", Order = -2)]
         public string GUID { get; private set; } = null;
+
+        /// <summary>
+        /// Node type.
+        /// </summary>
+        [JsonProperty(PropertyName = "guid", Order = -1)]
+        public string NodeType { get; private set; } = null;
 
         /// <summary>
         /// Timestamp from creation, in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "created")]
-        internal DateTime CreatedUtc { get; private set; } = DateTime.Now.ToUniversalTime();
+        public DateTime CreatedUtc { get; private set; } = DateTime.Now.ToUniversalTime();
 
         /// <summary>
         /// JSON properties.
         /// </summary>
         [JsonProperty(PropertyName = "props", Order = 990)]
-        internal JObject Properties { get; private set; } = null;
+        public JObject Properties { get; private set; } = null;
 
         #endregion
 
@@ -51,11 +57,13 @@ namespace LiteGraph
         /// Instantiate the object.
         /// </summary>
         /// <param name="guid">Globally-unique identifier.</param>
+        /// <param name="type">Node type.</param>
         /// <param name="created">Timestamp from creation, in UTC.</param>
         /// <param name="props">JSON properties.</param>
-        public NodeEventArgs(string guid, DateTime created, JObject props)
+        public NodeEventArgs(string guid, string type, DateTime created, JObject props)
         {
             GUID = guid;
+            NodeType = type;
             CreatedUtc = created;
             Properties = props;
         }

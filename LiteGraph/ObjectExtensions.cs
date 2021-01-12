@@ -19,7 +19,10 @@ namespace LiteGraph
         public static string ToJson(this object obj, bool pretty = true)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
-            return JsonConvert.SerializeObject(obj, (pretty ? Formatting.Indented : Formatting.None));
+            return JsonConvert.SerializeObject(obj, (pretty ? Formatting.Indented : Formatting.None), new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            });
         }
     }
 }

@@ -31,6 +31,15 @@ namespace Test
                     case "cls":
                         Console.Clear();
                         break;
+                    case "event on":
+                        EventsOn();
+                        break;
+                    case "event off":
+                        EventsOff();
+                        break;
+                    case "default":
+                        LoadDefaultGraph();
+                        break;
                     case "debug queries":
                         _Graph.Logger.LogQueries = !_Graph.Logger.LogQueries;
                         break;
@@ -150,10 +159,47 @@ namespace Test
 
         static void Enumerate(GraphResult r)
         {
-            Console.WriteLine(JsonConvert.SerializeObject(r, _JsonFormatting, new JsonSerializerSettings
+            Console.WriteLine(Serialize(r));
+        }
+
+        static string Serialize(object o)
+        {
+            if (o == null) return null;
+            return JsonConvert.SerializeObject(
+                o,
+                _JsonFormatting,
+                new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                }
+            );
+        }
+
+        static string Serialize(object o, bool pretty = true)
+        {
+            if (o == null) return null;
+            if (pretty)
             {
-                NullValueHandling = NullValueHandling.Ignore
-            }));
+                return JsonConvert.SerializeObject(
+                   o,
+                   Formatting.Indented,
+                   new JsonSerializerSettings
+                   {
+                       NullValueHandling = NullValueHandling.Ignore
+                   }
+               );
+            }
+            else
+            {
+                return JsonConvert.SerializeObject(
+                    o,
+                    Formatting.None,
+                    new JsonSerializerSettings
+                    {
+                        NullValueHandling = NullValueHandling.Ignore
+                    }
+                );
+            }
         }
 
         static void Menu()
@@ -163,6 +209,9 @@ namespace Test
             Console.WriteLine("  ?               help, this menu");
             Console.WriteLine("  q               quit");
             Console.WriteLine("  cls             clear the screen");
+            Console.WriteLine("  default         load default nodes and edges (see documentation)");
+            Console.WriteLine("  event on        enable event messages");
+            Console.WriteLine("  event off       disable event messages");
             Console.WriteLine("  debug queries   toggle query debug, currently: " + _Graph.Logger.LogQueries);
             Console.WriteLine("  debug results   toggle results debug, currently: " + _Graph.Logger.LogResults);
             Console.WriteLine("  formatting      toggle JSON formatting, currently: " + _JsonFormatting.ToString());
@@ -180,6 +229,51 @@ namespace Test
             Console.WriteLine("  search nodes    search nodes using supplied filters");
             Console.WriteLine("  search edges    search edges using supplied filters");
             Console.WriteLine("");
+        }
+
+        static void EventsOn()
+        {
+            _Graph.Events.NodeAdded += NodeAdded;
+            _Graph.Events.NodeUpdated += NodeUpdated;
+            _Graph.Events.NodeRemoved += NodeRemoved;
+            _Graph.Events.EdgeAdded += EdgeAdded;
+            _Graph.Events.EdgeUpdated += EdgeUpdated;
+            _Graph.Events.EdgeRemoved += EdgeRemoved;
+        }
+
+        static void EventsOff()
+        {
+            _Graph.Events = null;
+        }
+
+        static void LoadDefaultGraph()
+        {
+            // People
+            _Graph.AddNode("{'guid':'joel','type':'person','first':'Joel','city':'San Jose'}");
+            _Graph.AddNode("{'guid':'maria','type':'person','first':'Maria','city':'San Jose'}");
+            _Graph.AddNode("{'guid':'jason','type':'person','first':'Jason','city':'San Jose'}");
+            _Graph.AddNode("{'guid':'scott','type':'person','first':'Scott','city':'Chicago'}");
+            _Graph.AddNode("{'guid':'may','type':'person','first':'May','city':'New York City'}");
+            _Graph.AddNode("{'guid':'matt','type':'person','first':'Matt','city':'Raleigh'}");
+            _Graph.AddNode("{'guid':'bob','type':'person','first':'Bob','city':'Asheville'}");
+
+            // Things
+            _Graph.AddNode("{'guid':'car1','type':'car','make':'Toyota','model':'Highlander'}");
+            _Graph.AddNode("{'guid':'car2','type':'car','make':'Volkswagen','model':'Jetta'}");
+            _Graph.AddNode("{'guid':'car3','type':'car','make':'Mercedes','model':'SUV'}");
+            _Graph.AddNode("{'guid':'guitar','type':'instrument','make':'Jackson','model':'Soloist'}");
+            _Graph.AddNode("{'guid':'piano','type':'instrument','make':'Yamaha','model':'Keyboard'}");
+            _Graph.AddNode("{'guid':'house','type':'house','desc':'Super duper house'}");
+
+            // Relationships
+            _Graph.AddEdge("joel", "house", "{'guid':'r1','type':'lives_in','data':'foo'}");
+            _Graph.AddEdge("maria", "house", "{'guid':'r2','type':'lives_in','data':'bar'}");
+            _Graph.AddEdge("jason", "house", "{'guid':'r3','type':'lives_in','data':'baz'}");
+            _Graph.AddEdge("joel", "scott", "{'guid':'r4','type':'friends_with','data':'foo'}");
+            _Graph.AddEdge("maria", "may", "{'guid':'r5','type':'friends_with','data':'bar'}");
+            _Graph.AddEdge("joel", "matt", "{'guid':'r6','type':'worked_with','data':'baz'}");
+            _Graph.AddEdge("matt", "bob", "{'guid':'r7','type':'worked_with','data':'foo'}");
+            _Graph.AddEdge("jason", "maria", "{'guid':'r8','type':'is_child_of','data':'bar'}");
         }
 
         static void AddNode()
@@ -206,7 +300,8 @@ namespace Test
         {
             string guid = InputString("GUID:", null, true);
             if (String.IsNullOrEmpty(guid)) return;
-            Enumerate(_Graph.GetDescendants(guid));
+            List<string> types = InputStringList("Types:", true);
+            Enumerate(_Graph.GetDescendants(guid, types));
         }
 
         static void UpdateNode()
@@ -262,15 +357,48 @@ namespace Test
         static void SearchNodes()
         {
             List<string> guids = InputStringList("GUID:", true);
+            List<string> types = InputStringList("Type:", true);
             List<SearchFilter> filters = InputSearchFilter();
-            Enumerate(_Graph.SearchNodes(guids, filters));
+            Enumerate(_Graph.SearchNodes(guids, types, filters));
         }
 
         static void SearchEdges()
         {
             List<string> guids = InputStringList("GUID:", true);
+            List<string> types = InputStringList("Type:", true);
             List<SearchFilter> filters = InputSearchFilter();
-            Enumerate(_Graph.SearchEdges(guids, filters));
+            Enumerate(_Graph.SearchEdges(guids, types, filters));
         }
+
+        private static void NodeAdded(object sender, NodeEventArgs args)
+        {
+            Console.WriteLine("[NodeAdded] " + args.GUID + " " + args.NodeType + " " + args.CreatedUtc.ToString() + ": " + Serialize(args.Properties, false));
+        }
+
+        private static void NodeUpdated(object sender, NodeEventArgs args)
+        {
+            Console.WriteLine("[NodeUpdated] " + args.GUID + " " + args.NodeType + " " + args.CreatedUtc.ToString() + ": " + Serialize(args.Properties, false));
+        }
+
+        private static void NodeRemoved(object sender, NodeEventArgs args)
+        {
+            Console.WriteLine("[NodeRemoved] " + args.GUID + " " + args.NodeType + " " + args.CreatedUtc.ToString() + ": " + Serialize(args.Properties, false));
+        }
+
+        private static void EdgeAdded(object sender, EdgeEventArgs args)
+        {
+            Console.WriteLine("[EdgeAdded] " + args.GUID + " " + args.EdgeType + " (" + args.FromGUID + " -> " + args.ToGUID + ") " + args.CreatedUtc.ToString() + ": " + Serialize(args.Properties, false));
+        }
+
+        private static void EdgeUpdated(object sender, EdgeEventArgs args)
+        {
+            Console.WriteLine("[EdgeUpdated] " + args.GUID + " " + args.EdgeType + " (" + args.FromGUID + " -> " + args.ToGUID + ") " + args.CreatedUtc.ToString() + ": " + Serialize(args.Properties, false));
+        }
+
+        private static void EdgeRemoved(object sender, EdgeEventArgs args)
+        {
+            Console.WriteLine("[EdgeRemoved] " + args.GUID + " " + args.EdgeType + " (" + args.FromGUID + " -> " + args.ToGUID + ") " + args.CreatedUtc.ToString() + ": " + Serialize(args.Properties, false));
+        }
+
     }
 }

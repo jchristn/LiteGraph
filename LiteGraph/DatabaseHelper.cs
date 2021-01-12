@@ -20,6 +20,7 @@ namespace LiteGraph
             internal static string TableName = "nodes";
             internal static string IdField = "id";
             internal static string GuidField = "guid";
+            internal static string TypeField = "type";
             internal static string PropsField = "props";
             internal static string CreatedUtcField = "createdutc";
 
@@ -37,6 +38,11 @@ namespace LiteGraph
                 if (row.Table.Columns.Contains(GuidField) && row[GuidField] != null && row[GuidField] != DBNull.Value)
                 {
                     ret.GUID = row[GuidField].ToString();
+                }
+
+                if (row.Table.Columns.Contains(TypeField) && row[TypeField] != null && row[TypeField] != DBNull.Value)
+                {
+                    ret.NodeType = row[TypeField].ToString();
                 }
 
                 if (row.Table.Columns.Contains(CreatedUtcField) && row[CreatedUtcField] != null && row[CreatedUtcField] != DBNull.Value)
@@ -77,7 +83,8 @@ namespace LiteGraph
                        "BEGIN TRANSACTION; " +
                        "CREATE TABLE IF NOT EXISTS " + TableName + " (" +
                        "  " + IdField +         " INTEGER     PRIMARY KEY AUTOINCREMENT, " +
-                       "  " + GuidField +       " VARCHAR(64) COLLATE NOCASE, " +
+                       "  " + GuidField       + " VARCHAR(64) COLLATE NOCASE, " +
+                       "  " + TypeField       + " VARCHAR(64) COLLATE NOCASE, " +
                        "  " + CreatedUtcField + " TEXT, " +
                        "  " + PropsField +      " TEXT" +
                        "); " +
@@ -92,11 +99,13 @@ namespace LiteGraph
                     "BEGIN TRANSACTION; " +
                     "INSERT INTO " + TableName + " (" +
                     "  " + GuidField + ", " +
+                    "  " + TypeField + ", " +
                     "  " + CreatedUtcField + ", " +
                     "  " + PropsField +
                     ") " +
                     "VALUES (" +
                     "  '" + Sanitize(node.GUID) + "', " +
+                    "  '" + Sanitize(node.NodeType) + "', " +
                     "  '" + Sanitize(node.CreatedUtc.ToString(_TimestampFormat)) + "', " +
                     "  " + (node.Properties != null ? "json('" + node.Properties.ToJson(false) + "')" : "null" ) + " " +
                     "); " +
@@ -136,7 +145,7 @@ namespace LiteGraph
                 return "SELECT * FROM " + TableName + " WHERE " + GuidField + " = '" + Sanitize(guid) + "'";
             }
 
-            internal static string SelectByFilter(List<string> guids, List<SearchFilter> filters, int indexStart, int maxResults)
+            internal static string SelectByFilter(List<string> guids, List<string> types, List<SearchFilter> filters, int indexStart, int maxResults)
             {
                 guids = Sanitize(guids);
                 filters = Sanitize(filters);
@@ -170,6 +179,22 @@ namespace LiteGraph
                     ret += "))";
                 }
 
+                if (types != null && types.Count > 0)
+                {
+                    ret += "AND (" + TypeField + " IN (";
+
+                    int typesAdded = 0;
+                    foreach (string type in types)
+                    {
+                        if (String.IsNullOrEmpty(type)) continue;
+                        if (typesAdded > 0) ret += ",";
+                        ret += "'" + type + "'";
+                        typesAdded++;
+                    }
+
+                    ret += "))";
+                }
+
                 if (indexStart >= 0 && maxResults > 0)
                 {
                     ret += "LIMIT " + indexStart + ", " + maxResults;
@@ -188,6 +213,7 @@ namespace LiteGraph
             internal static string TableName = "edges";
             internal static string IdField = "id";
             internal static string GuidField = "guid";
+            internal static string TypeField = "type";
             internal static string FromGuidField = "fromguid";
             internal static string ToGuidField = "toguid";
             internal static string PropsField = "props";
@@ -207,6 +233,11 @@ namespace LiteGraph
                 if (row.Table.Columns.Contains(GuidField) && row[GuidField] != null && row[GuidField] != DBNull.Value)
                 {
                     ret.GUID = row[GuidField].ToString();
+                }
+
+                if (row.Table.Columns.Contains(TypeField) && row[TypeField] != null && row[TypeField] != DBNull.Value)
+                {
+                    ret.EdgeType = row[TypeField].ToString();
                 }
 
                 if (row.Table.Columns.Contains(FromGuidField) && row[FromGuidField] != null && row[FromGuidField] != DBNull.Value)
@@ -257,7 +288,8 @@ namespace LiteGraph
                        "BEGIN TRANSACTION; " +
                        "CREATE TABLE IF NOT EXISTS " + TableName + " (" +
                        "  " + IdField +         " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                       "  " + GuidField +       " VARCHAR(64) COLLATE NOCASE, " +
+                       "  " + GuidField       + " VARCHAR(64) COLLATE NOCASE, " +
+                       "  " + TypeField       + " VARCHAR(64) COLLATE NOCASE, " +
                        "  " + FromGuidField +   " VARCHAR(64) COLLATE NOCASE, " +
                        "  " + ToGuidField +     " VARCHAR(64) COLLATE NOCASE, " +
                        "  " + CreatedUtcField + " TEXT, " +
@@ -273,6 +305,7 @@ namespace LiteGraph
                     "BEGIN TRANSACTION; " +
                     "INSERT INTO " + TableName + " (" +
                     "  " + GuidField + ", " +
+                    "  " + TypeField + ", " +
                     "  " + FromGuidField + ", " +
                     "  " + ToGuidField + ", " +
                     "  " + CreatedUtcField + ", " +
@@ -280,6 +313,7 @@ namespace LiteGraph
                     ") " +
                     "VALUES (" +
                     "  '" + Sanitize(edge.GUID) + "', " +
+                    "  '" + Sanitize(edge.EdgeType) + "', " +
                     "  '" + Sanitize(edge.FromGUID) + "', " +
                     "  '" + Sanitize(edge.ToGUID) + "', " +
                     "  '" + Sanitize(edge.CreatedUtc.ToString(_TimestampFormat)) + "', " +
@@ -326,7 +360,7 @@ namespace LiteGraph
                 return "SELECT * FROM " + TableName + " WHERE " + GuidField + " = '" + Sanitize(guid) + "'";
             }
 
-            internal static string SelectByFilter(List<string> guids, List<SearchFilter> filters, int indexStart, int maxResults)
+            internal static string SelectByFilter(List<string> guids, List<string> types, List<SearchFilter> filters, int indexStart, int maxResults)
             {
                 guids = Sanitize(guids);
                 filters = Sanitize(filters);
@@ -343,7 +377,23 @@ namespace LiteGraph
                         ret += "AND " + SearchFilterToQueryCondition(filter, PropsField) + " ";
                     } 
                 }
-                 
+
+                if (types != null && types.Count > 0)
+                {
+                    ret += "AND (" + TypeField + " IN (";
+
+                    int typesAdded = 0;
+                    foreach (string type in types)
+                    {
+                        if (String.IsNullOrEmpty(type)) continue;
+                        if (typesAdded > 0) ret += ",";
+                        ret += "'" + type + "'";
+                        typesAdded++;
+                    }
+
+                    ret += "))";
+                }
+
                 if (guids != null && guids.Count > 0)
                 {
                     ret += "AND (";
@@ -415,14 +465,28 @@ namespace LiteGraph
                 return ret;
             }
 
-            internal static string SelectEdgesFrom(string guid, int indexStart, int maxResults)
+            internal static string SelectEdgesFrom(string guid, List<string> types, int indexStart, int maxResults)
             {
                 guid = Sanitize(guid);
+                types = Sanitize(types);
 
                 string ret =
                     "SELECT * FROM " + TableName + " " +
                     "WHERE " + IdField + " > 0 " +
                     "AND " + FromGuidField + " = '" + guid + "' ";
+
+                if (types != null && types.Count > 0)
+                {
+                    ret += "AND " + TypeField + " IN (";
+
+                    int typesAdded = 0;
+                    foreach (string type in types)
+                    {
+                        if (typesAdded > 0) ret += ",";
+                        ret += "'" + type + "'";
+                    }
+                    ret += ") ";
+                }
 
                 if (indexStart >= 0 && maxResults > 0)
                 {
@@ -436,14 +500,28 @@ namespace LiteGraph
                 return ret;
             }
 
-            internal static string SelectEdgesTo(string guid, int indexStart, int maxResults)
+            internal static string SelectEdgesTo(string guid, List<string> types, int indexStart, int maxResults)
             {
                 guid = Sanitize(guid);
+                types = Sanitize(types);
 
                 string ret =
                     "SELECT * FROM " + TableName + " " +
                     "WHERE " + IdField + " > 0 " +
                     "AND " + ToGuidField + " = '" + guid + "' ";
+
+                if (types != null && types.Count > 0)
+                {
+                    ret += "AND " + TypeField + " IN (";
+
+                    int typesAdded = 0;
+                    foreach (string type in types)
+                    {
+                        if (typesAdded > 0) ret += ",";
+                        ret += "'" + type + "'";
+                    }
+                    ret += ") ";
+                }
 
                 if (indexStart >= 0 && maxResults > 0)
                 {
@@ -553,10 +631,36 @@ namespace LiteGraph
         internal static SearchFilter Sanitize(SearchFilter sf)
         {
             if (sf == null) return null;
-            SearchFilter sanitized = new SearchFilter(
-                Sanitize(sf.Field),
-                sf.Condition,
-                Sanitize(sf.Value));
+
+            SearchFilter sanitized = null;
+
+            if (sf.Condition == SearchCondition.In)
+            {
+                if (!SearchFilter.IsStringList(sf.Value))
+                    throw new ArgumentException("Value must be convertible to List<string> when using In.");
+
+                sanitized = new SearchFilter(
+                    Sanitize(sf.Field),
+                    sf.Condition,
+                    Sanitize((List<string>)(sf.Value)));
+            }
+            else
+            {
+                if (sf.Value != null)
+                {
+                    sanitized = new SearchFilter(
+                        Sanitize(sf.Field),
+                        sf.Condition,
+                        Sanitize(sf.Value.ToString()));
+                }
+                else
+                {
+                    sanitized = new SearchFilter(
+                        Sanitize(sf.Field),
+                        sf.Condition,
+                        null);
+                }
+            }
             return sanitized;
         }
 
@@ -581,52 +685,76 @@ namespace LiteGraph
             switch (filter.Condition)
             {
                 case SearchCondition.Contains:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
-                    ret += "LIKE '%" + Sanitize(filter.Value) + "%'";
+                    if (filter.Value == null || String.IsNullOrEmpty(filter.Value.ToString()))
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    ret += "LIKE '%" + Sanitize(filter.Value.ToString()) + "%'";
                     break;
                 case SearchCondition.ContainsNot:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
-                    ret += "NOT LIKE '%" + Sanitize(filter.Value) + "%'";
+                    if (filter.Value == null || String.IsNullOrEmpty(filter.Value.ToString()))
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    ret += "NOT LIKE '%" + Sanitize(filter.Value.ToString()) + "%'";
                     break;
                 case SearchCondition.EndsWith:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
-                    ret += "LIKE '%" + Sanitize(filter.Value) + "'";
+                    if (filter.Value == null || String.IsNullOrEmpty(filter.Value.ToString()))
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    ret += "LIKE '%" + Sanitize(filter.Value.ToString()) + "'";
                     break;
                 case SearchCondition.Equals:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
-                    ret += "= '" + Sanitize(filter.Value) + "'";
+                    if (filter.Value == null || String.IsNullOrEmpty(filter.Value.ToString()))
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    ret += "= '" + Sanitize(filter.Value.ToString()) + "'";
                     break;
                 case SearchCondition.GreaterThan:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
-                    ret += "> '" + Sanitize(filter.Value) + "'";
+                    if (filter.Value == null || String.IsNullOrEmpty(filter.Value.ToString()))
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    ret += "> '" + Sanitize(filter.Value.ToString()) + "'";
                     break;
                 case SearchCondition.GreaterThanOrEqualTo:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
-                    ret += ">= '" + Sanitize(filter.Value) + "'";
+                    if (filter.Value == null || String.IsNullOrEmpty(filter.Value.ToString()))
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    ret += ">= '" + Sanitize(filter.Value.ToString()) + "'";
                     break;
-                case SearchCondition.IsNotNull:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
+                case SearchCondition.IsNotNull: 
                     ret += "IS NOT NULL";
                     break;
-                case SearchCondition.IsNull:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
+                case SearchCondition.IsNull: 
                     ret += "IS NULL";
                     break;
                 case SearchCondition.LessThan:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
-                    ret += "< '" + Sanitize(filter.Value) + "'";
+                    if (filter.Value == null || String.IsNullOrEmpty(filter.Value.ToString()))
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    ret += "< '" + Sanitize(filter.Value.ToString()) + "'";
                     break;
                 case SearchCondition.LessThanOrEqualTo:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
-                    ret += "<= '" + Sanitize(filter.Value) + "'";
+                    if (filter.Value == null || String.IsNullOrEmpty(filter.Value.ToString()))
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    ret += "<= '" + Sanitize(filter.Value.ToString()) + "'";
                     break;
                 case SearchCondition.NotEquals:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
-                    ret += "!= '" + Sanitize(filter.Value) + "'";
+                    if (filter.Value == null || String.IsNullOrEmpty(filter.Value.ToString()))
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    ret += "!= '" + Sanitize(filter.Value.ToString()) + "'";
                     break;
                 case SearchCondition.StartsWith:
-                    if (String.IsNullOrEmpty(filter.Value)) throw new ArgumentNullException(nameof(SearchFilter.Value));
-                    ret += "LIKE '" + Sanitize(filter.Value) + "%'";
+                    if (filter.Value == null || String.IsNullOrEmpty(filter.Value.ToString()))
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    ret += "LIKE '" + Sanitize(filter.Value.ToString()) + "%'";
+                    break;
+                case SearchCondition.In:
+                    if (filter.Value == null)
+                        throw new ArgumentNullException(nameof(SearchFilter.Value));
+                    if (!SearchFilter.IsStringList(filter.Value))
+                        throw new ArgumentException("Value must be convertible to List<string> when using In.");
+                    ret += "IN (";
+                    int filtersAdded = 0;
+                    List<string> vals = (List<string>)(filter.Value);
+                    foreach (string val in vals)
+                    {
+                        if (filtersAdded > 0) ret += ",";
+                        ret += "'" + Sanitize(val) + "'";
+                        filtersAdded++;
+                    }
+                    ret += ")";
                     break;
                 default:
                     throw new ArgumentException("Unsupported filter condition '" + filter.Condition.ToString() + "'.");

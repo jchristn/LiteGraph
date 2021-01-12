@@ -12,8 +12,11 @@ namespace LiteGraph
         [JsonIgnore]
         internal int Id { get; set; } = 0;
 
-        [JsonProperty(PropertyName = "guid", Order = -3)]
+        [JsonProperty(PropertyName = "guid", Order = -4)]
         internal string GUID { get; set; } = null;
+
+        [JsonProperty(PropertyName = "type", Order = -3)]
+        internal string EdgeType { get; set; } = null;
 
         [JsonProperty(PropertyName = "from", Order = -2)]
         internal string FromGUID { get; set; } = null;
@@ -32,15 +35,17 @@ namespace LiteGraph
 
         }
 
-        internal Edge(int id, string guid, string fromGuid, string toGuid, DateTime createdUtc, string props)
+        internal Edge(int id, string guid, string type, string fromGuid, string toGuid, DateTime createdUtc, string props)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
+            if (String.IsNullOrEmpty(type)) throw new ArgumentNullException(nameof(type));
             if (String.IsNullOrEmpty(toGuid)) throw new ArgumentNullException(nameof(toGuid));
             if (String.IsNullOrEmpty(fromGuid)) throw new ArgumentNullException(nameof(fromGuid));
             if (id < 0) throw new ArgumentException("Id must be zero or greater.");
 
             Id = id;
             GUID = guid;
+            EdgeType = type;
             FromGUID = fromGuid;
             ToGUID = toGuid;
             CreatedUtc = createdUtc.ToUniversalTime();

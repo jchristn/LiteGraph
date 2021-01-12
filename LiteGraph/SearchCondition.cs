@@ -73,6 +73,11 @@ namespace LiteGraph
         /// The left term ends with the right term.
         /// </summary>
         [EnumMember(Value = "EndsWith")]
-        EndsWith
+        EndsWith,
+        /// <summary>
+        /// The left term can be found within the list in the right terme.
+        /// </summary>
+        [EnumMember(Value = "EndsWith")]
+        In
     }
 }

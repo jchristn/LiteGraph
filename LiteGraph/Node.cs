@@ -12,8 +12,11 @@ namespace LiteGraph
         [JsonIgnore]
         internal int Id { get; set; } = 0;
 
-        [JsonProperty(PropertyName = "guid", Order = -1)]
+        [JsonProperty(PropertyName = "guid", Order = -2)]
         internal string GUID { get; set; } = null;
+
+        [JsonProperty(PropertyName = "type", Order = -1)]
+        internal string NodeType { get; set; } = null;
 
         [JsonProperty(PropertyName = "created")]
         internal DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
@@ -29,13 +32,15 @@ namespace LiteGraph
 
         }
 
-        internal Node(int id, string guid, DateTime createdUtc, JObject props, List<Node> descendents = null)
+        internal Node(int id, string guid, string type, DateTime createdUtc, JObject props, List<Node> descendents = null)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
+            if (String.IsNullOrEmpty(type)) throw new ArgumentNullException(nameof(type));
             if (id < 0) throw new ArgumentException("Id must be zero or greater.");
 
             Id = id;
             GUID = guid;
+            NodeType = type;
             CreatedUtc = createdUtc.ToUniversalTime();
             Properties = props;
             Descendents = descendents;
