@@ -13,14 +13,16 @@ LiteGraph is a lightweight graph database built using Sqlite with support for ex
 - Find routes between nodes using specified filters
 - Export the graph to GEXF for use with Gephi (https://github.com/gephi/gephi)
 
-## Important
+## Constraints
 
-- Node JSON must contain three properties
+- Node JSON must contain three properties:
+
   - GUID - globally unique identifier, using property name as set in the ```NodeGuidProperty``` field (default ```guid```)
   - Name - name of the node, using property name as set in the ```NodeNameProperty``` field (default ```name```)
   - Type - type of the node, using property name as set in the ```NodeTypeProperty``` field (default ```type```)
 
-- Edge JSON must contain two properties
+- Edge JSON must contain two properties:
+
   - GUID - globally unique identifier, using property name as set in the ```EdgeGuidProperty``` field (default ```guid```)
   - Type - type of the node, using property name as set in the ```EdgeTypeProperty``` field (default ```type```)
  
