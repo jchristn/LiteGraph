@@ -60,6 +60,22 @@ namespace LiteGraph
         }
 
         /// <summary>
+        /// Name property that must be present in every node added to the graph.
+        /// </summary>
+        public string NodeNameProperty
+        {
+            get
+            {
+                return _NodeNameProperty;
+            }
+            set
+            {
+                if (String.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(NodeNameProperty));
+                _NodeNameProperty = value;
+            }
+        }
+
+        /// <summary>
         /// Type property that must be present in every node added to the graph.
         /// </summary>
         public string NodeTypeProperty
@@ -140,6 +156,7 @@ namespace LiteGraph
         private string _Filename = null;
         private string _ConnectionString = null;
         private string _NodeGuidProperty = "guid";
+        private string _NodeNameProperty = "name";
         private string _NodeTypeProperty = "type";
         private string _EdgeGuidProperty = "guid";
         private string _EdgeTypeProperty = "type";
@@ -198,10 +215,14 @@ namespace LiteGraph
 
             JObject j = JObject.Parse(json);
             if (!j.ContainsKey(_NodeGuidProperty)) throw new ArgumentException("Supplied JSON does not contain the globally-unique identifier property '" + _NodeGuidProperty + "'.  To use a different property name, modify the 'NodeGuidProperty' field.");
+            if (!j.ContainsKey(_NodeNameProperty)) throw new ArgumentException("Supplied JSON does not contain the name property '" + _NodeNameProperty + "'.  To use a different property name, modify the 'NodeNameProperty' field.");
             if (!j.ContainsKey(_NodeTypeProperty)) throw new ArgumentException("Supplied JSON does not contain the type property '" + _NodeTypeProperty + "'.  To use a different property name, modify the 'NodeTypeProperty' field.");
 
             string guid = j[_NodeGuidProperty].ToString();
             if (String.IsNullOrEmpty(guid)) throw new ArgumentException("Supplied unique identifier in property '" + _NodeGuidProperty + "' is null or empty.");
+
+            string name = j[_NodeNameProperty].ToString();
+            if (String.IsNullOrEmpty(name)) throw new ArgumentException("Supplied identifier in property '" + _NodeNameProperty + "' is null or empty.");
 
             string type = j[_NodeTypeProperty].ToString();
             if (String.IsNullOrEmpty(type)) throw new ArgumentException("Supplied identifier in property '" + _NodeTypeProperty + "' is null or empty.");
@@ -210,10 +231,10 @@ namespace LiteGraph
             if ((bool)existsResult.Result) throw new ArgumentException("Node with unique identifier '" + guid + "' already exists.");
 
             DateTime ts = DateTime.Now.ToUniversalTime();
-            Node n = new Node(0, guid, type, DateTime.Now.ToUniversalTime(), j);
+            Node n = new Node(0, guid, name, type, DateTime.Now.ToUniversalTime(), j);
             Query(DatabaseHelper.Nodes.InsertQuery(n));
 
-            _Events.HandleNodeAdded(this, new NodeEventArgs(guid, type, ts, j));
+            _Events.HandleNodeAdded(this, new NodeEventArgs(guid, name, type, ts, j));
 
             r.Time.End = DateTime.Now;
             return r;
@@ -233,10 +254,14 @@ namespace LiteGraph
 
             JObject j = JObject.Parse(json);
             if (!j.ContainsKey(_NodeGuidProperty)) throw new ArgumentException("Supplied JSON does not contain the globally-unique identifier property '" + _NodeGuidProperty + "'.  To use a different property name, modify the 'NodeGuidProperty' field.");
+            if (!j.ContainsKey(_NodeNameProperty)) throw new ArgumentException("Supplied JSON does not contain the name property '" + _NodeNameProperty + "'.  To use a different property name, modify the 'NodeNameProperty' field.");
             if (!j.ContainsKey(_NodeTypeProperty)) throw new ArgumentException("Supplied JSON does not contain the type property '" + _NodeTypeProperty + "'.  To use a different property name, modify the 'NodeTypeProperty' field.");
 
             string guid = j[_NodeGuidProperty].ToString();
             if (String.IsNullOrEmpty(guid)) throw new ArgumentException("Supplied unique identifier in property '" + _NodeGuidProperty + "' is null or empty.");
+
+            string name = j[_NodeNameProperty].ToString();
+            if (String.IsNullOrEmpty(name)) throw new ArgumentException("Supplied identifier in property '" + _NodeNameProperty + "' is null or empty.");
 
             string type = j[_NodeTypeProperty].ToString();
             if (String.IsNullOrEmpty(type)) throw new ArgumentException("Supplied identifier in property '" + _NodeTypeProperty + "' is null or empty.");
@@ -247,7 +272,7 @@ namespace LiteGraph
             n.Properties = JObject.Parse(json);
             Query(DatabaseHelper.Nodes.UpdateQuery(n));
 
-            _Events.HandleNodeUpdated(this, new NodeEventArgs(n.GUID, n.NodeType, n.CreatedUtc, n.Properties));
+            _Events.HandleNodeUpdated(this, new NodeEventArgs(n.GUID, n.Name, n.NodeType, n.CreatedUtc, n.Properties));
 
             r.Time.End = DateTime.Now;
             return r;
@@ -270,7 +295,7 @@ namespace LiteGraph
             Query(DatabaseHelper.Nodes.DeleteQuery(guid));
             Query(DatabaseHelper.Edges.DeleteNodeEdgesQuery(guid));
 
-            _Events.HandleNodeRemoved(this, new NodeEventArgs(n.GUID, n.NodeType, n.CreatedUtc, n.Properties));
+            _Events.HandleNodeRemoved(this, new NodeEventArgs(n.GUID, n.Name, n.NodeType, n.CreatedUtc, n.Properties));
 
             r.Time.End = DateTime.Now;
             return r;
@@ -321,12 +346,12 @@ namespace LiteGraph
                 }
                 else
                 {
-                    r.Data = JArray.FromObject(new List<object>(), _JsonSerializer);
+                    r.Data = JArray.FromObject(new List<Node>(), _JsonSerializer);
                 }
             }
             else
             {
-                r.Data = JArray.FromObject(new List<object>(), _JsonSerializer);
+                r.Data = JArray.FromObject(new List<Node>(), _JsonSerializer);
             }
              
             r.Time.End = DateTime.Now;
@@ -395,12 +420,12 @@ namespace LiteGraph
                 }
                 else
                 {
-                    r.Data = JArray.FromObject(new List<object>(), _JsonSerializer);
+                    r.Data = JArray.FromObject(new List<Node>(), _JsonSerializer);
                 }
             }
             else
             {
-                r.Data = JArray.FromObject(new List<object>(), _JsonSerializer);
+                r.Data = JArray.FromObject(new List<Node>(), _JsonSerializer);
             }
 
             r.Time.End = DateTime.Now;
@@ -431,7 +456,7 @@ namespace LiteGraph
             }
             else
             {
-                r.Data = JArray.FromObject(new List<object>(), _JsonSerializer);
+                r.Data = JArray.FromObject(new List<Node>(), _JsonSerializer);
             }
 
             r.Time.End = DateTime.Now;
@@ -443,9 +468,10 @@ namespace LiteGraph
         /// </summary>
         /// <param name="guid">Globally-unique identifier.</param>
         /// <param name="types">Types of edges on which to filter.</param>
+        /// <param name="filters">Filters by which edges should be evaluated.</param>
         /// <param name="maxDepth">The maximum depth to search.</param>
         /// <returns>Graph result.</returns>
-        public GraphResult GetDescendants(string guid, List<string> types, int maxDepth = 5)
+        public GraphResult GetDescendants(string guid, List<string> types, List<SearchFilter> filters = null, int maxDepth = 5)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             GraphResult r = new GraphResult(GraphOperation.GetDescendants);
@@ -454,7 +480,7 @@ namespace LiteGraph
             if (result != null && result.Rows.Count > 0)
             {
                 Node n = DatabaseHelper.Nodes.FromDataRow(result.Rows[0]);
-                n.Descendents = GetDescendantsFromNode(n, types, n.GUID, 0, maxDepth);
+                n.Descendents = GetDescendantsFromNode(n, types, filters, n.GUID, 0, maxDepth);
                 r.Data = JObject.FromObject(n, _JsonSerializer);
             }
 
@@ -472,10 +498,11 @@ namespace LiteGraph
         /// The supplied JSON must contain the type identifier property as specified in EdgeTypeProperty.
         /// </summary>
         /// <param name="fromGuid">Globally-unique identifier of the source node.</param>
-        /// <param name="toGuid">Globally-unique identifier of the target node.</param>
+        /// <param name="toGuid">Globally-unique identifier of the target node.</param> 
         /// <param name="json">JSON object.</param>
+        /// <param name="cost">Cost for using the edge.</param>
         /// <returns>Graph result.</returns>
-        public GraphResult AddEdge(string fromGuid, string toGuid, string json)
+        public GraphResult AddEdge(string fromGuid, string toGuid, string json, int? cost = null)
         {
             GraphResult r = new GraphResult(GraphOperation.AddEdge);
 
@@ -491,7 +518,7 @@ namespace LiteGraph
             if (String.IsNullOrEmpty(guid)) throw new ArgumentException("Supplied unique identifier in property '" + _EdgeGuidProperty + "' is null or empty.");
 
             string type = j[_EdgeTypeProperty].ToString();
-            if (String.IsNullOrEmpty(type)) throw new ArgumentException("Supplied identifier in property '" + _EdgeTypeProperty + "' is null or empty.");
+            if (String.IsNullOrEmpty(type)) throw new ArgumentException("Supplied type identifier in property '" + _EdgeTypeProperty + "' is null or empty.");
 
             GraphResult existsResult = EdgeExists(guid);
             if ((bool)existsResult.Result) throw new ArgumentException("Edge with unique identifier '" + guid + "' already exists.");
@@ -503,10 +530,10 @@ namespace LiteGraph
             if (!(bool)existsResult.Result) throw new ArgumentException("Node with unique identifier '" + toGuid + "' not found.");
 
             DateTime ts = DateTime.Now.ToUniversalTime();
-            Edge e = new Edge(0, guid, type, fromGuid, toGuid, DateTime.Now.ToUniversalTime(), json);
+            Edge e = new Edge(0, guid, type, fromGuid, toGuid, cost, ts, j);
             Query(DatabaseHelper.Edges.InsertQuery(e));
 
-            _Events.HandleEdgeAdded(this, new EdgeEventArgs(guid, fromGuid, toGuid, type, ts, j));
+            _Events.HandleEdgeAdded(this, new EdgeEventArgs(guid, type, fromGuid, toGuid, e.Cost, ts, j));
 
             r.Time.End = DateTime.Now;
             return r;
@@ -541,7 +568,7 @@ namespace LiteGraph
             e.Properties = JObject.Parse(json);
             Query(DatabaseHelper.Edges.UpdateQuery(e));
 
-            _Events.HandleEdgeUpdated(this, new EdgeEventArgs(e.GUID, e.FromGUID, e.ToGUID, e.EdgeType, e.CreatedUtc, e.Properties));
+            _Events.HandleEdgeUpdated(this, new EdgeEventArgs(e.GUID, e.EdgeType, e.FromGUID, e.ToGUID, e.Cost, e.CreatedUtc, e.Properties));
 
             r.Time.End = DateTime.Now;
             return r;
@@ -563,7 +590,7 @@ namespace LiteGraph
 
             Query(DatabaseHelper.Edges.DeleteQuery(guid));
 
-            _Events.HandleEdgeRemoved(this, new EdgeEventArgs(e.GUID, e.FromGUID, e.ToGUID, e.EdgeType, e.CreatedUtc, e.Properties));
+            _Events.HandleEdgeRemoved(this, new EdgeEventArgs(e.GUID, e.EdgeType, e.FromGUID, e.ToGUID, e.Cost, e.CreatedUtc, e.Properties));
 
             r.Time.End = DateTime.Now;
             return r;
@@ -596,15 +623,18 @@ namespace LiteGraph
         /// <summary>
         /// Retrieve all edges.
         /// </summary>
-        /// <param name="types">Types of nodes on which to filter.</param>
+        /// <param name="types">Types of edges on which to filter.</param>
+        /// <param name="filters">Filters by which edges should be filtered.</param>
         /// <param name="indexStart">Starting index.</param>
         /// <param name="maxResults">Maximum number of results to retrieve.</param>
+        /// <param name="costMin">Minimum cost to use the edge.</param>
+        /// <param name="costMax">Maximum cost to use the edge</param>
         /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult GetAllEdges(List<string> types = default, int indexStart = 0, int maxResults = 100)
+        public GraphResult GetAllEdges(List<string> types = default, List<SearchFilter> filters = null, int indexStart = 0, int maxResults = 100, int? costMin = null, int? costMax = null)
         {
             GraphResult r = new GraphResult(GraphOperation.GetAllEdges);
 
-            DataTable result = Query(DatabaseHelper.Edges.SelectByFilter(null, types, null, indexStart, maxResults));
+            DataTable result = Query(DatabaseHelper.Edges.SelectByFilter(null, types, filters, indexStart, maxResults, costMin, costMax));
             if (result != null && result.Rows.Count > 0)
             {
                 List<Edge> edges = DatabaseHelper.Edges.FromDataTable(result);
@@ -614,12 +644,12 @@ namespace LiteGraph
                 }
                 else
                 {
-                    r.Data = JArray.FromObject(new List<object>(), _JsonSerializer);
+                    r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
                 }
             }
             else
             {
-                r.Data = JArray.FromObject(new List<object>(), _JsonSerializer);
+                r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
             }
 
             r.Time.End = DateTime.Now;
@@ -629,12 +659,15 @@ namespace LiteGraph
         /// <summary>
         /// Retrieve all edges to or from a given node.
         /// </summary>
-        /// <param name="guid">Globally-unique identifier.</param>
+        /// <param name="guid">Globally-unique identifier of the node.</param>
         /// <param name="types">Types of edges on which to filter.</param>
+        /// <param name="filters">Filters by which edges should be filtered.</param>
         /// <param name="indexStart">Starting index.</param>
         /// <param name="maxResults">Maximum number of results to retrieve.</param>
+        /// <param name="costMin">Minimum cost to use the edge.</param>
+        /// <param name="costMax">Maximum cost to use the edge</param>
         /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult GetEdges(string guid, List<string> types = default, int indexStart = 0, int maxResults = 100)
+        public GraphResult GetEdges(string guid, List<string> types = default, List<SearchFilter> filters = null, int indexStart = 0, int maxResults = 100, int? costMin = null, int? costMax = null)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             GraphResult r = new GraphResult(GraphOperation.GetEdges);
@@ -642,7 +675,7 @@ namespace LiteGraph
             List<string> guids = new List<string>();
             guids.Add(guid);
 
-            DataTable result = Query(DatabaseHelper.Edges.SelectByFilter(guids, types, null, indexStart, maxResults));
+            DataTable result = Query(DatabaseHelper.Edges.SelectByFilter(guids, types, filters, indexStart, maxResults, costMin, costMax));
             if (result != null && result.Rows.Count > 0)
             {
                 List<Edge> edges = DatabaseHelper.Edges.FromDataTable(result);
@@ -650,9 +683,71 @@ namespace LiteGraph
             }
             else
             {
-                r.Data = JArray.FromObject(new List<object>(), _JsonSerializer);
+                r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
             }
+
+            r.Time.End = DateTime.Now;
+            return r;
+        }
+
+        /// <summary>
+        /// Retrieve all edges from a given node.
+        /// </summary>
+        /// <param name="guid">Globally-unique identifier of the node.</param>
+        /// <param name="types">Types of edges on which to filter.</param>
+        /// <param name="filters">Filters by which edges should be filtered.</param>
+        /// <param name="indexStart">Starting index.</param>
+        /// <param name="maxResults">Maximum number of results to retrieve.</param>
+        /// <param name="costMin">Minimum cost to use the edge.</param>
+        /// <param name="costMax">Maximum cost to use the edge</param>
+        /// <returns>Graph result where 'Data' contains a JArray.</returns>
+        public GraphResult GetEdgesFrom(string guid, List<string> types = default, List<SearchFilter> filters = null, int indexStart = 0, int maxResults = 100, int? costMin = null, int? costMax = null)
+        {
+            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
+            GraphResult r = new GraphResult(GraphOperation.GetEdges);
+
+            DataTable result = Query(DatabaseHelper.Edges.SelectEdgesFrom(guid, types, filters, indexStart, maxResults, costMin, costMax));
+            if (result != null && result.Rows.Count > 0)
+            {
+                List<Edge> edges = DatabaseHelper.Edges.FromDataTable(result);
+                r.Data = JArray.FromObject(edges, _JsonSerializer);
+            }
+            else
+            {
+                r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
+            }
+
+            r.Time.End = DateTime.Now;
+            return r;
+        }
+
+        /// <summary>
+        /// Retrieve all edges to a given node.
+        /// </summary>
+        /// <param name="guid">Globally-unique identifier of the node.</param>
+        /// <param name="types">Types of edges on which to filter.</param>
+        /// <param name="filters">Filters by which edges should be filtered.</param>
+        /// <param name="indexStart">Starting index.</param>
+        /// <param name="maxResults">Maximum number of results to retrieve.</param>
+        /// <param name="costMin">Minimum cost to use the edge.</param>
+        /// <param name="costMax">Maximum cost to use the edge</param>
+        /// <returns>Graph result where 'Data' contains a JArray.</returns>
+        public GraphResult GetEdgesTo(string guid, List<string> types = default, List<SearchFilter> filters = null, int indexStart = 0, int maxResults = 100, int? costMin = null, int? costMax = null)
+        {
+            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
+            GraphResult r = new GraphResult(GraphOperation.GetEdges);
              
+            DataTable result = Query(DatabaseHelper.Edges.SelectEdgesTo(guid, types, filters, indexStart, maxResults, costMin, costMax));
+            if (result != null && result.Rows.Count > 0)
+            {
+                List<Edge> edges = DatabaseHelper.Edges.FromDataTable(result);
+                r.Data = JArray.FromObject(edges, _JsonSerializer);
+            }
+            else
+            {
+                r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
+            }
+
             r.Time.End = DateTime.Now;
             return r;
         }
@@ -690,15 +785,17 @@ namespace LiteGraph
         /// <param name="filters">Filters to apply against each edge's JSON data.</param>
         /// <param name="indexStart">Starting index.</param>
         /// <param name="maxResults">Maximum number of results to retrieve.</param>
+        /// <param name="costMin">Minimum cost to use the edge.</param>
+        /// <param name="costMax">Maximum cost to use the edge</param>
         /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult SearchEdges(List<string> guids, List<string> types, List<SearchFilter> filters, int indexStart = 0, int maxResults = 100)
+        public GraphResult SearchEdges(List<string> guids, List<string> types, List<SearchFilter> filters, int indexStart = 0, int maxResults = 100, int? costMin = null, int? costMax = null)
         {
             if (indexStart < 0) throw new ArgumentException("Index start must be zero or greater.");
             if (maxResults < 1) throw new ArgumentException("Max results must be greater than zero.");
             if (maxResults > _MaxResultsLimit) throw new ArgumentException("Max results must not exceed " + _MaxResultsLimit);
             GraphResult r = new GraphResult(GraphOperation.SearchEdges);
 
-            DataTable result = Query(DatabaseHelper.Edges.SelectByFilter(guids, types, filters, indexStart, maxResults));
+            DataTable result = Query(DatabaseHelper.Edges.SelectByFilter(guids, types, filters, indexStart, maxResults, costMin, costMax));
             if (result != null && result.Rows.Count > 0)
             {
                 List<Edge> edges = DatabaseHelper.Edges.FromDataTable(result);
@@ -706,7 +803,7 @@ namespace LiteGraph
             }
             else
             {
-                r.Data = JArray.FromObject(new List<object>(), _JsonSerializer);
+                r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
             }
 
             r.Time.End = DateTime.Now;
@@ -714,7 +811,7 @@ namespace LiteGraph
         }
 
         #endregion
-
+         
         #endregion
 
         #region Private-Methods
@@ -772,7 +869,7 @@ namespace LiteGraph
                     conn.Close();
                 }
 
-                if (Logger.LogResults) Logger.Log("result: " + (result != null ? result.Rows.Count + " rows" : "(null)"));
+                if (Logger.LogResults) Logger.Log("query: " + query + "  result: " + (result != null ? result.Rows.Count + " rows" : "(null)"));
                 return result;
             }
             catch (Exception e)
@@ -782,11 +879,11 @@ namespace LiteGraph
             }
         }
 
-        private List<Node> GetDescendantsFromNode(Node n, List<string> edgeTypes, string startingGuid, int currentDepth, int maxDepth)
+        private List<Node> GetDescendantsFromNode(Node n, List<string> edgeTypes, List<SearchFilter> filters, string startingGuid, int currentDepth, int maxDepth)
         {
             List<Node> ret = null;
              
-            DataTable edgeResult = Query(DatabaseHelper.Edges.SelectEdgesFrom(n.GUID, edgeTypes, 0, 0));
+            DataTable edgeResult = Query(DatabaseHelper.Edges.SelectEdgesFrom(n.GUID, edgeTypes, filters, 0, 0));
             if (edgeResult != null && edgeResult.Rows.Count > 0)
             { 
                 List<Edge> edges = DatabaseHelper.Edges.FromDataTable(edgeResult);
@@ -803,7 +900,7 @@ namespace LiteGraph
                         if (nodeResult != null && nodeResult.Rows.Count > 0)
                         {
                             Node node = DatabaseHelper.Nodes.FromDataRow(nodeResult.Rows[0]);
-                            if (currentDepth < maxDepth) node.Descendents = GetDescendantsFromNode(node, edgeTypes, startingGuid, (currentDepth + 1), maxDepth);
+                            if (currentDepth < maxDepth) node.Descendents = GetDescendantsFromNode(node, edgeTypes, filters, startingGuid, (currentDepth + 1), maxDepth);
                             if (ret == null) ret = new List<Node>();
                             ret.Add(node);
                         }
@@ -812,6 +909,32 @@ namespace LiteGraph
             }
 
             return ret;
+        }
+
+        private GraphResult FindRoutesBfs(string fromGuid, string toGuid, List<string> types = default, List<SearchFilter> filters = null, int? costMin = null, int? costMax = null )
+        {
+            GraphResult r = new GraphResult(GraphOperation.FindRoutes);
+
+            GraphResult edgesFrom = GetEdgesFrom(fromGuid, types, filters, 0, 0, null, null);
+            if (edgesFrom.Data != null)
+            {
+                List<Edge> edges = ((JArray)edgesFrom.Data).ToObject<List<Edge>>();
+                if (edges != null && edges.Count > 0)
+                {
+
+                }
+            }
+
+            r.Time.End = DateTime.Now;
+            return r;
+        }
+
+        private GraphResult FindRoutesDfs(string fromGuid, string toGuid, List<string> types = default, List<SearchFilter> filters = null, int? costMin = null, int? costMax = null)
+        {
+            GraphResult r = new GraphResult(GraphOperation.FindRoutes);
+
+            r.Time.End = DateTime.Now;
+            return r;
         }
 
         #endregion

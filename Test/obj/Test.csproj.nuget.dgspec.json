@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\code\\misc\\LiteGraph\\Test\\Test.csproj": {}
+    "C:\\Code\\Misc\\LiteGraph\\Test\\Test.csproj": {}
   },
   "projects": {
-    "c:\\code\\misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj": {
-      "version": "1.0.0",
+    "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj": {
+      "version": "1.0.0.1",
       "restore": {
-        "projectUniqueName": "c:\\code\\misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj",
+        "projectUniqueName": "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj",
         "projectName": "LiteGraph",
-        "projectPath": "c:\\code\\misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj",
+        "projectPath": "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj",
         "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-        "outputPath": "c:\\code\\misc\\LiteGraph\\LiteGraph\\obj\\",
+        "outputPath": "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\obj\\",
         "projectStyle": "PackageReference",
         "crossTargeting": true,
         "fallbackFolders": [
@@ -89,18 +89,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[3.1.10, 3.1.10]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.102\\RuntimeIdentifierGraph.json"
         },
         "net5.0": {
           "targetAlias": "net5.0",
@@ -133,7 +127,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.102\\RuntimeIdentifierGraph.json"
         },
         "net461": {
           "targetAlias": "net461",
@@ -151,7 +145,7 @@
               "version": "[12.0.3, )"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.102\\RuntimeIdentifierGraph.json"
         },
         "netstandard2.0": {
           "targetAlias": "netstandard2.0",
@@ -185,7 +179,7 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.102\\RuntimeIdentifierGraph.json"
         },
         "netstandard2.1": {
           "targetAlias": "netstandard2.1",
@@ -218,18 +212,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.102\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "c:\\code\\misc\\LiteGraph\\Test\\Test.csproj": {
+    "C:\\Code\\Misc\\LiteGraph\\Test\\Test.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\code\\misc\\LiteGraph\\Test\\Test.csproj",
+        "projectUniqueName": "C:\\Code\\Misc\\LiteGraph\\Test\\Test.csproj",
         "projectName": "Test",
-        "projectPath": "c:\\code\\misc\\LiteGraph\\Test\\Test.csproj",
+        "projectPath": "C:\\Code\\Misc\\LiteGraph\\Test\\Test.csproj",
         "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-        "outputPath": "c:\\code\\misc\\LiteGraph\\Test\\obj\\",
+        "outputPath": "C:\\Code\\Misc\\LiteGraph\\Test\\obj\\",
         "projectStyle": "PackageReference",
         "crossTargeting": true,
         "fallbackFolders": [
@@ -254,24 +248,24 @@
           "netcoreapp3.1": {
             "targetAlias": "netcoreapp3.1",
             "projectReferences": {
-              "c:\\code\\misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj": {
-                "projectPath": "c:\\code\\misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj"
+              "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj": {
+                "projectPath": "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj"
               }
             }
           },
           "net5.0": {
             "targetAlias": "net5.0",
             "projectReferences": {
-              "c:\\code\\misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj": {
-                "projectPath": "c:\\code\\misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj"
+              "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj": {
+                "projectPath": "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj"
               }
             }
           },
           "net461": {
             "targetAlias": "net461",
             "projectReferences": {
-              "c:\\code\\misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj": {
-                "projectPath": "c:\\code\\misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj"
+              "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj": {
+                "projectPath": "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj"
               }
             }
           }
@@ -295,22 +289,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[3.1.10, 3.1.10]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[3.1.10, 3.1.10]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.102\\RuntimeIdentifierGraph.json"
         },
         "net5.0": {
           "targetAlias": "net5.0",
@@ -329,11 +313,11 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.102\\RuntimeIdentifierGraph.json"
         },
         "net461": {
           "targetAlias": "net461",
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.102\\RuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {

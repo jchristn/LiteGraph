@@ -16,7 +16,7 @@ namespace LiteGraph
         /// <summary>
         /// The field upon which to match.
         /// </summary>
-        [JsonProperty(Order = -1)]
+        [JsonProperty(PropertyName = "field", Order = -2)]
         public string Field
         {
             get
@@ -33,6 +33,7 @@ namespace LiteGraph
         /// <summary>
         /// The condition by which the graph is evaluated against the supplied value.
         /// </summary>
+        [JsonProperty(PropertyName = "condition", Order = -1)]
         public SearchCondition Condition = SearchCondition.Equals;
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace LiteGraph
         /// When using GreaterThan, GreaterThanOrEqualTo, LessThan, or LessThanOrEqualTo, the value supplied must be convertible to decimal.
         /// When using In, the value supplied 
         /// </summary>
-        [JsonProperty(Order = 990)]
+        [JsonProperty(PropertyName = "value", Order = 990)]
         public object Value
         {
             get

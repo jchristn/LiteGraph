@@ -20,6 +20,7 @@ namespace LiteGraph
             internal static string TableName = "nodes";
             internal static string IdField = "id";
             internal static string GuidField = "guid";
+            internal static string NameField = "name";
             internal static string TypeField = "type";
             internal static string PropsField = "props";
             internal static string CreatedUtcField = "createdutc";
@@ -38,6 +39,11 @@ namespace LiteGraph
                 if (row.Table.Columns.Contains(GuidField) && row[GuidField] != null && row[GuidField] != DBNull.Value)
                 {
                     ret.GUID = row[GuidField].ToString();
+                }
+
+                if (row.Table.Columns.Contains(NameField) && row[NameField] != null && row[NameField] != DBNull.Value)
+                {
+                    ret.Name = row[NameField].ToString();
                 }
 
                 if (row.Table.Columns.Contains(TypeField) && row[TypeField] != null && row[TypeField] != DBNull.Value)
@@ -84,6 +90,7 @@ namespace LiteGraph
                        "CREATE TABLE IF NOT EXISTS " + TableName + " (" +
                        "  " + IdField +         " INTEGER     PRIMARY KEY AUTOINCREMENT, " +
                        "  " + GuidField       + " VARCHAR(64) COLLATE NOCASE, " +
+                       "  " + NameField       + " VARCHAR(64) COLLATE NOCASE, " +
                        "  " + TypeField       + " VARCHAR(64) COLLATE NOCASE, " +
                        "  " + CreatedUtcField + " TEXT, " +
                        "  " + PropsField +      " TEXT" +
@@ -99,12 +106,14 @@ namespace LiteGraph
                     "BEGIN TRANSACTION; " +
                     "INSERT INTO " + TableName + " (" +
                     "  " + GuidField + ", " +
+                    "  " + NameField + ", " +
                     "  " + TypeField + ", " +
                     "  " + CreatedUtcField + ", " +
                     "  " + PropsField +
                     ") " +
                     "VALUES (" +
                     "  '" + Sanitize(node.GUID) + "', " +
+                    "  '" + Sanitize(node.Name) + "', " +
                     "  '" + Sanitize(node.NodeType) + "', " +
                     "  '" + Sanitize(node.CreatedUtc.ToString(_TimestampFormat)) + "', " +
                     "  " + (node.Properties != null ? "json('" + node.Properties.ToJson(false) + "')" : "null" ) + " " +
@@ -116,9 +125,12 @@ namespace LiteGraph
             {
                 return
                     "BEGIN TRANSACTION;" +
-                    "UPDATE " + TableName + " SET " + PropsField + " = " +
-                    (node.Properties != null ? "json('" + node.Properties.ToJson(false) + "')" : "null") + " " +
-                    "WHERE " + GuidField + " = '" + Sanitize(node.GUID) + "';" +
+                    "UPDATE " + TableName + " " +
+                    "SET " +
+                    "  " + TypeField + " = '" + Sanitize(node.NodeType) + "', " +
+                    "  " + PropsField + " = " + (node.Properties != null ? "json('" + node.Properties.ToJson(false) + "')" : "null") + " " +
+                    "WHERE " + 
+                    "  " + GuidField + " = '" + Sanitize(node.GUID) + "';" +
                     "COMMIT;";
             }
 
@@ -214,6 +226,7 @@ namespace LiteGraph
             internal static string IdField = "id";
             internal static string GuidField = "guid";
             internal static string TypeField = "type";
+            internal static string CostField = "cost";
             internal static string FromGuidField = "fromguid";
             internal static string ToGuidField = "toguid";
             internal static string PropsField = "props";
@@ -233,6 +246,11 @@ namespace LiteGraph
                 if (row.Table.Columns.Contains(GuidField) && row[GuidField] != null && row[GuidField] != DBNull.Value)
                 {
                     ret.GUID = row[GuidField].ToString();
+                }
+
+                if (row.Table.Columns.Contains(CostField) && row[CostField] != null && row[CostField] != DBNull.Value)
+                {
+                    ret.Cost = Convert.ToInt32(row[CostField]);
                 }
 
                 if (row.Table.Columns.Contains(TypeField) && row[TypeField] != null && row[TypeField] != DBNull.Value)
@@ -290,6 +308,7 @@ namespace LiteGraph
                        "  " + IdField +         " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                        "  " + GuidField       + " VARCHAR(64) COLLATE NOCASE, " +
                        "  " + TypeField       + " VARCHAR(64) COLLATE NOCASE, " +
+                       "  " + CostField       + " INTEGER, " +
                        "  " + FromGuidField +   " VARCHAR(64) COLLATE NOCASE, " +
                        "  " + ToGuidField +     " VARCHAR(64) COLLATE NOCASE, " +
                        "  " + CreatedUtcField + " TEXT, " +
@@ -306,6 +325,7 @@ namespace LiteGraph
                     "INSERT INTO " + TableName + " (" +
                     "  " + GuidField + ", " +
                     "  " + TypeField + ", " +
+                    "  " + CostField + ", " +
                     "  " + FromGuidField + ", " +
                     "  " + ToGuidField + ", " +
                     "  " + CreatedUtcField + ", " +
@@ -314,6 +334,7 @@ namespace LiteGraph
                     "VALUES (" +
                     "  '" + Sanitize(edge.GUID) + "', " +
                     "  '" + Sanitize(edge.EdgeType) + "', " +
+                    "  " + (edge.Cost != null ? edge.Cost.ToString() : "null") + ", " +
                     "  '" + Sanitize(edge.FromGUID) + "', " +
                     "  '" + Sanitize(edge.ToGUID) + "', " +
                     "  '" + Sanitize(edge.CreatedUtc.ToString(_TimestampFormat)) + "', " +
@@ -326,9 +347,15 @@ namespace LiteGraph
             {
                 return
                     "BEGIN TRANSACTION;" +
-                    "UPDATE " + TableName + " SET " + PropsField + " = " +
-                    (edge.Properties != null ? "json('" + edge.Properties.ToJson(false) + "')" : "null") + " " +
-                    "WHERE " + GuidField + " = '" + Sanitize(edge.GUID) + "';" +
+                    "UPDATE " + TableName + " " +
+                    "SET " +
+                    "  " + TypeField + " = '" + Sanitize(edge.EdgeType) + "', " +
+                    "  " + FromGuidField + " = '" + Sanitize(edge.FromGUID) + "', " +
+                    "  " + ToGuidField + " = '" + Sanitize(edge.ToGUID) + "', " +
+                    "  " + CostField + " = " + (edge.Cost != null ? edge.Cost.ToString() : "null") + ", " +
+                    "  " + PropsField + " = " + (edge.Properties != null ? "json('" + edge.Properties.ToJson(false) + "')" : "null") + " " +
+                    "WHERE " + 
+                    "  " + GuidField + " = '" + Sanitize(edge.GUID) + "';" +
                     "COMMIT;";
             }
 
@@ -360,7 +387,7 @@ namespace LiteGraph
                 return "SELECT * FROM " + TableName + " WHERE " + GuidField + " = '" + Sanitize(guid) + "'";
             }
 
-            internal static string SelectByFilter(List<string> guids, List<string> types, List<SearchFilter> filters, int indexStart, int maxResults)
+            internal static string SelectByFilter(List<string> guids, List<string> types, List<SearchFilter> filters, int indexStart, int maxResults, int? costMin = null, int? costMax = null)
             {
                 guids = Sanitize(guids);
                 filters = Sanitize(filters);
@@ -368,6 +395,13 @@ namespace LiteGraph
                 string ret =
                     "SELECT * FROM " + TableName + " " +
                     "WHERE " + IdField + " > 0 ";
+
+                if (costMin != null && costMax != null)
+                    ret += "AND " + CostField + " != null AND " + CostField + " >= " + costMin.ToString() + " AND " + CostField + " <= " + costMax.ToString() + " ";
+                else if (costMin != null)
+                    ret += "AND " + CostField + " != null AND " + CostField + " >= " + costMin.ToString() + " ";
+                else if (costMax != null)
+                    ret += "AND " + CostField + " != null AND " + CostField + " <= " + costMax.ToString() + " ";
 
                 if (filters != null && filters.Count > 0)
                 { 
@@ -465,7 +499,7 @@ namespace LiteGraph
                 return ret;
             }
 
-            internal static string SelectEdgesFrom(string guid, List<string> types, int indexStart, int maxResults)
+            internal static string SelectEdgesFrom(string guid, List<string> types, List<SearchFilter> filters, int indexStart, int maxResults, int? costMin = null, int? costMax = null)
             {
                 guid = Sanitize(guid);
                 types = Sanitize(types);
@@ -474,6 +508,22 @@ namespace LiteGraph
                     "SELECT * FROM " + TableName + " " +
                     "WHERE " + IdField + " > 0 " +
                     "AND " + FromGuidField + " = '" + guid + "' ";
+
+                if (costMin != null && costMax != null)
+                    ret += "AND " + CostField + " != null AND " + CostField + " >= " + costMin.ToString() + " AND " + CostField + " <= " + costMax.ToString() + " ";
+                else if (costMin != null)
+                    ret += "AND " + CostField + " != null AND " + CostField + " >= " + costMin.ToString() + " ";
+                else if (costMax != null)
+                    ret += "AND " + CostField + " != null AND " + CostField + " <= " + costMax.ToString() + " ";
+
+                if (filters != null && filters.Count > 0)
+                {
+                    foreach (SearchFilter filter in filters)
+                    {
+                        if (String.IsNullOrEmpty(filter.Field)) continue;
+                        ret += "AND " + SearchFilterToQueryCondition(filter, PropsField) + " ";
+                    }
+                }
 
                 if (types != null && types.Count > 0)
                 {
@@ -500,7 +550,7 @@ namespace LiteGraph
                 return ret;
             }
 
-            internal static string SelectEdgesTo(string guid, List<string> types, int indexStart, int maxResults)
+            internal static string SelectEdgesTo(string guid, List<string> types, List<SearchFilter> filters, int indexStart, int maxResults, int? costMin = null, int? costMax = null)
             {
                 guid = Sanitize(guid);
                 types = Sanitize(types);
@@ -509,6 +559,22 @@ namespace LiteGraph
                     "SELECT * FROM " + TableName + " " +
                     "WHERE " + IdField + " > 0 " +
                     "AND " + ToGuidField + " = '" + guid + "' ";
+
+                if (costMin != null && costMax != null)
+                    ret += "AND " + CostField + " != null AND " + CostField + " >= " + costMin.ToString() + " AND " + CostField + " <= " + costMax.ToString() + " ";
+                else if (costMin != null)
+                    ret += "AND " + CostField + " != null AND " + CostField + " >= " + costMin.ToString() + " ";
+                else if (costMax != null)
+                    ret += "AND " + CostField + " != null AND " + CostField + " <= " + costMax.ToString() + " ";
+
+                if (filters != null && filters.Count > 0)
+                {
+                    foreach (SearchFilter filter in filters)
+                    {
+                        if (String.IsNullOrEmpty(filter.Field)) continue;
+                        ret += "AND " + SearchFilterToQueryCondition(filter, PropsField) + " ";
+                    }
+                }
 
                 if (types != null && types.Count > 0)
                 {

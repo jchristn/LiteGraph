@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "X27wpM5i0jgWEJIaR5hGoSiSJpWi68bdtKhyTUQ9pIFuDZ8rAXmiE63XOmg0GcQTJRfWwEwZpOwAOp9ru6CtZw==",
+  "dgSpecHash": "suB3sBUPol4Atf9ORmHjq0OSUTDYMmUO1T3Rh35kNsa1V7jagzQko8+TYgy8AgX0uLIz7sRIXnhOQx6wsq8JvA==",
   "success": true,
-  "projectFilePath": "c:\\code\\misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj",
+  "projectFilePath": "C:\\Code\\Misc\\LiteGraph\\LiteGraph\\LiteGraph.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\joelc\\.nuget\\packages\\microsoft.data.sqlite\\5.0.1\\microsoft.data.sqlite.5.0.1.nupkg.sha512",
     "C:\\Users\\joelc\\.nuget\\packages\\microsoft.data.sqlite.core\\5.0.1\\microsoft.data.sqlite.core.5.0.1.nupkg.sha512",
@@ -17,8 +17,7 @@
     "C:\\Users\\joelc\\.nuget\\packages\\system.buffers\\4.4.0\\system.buffers.4.4.0.nupkg.sha512",
     "C:\\Users\\joelc\\.nuget\\packages\\system.memory\\4.5.3\\system.memory.4.5.3.nupkg.sha512",
     "C:\\Users\\joelc\\.nuget\\packages\\system.numerics.vectors\\4.4.0\\system.numerics.vectors.4.4.0.nupkg.sha512",
-    "C:\\Users\\joelc\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\4.5.2\\system.runtime.compilerservices.unsafe.4.5.2.nupkg.sha512",
-    "C:\\Users\\joelc\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\3.1.10\\microsoft.aspnetcore.app.ref.3.1.10.nupkg.sha512"
+    "C:\\Users\\joelc\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\4.5.2\\system.runtime.compilerservices.unsafe.4.5.2.nupkg.sha512"
   ],
   "logs": []
 }

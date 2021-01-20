@@ -13,3 +13,4 @@ c:\code\misc\LiteGraph\LiteGraph\obj\Debug\net5.0\LiteGraph.pdb
 c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\assets\icon.ico
 c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\assets\icon.png
 c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\LICENSE.md
+C:\Code\Misc\LiteGraph\LiteGraph\bin\Debug\net5.0\LiteGraph.xml

@@ -16,26 +16,32 @@ namespace LiteGraph
         /// <summary>
         /// Globally-unique identifier.
         /// </summary>
-        [JsonProperty(PropertyName = "guid", Order = -4)]
+        [JsonProperty(PropertyName = "guid", Order = -5)]
         public string GUID { get; private set; } = null;
+
+        /// <summary>
+        /// Edge type.
+        /// </summary>
+        [JsonProperty(PropertyName = "to", Order = -2)]
+        public string EdgeType { get; private set; } = null;
 
         /// <summary>
         /// Globally-unique identifier of the from node.
         /// </summary>
-        [JsonProperty(PropertyName = "from", Order = -3)]
+        [JsonProperty(PropertyName = "from", Order = -4)]
         public string FromGUID { get; private set; } = null;
 
         /// <summary>
         /// Globally-unique identifier of the to node.
         /// </summary>
-        [JsonProperty(PropertyName = "to", Order = -2)]
+        [JsonProperty(PropertyName = "to", Order = -3)]
         public string ToGUID { get; private set; } = null;
 
         /// <summary>
-        /// Edge type.
+        /// Cost.
         /// </summary>
-        [JsonProperty(PropertyName = "to", Order = -1)]
-        public string EdgeType { get; private set; } = null;
+        [JsonProperty(PropertyName = "cost", Order = -1)]
+        public int? Cost { get; private set; } = null;
 
         /// <summary>
         /// Timestamp from creation, in UTC.
@@ -69,17 +75,19 @@ namespace LiteGraph
         /// Instantiate the object.
         /// </summary>
         /// <param name="guid">Globally-unique identifier.</param>
+        /// <param name="type">Edge type.</param>
         /// <param name="fromGuid">Globally-unique identifier of the from node.</param>
         /// <param name="toGuid">Globally-unique identifier of the to node.</param>
-        /// <param name="type">Edge type.</param>
+        /// <param name="cost">Cost for using this edge.</param>
         /// <param name="created">Timestamp from creation, in UTC.</param>
         /// <param name="props">JSON properties.</param>
-        public EdgeEventArgs(string guid, string fromGuid, string toGuid, string type, DateTime created, JObject props)
+        public EdgeEventArgs(string guid, string type, string fromGuid, string toGuid, int? cost, DateTime created, JObject props)
         {
             GUID = guid;
+            EdgeType = type;
             FromGUID = fromGuid;
             ToGUID = toGuid;
-            EdgeType = type;
+            Cost = cost;
             CreatedUtc = created;
             Properties = props;
         }

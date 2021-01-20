@@ -43,13 +43,13 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net461\LiteGraph.dll" target="lib\net461\LiteGraph.dll" />
-    <file src="c:\code\misc\LiteGraph\LiteGraph\bin\Debug\net5.0\LiteGraph.dll" target="lib\net5.0\LiteGraph.dll" />
-    <file src="c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netcoreapp3.1\LiteGraph.dll" target="lib\netcoreapp3.1\LiteGraph.dll" />
-    <file src="c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netstandard2.0\LiteGraph.dll" target="lib\netstandard2.0\LiteGraph.dll" />
-    <file src="c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netstandard2.0\LiteGraph.xml" target="lib\netstandard2.0\LiteGraph.xml" />
-    <file src="c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netstandard2.1\LiteGraph.dll" target="lib\netstandard2.1\LiteGraph.dll" />
-    <file src="c:\code\misc\LiteGraph\LiteGraph\assets\icon.png" target="icon.png" />
-    <file src="c:\code\misc\LiteGraph\LiteGraph\LICENSE.md" target="LICENSE.md" />
+    <file src="C:\Code\Misc\LiteGraph\LiteGraph\bin\Debug\net461\LiteGraph.dll" target="lib\net461\LiteGraph.dll" />
+    <file src="C:\Code\Misc\LiteGraph\LiteGraph\bin\Debug\net5.0\LiteGraph.dll" target="lib\net5.0\LiteGraph.dll" />
+    <file src="C:\Code\Misc\LiteGraph\LiteGraph\bin\Debug\netcoreapp3.1\LiteGraph.dll" target="lib\netcoreapp3.1\LiteGraph.dll" />
+    <file src="C:\Code\Misc\LiteGraph\LiteGraph\bin\Debug\netstandard2.0\LiteGraph.dll" target="lib\netstandard2.0\LiteGraph.dll" />
+    <file src="C:\Code\Misc\LiteGraph\LiteGraph\bin\Debug\netstandard2.0\LiteGraph.xml" target="lib\netstandard2.0\LiteGraph.xml" />
+    <file src="C:\Code\Misc\LiteGraph\LiteGraph\bin\Debug\netstandard2.1\LiteGraph.dll" target="lib\netstandard2.1\LiteGraph.dll" />
+    <file src="C:\Code\Misc\LiteGraph\LiteGraph\assets\icon.png" target="icon.png" />
+    <file src="C:\Code\Misc\LiteGraph\LiteGraph\LICENSE.md" target="LICENSE.md" />
   </files>
 </package>

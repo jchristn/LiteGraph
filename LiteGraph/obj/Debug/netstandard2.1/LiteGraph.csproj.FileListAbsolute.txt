@@ -10,3 +10,4 @@ c:\code\misc\LiteGraph\LiteGraph\obj\Debug\netstandard2.1\LiteGraph.csprojAssemb
 c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netstandard2.1\assets\icon.ico
 c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netstandard2.1\assets\icon.png
 c:\code\misc\LiteGraph\LiteGraph\bin\Debug\netstandard2.1\LICENSE.md
+C:\Code\Misc\LiteGraph\LiteGraph\bin\Debug\netstandard2.1\LiteGraph.xml

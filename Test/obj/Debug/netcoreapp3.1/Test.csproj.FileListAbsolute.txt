@@ -36,3 +36,4 @@ c:\code\misc\LiteGraph\Test\obj\Debug\netcoreapp3.1\Test.genruntimeconfig.cache
 c:\code\misc\LiteGraph\Test\bin\Debug\netcoreapp3.1\assets\icon.ico
 c:\code\misc\LiteGraph\Test\bin\Debug\netcoreapp3.1\assets\icon.png
 c:\code\misc\LiteGraph\Test\bin\Debug\netcoreapp3.1\LICENSE.md
+C:\Code\Misc\LiteGraph\Test\bin\Debug\netcoreapp3.1\LiteGraph.xml

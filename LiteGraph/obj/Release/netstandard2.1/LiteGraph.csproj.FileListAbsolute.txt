@@ -1,0 +1,12 @@
+C:\Code\Misc\LiteGraph\LiteGraph\bin\Release\netstandard2.1\assets\icon.ico
+C:\Code\Misc\LiteGraph\LiteGraph\bin\Release\netstandard2.1\assets\icon.png
+C:\Code\Misc\LiteGraph\LiteGraph\bin\Release\netstandard2.1\LICENSE.md
+C:\Code\Misc\LiteGraph\LiteGraph\bin\Release\netstandard2.1\LiteGraph.deps.json
+C:\Code\Misc\LiteGraph\LiteGraph\bin\Release\netstandard2.1\LiteGraph.dll
+C:\Code\Misc\LiteGraph\LiteGraph\bin\Release\netstandard2.1\LiteGraph.pdb
+C:\Code\Misc\LiteGraph\LiteGraph\bin\Release\netstandard2.1\LiteGraph.xml
+C:\Code\Misc\LiteGraph\LiteGraph\obj\Release\netstandard2.1\LiteGraph.AssemblyInfoInputs.cache
+C:\Code\Misc\LiteGraph\LiteGraph\obj\Release\netstandard2.1\LiteGraph.AssemblyInfo.cs
+C:\Code\Misc\LiteGraph\LiteGraph\obj\Release\netstandard2.1\LiteGraph.csproj.CoreCompileInputs.cache
+C:\Code\Misc\LiteGraph\LiteGraph\obj\Release\netstandard2.1\LiteGraph.dll
+C:\Code\Misc\LiteGraph\LiteGraph\obj\Release\netstandard2.1\LiteGraph.pdb

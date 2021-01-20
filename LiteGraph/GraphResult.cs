@@ -16,25 +16,32 @@ namespace LiteGraph
         /// <summary>
         /// Type of operation.
         /// </summary>
-        [JsonProperty(Order = -1)]
+        [JsonProperty(PropertyName = "operation", Order = -2)]
         public GraphOperation Operation { get; set; } = GraphOperation.AddEdge;
 
         /// <summary>
         /// Time-related information for the result.
         /// </summary>
+        [JsonProperty(PropertyName = "time", Order = -1)]
         public Timestamps Time { get; set; } = new Timestamps();
 
         /// <summary>
         /// Result.
         /// </summary>
-        [JsonProperty(Order = 990)]
+        [JsonProperty(PropertyName = "result", Order = 990)]
         public object Result { get; set; } = null;
 
         /// <summary>
         /// Data.  Generally a JArray or JObject.
         /// </summary>
-        [JsonProperty(Order = 991)]
+        [JsonProperty(PropertyName = "order", Order = 991)]
         public object Data { get; set; } = null;
+
+        /// <summary>
+        /// Routes.
+        /// </summary>
+        [JsonProperty(PropertyName = "routes", Order = 992)]
+        public List<RouteDetail> Routes { get; set; } = null;
 
         #endregion
 

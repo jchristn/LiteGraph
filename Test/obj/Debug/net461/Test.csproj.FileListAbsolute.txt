@@ -124,3 +124,4 @@ c:\code\misc\LiteGraph\Test\obj\Debug\net461\Test.pdb
 c:\code\misc\LiteGraph\Test\bin\Debug\net461\assets\icon.ico
 c:\code\misc\LiteGraph\Test\bin\Debug\net461\assets\icon.png
 c:\code\misc\LiteGraph\Test\bin\Debug\net461\LICENSE.md
+C:\Code\Misc\LiteGraph\Test\bin\Debug\net461\LiteGraph.xml

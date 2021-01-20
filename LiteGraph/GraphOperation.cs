@@ -107,7 +107,17 @@ namespace LiteGraph
         /// SearchEdges.
         /// </summary>
         [EnumMember(Value = "SearchEdges")]
-        SearchEdges
+        SearchEdges,
+
+        #endregion
+
+        #region Navigation
+
+        /// <summary>
+        /// FindRoutes.
+        /// </summary>
+        [EnumMember(Value = "FindRoutes")]
+        FindRoutes,
 
         #endregion
     }

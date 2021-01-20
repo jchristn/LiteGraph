@@ -37,8 +37,11 @@ namespace Test
                     case "event off":
                         EventsOff();
                         break;
-                    case "default":
-                        LoadDefaultGraph();
+                    case "default1":
+                        LoadDefault1Graph();
+                        break;
+                    case "default2":
+                        LoadDefault2Graph();
                         break;
                     case "debug queries":
                         _Graph.Logger.LogQueries = !_Graph.Logger.LogQueries;
@@ -88,6 +91,12 @@ namespace Test
                         break;
                     case "search edges":
                         SearchEdges();
+                        break;
+                    case "route":
+                        FindRoutes();
+                        break;
+                    case "export":
+                        ExportToGexf();
                         break;
                 }
             }
@@ -209,7 +218,8 @@ namespace Test
             Console.WriteLine("  ?               help, this menu");
             Console.WriteLine("  q               quit");
             Console.WriteLine("  cls             clear the screen");
-            Console.WriteLine("  default         load default nodes and edges (see documentation)");
+            Console.WriteLine("  default1        load default1 nodes and edges (see documentation)");
+            Console.WriteLine("  default2        load default2 nodes and edges (see documentation)");
             Console.WriteLine("  event on        enable event messages");
             Console.WriteLine("  event off       disable event messages");
             Console.WriteLine("  debug queries   toggle query debug, currently: " + _Graph.Logger.LogQueries);
@@ -228,6 +238,8 @@ namespace Test
             Console.WriteLine("  update edge     update an edge");
             Console.WriteLine("  search nodes    search nodes using supplied filters");
             Console.WriteLine("  search edges    search edges using supplied filters");
+            Console.WriteLine("  route           find routes between two nodes");
+            Console.WriteLine("  export          export to a GEXF file");
             Console.WriteLine("");
         }
 
@@ -246,34 +258,79 @@ namespace Test
             _Graph.Events = null;
         }
 
-        static void LoadDefaultGraph()
+        static void LoadDefault1Graph()
         {
             // People
-            _Graph.AddNode("{'guid':'joel','type':'person','first':'Joel','city':'San Jose'}");
-            _Graph.AddNode("{'guid':'maria','type':'person','first':'Maria','city':'San Jose'}");
-            _Graph.AddNode("{'guid':'jason','type':'person','first':'Jason','city':'San Jose'}");
-            _Graph.AddNode("{'guid':'scott','type':'person','first':'Scott','city':'Chicago'}");
-            _Graph.AddNode("{'guid':'may','type':'person','first':'May','city':'New York City'}");
-            _Graph.AddNode("{'guid':'matt','type':'person','first':'Matt','city':'Raleigh'}");
-            _Graph.AddNode("{'guid':'bob','type':'person','first':'Bob','city':'Asheville'}");
+            _Graph.AddNode("{'guid':'joel','name':'Joel','type':'person','first':'Joel','city':'San Jose'}");
+            _Graph.AddNode("{'guid':'maria','name':'Maria','type':'person','first':'Maria','city':'San Jose'}");
+            _Graph.AddNode("{'guid':'jason','name':'Jason','type':'person','first':'Jason','city':'San Jose'}");
+            _Graph.AddNode("{'guid':'scott','name':'Scott','type':'person','first':'Scott','city':'Chicago'}");
+            _Graph.AddNode("{'guid':'may','name':'May','type':'person','first':'May','city':'New York City'}");
+            _Graph.AddNode("{'guid':'matt','name':'Matt','type':'person','first':'Matt','city':'Raleigh'}");
+            _Graph.AddNode("{'guid':'bob','name':'Bob','type':'person','first':'Bob','city':'Asheville'}");
 
             // Things
-            _Graph.AddNode("{'guid':'car1','type':'car','make':'Toyota','model':'Highlander'}");
-            _Graph.AddNode("{'guid':'car2','type':'car','make':'Volkswagen','model':'Jetta'}");
-            _Graph.AddNode("{'guid':'car3','type':'car','make':'Mercedes','model':'SUV'}");
-            _Graph.AddNode("{'guid':'guitar','type':'instrument','make':'Jackson','model':'Soloist'}");
-            _Graph.AddNode("{'guid':'piano','type':'instrument','make':'Yamaha','model':'Keyboard'}");
-            _Graph.AddNode("{'guid':'house','type':'house','desc':'Super duper house'}");
+            _Graph.AddNode("{'guid':'car1','name':'Highlander','type':'car','make':'Toyota','model':'Highlander'}");
+            _Graph.AddNode("{'guid':'car2','name':'Jetta','type':'car','make':'Volkswagen','model':'Jetta'}");
+            _Graph.AddNode("{'guid':'car3','name':'SUV','type':'car','make':'Mercedes','model':'SUV'}");
+            _Graph.AddNode("{'guid':'guitar','name':'Soloist','type':'instrument','make':'Jackson','model':'Soloist'}");
+            _Graph.AddNode("{'guid':'piano','name':'Keyboard','type':'instrument','make':'Yamaha','model':'Keyboard'}");
+            _Graph.AddNode("{'guid':'house','name':'House','type':'house','desc':'Super duper house'}");
 
             // Relationships
             _Graph.AddEdge("joel", "house", "{'guid':'r1','type':'lives_in','data':'foo'}");
-            _Graph.AddEdge("maria", "house", "{'guid':'r2','type':'lives_in','data':'bar'}");
-            _Graph.AddEdge("jason", "house", "{'guid':'r3','type':'lives_in','data':'baz'}");
-            _Graph.AddEdge("joel", "scott", "{'guid':'r4','type':'friends_with','data':'foo'}");
-            _Graph.AddEdge("maria", "may", "{'guid':'r5','type':'friends_with','data':'bar'}");
-            _Graph.AddEdge("joel", "matt", "{'guid':'r6','type':'worked_with','data':'baz'}");
-            _Graph.AddEdge("matt", "bob", "{'guid':'r7','type':'worked_with','data':'foo'}");
-            _Graph.AddEdge("jason", "maria", "{'guid':'r8','type':'is_child_of','data':'bar'}");
+            _Graph.AddEdge("joel", "car1", "{'guid':'r2','type':'drives','data':'bar'}");
+            _Graph.AddEdge("joel", "guitar", "{'guid':'r3','type':'plays','data':'baz'}");
+            _Graph.AddEdge("maria", "house", "{'guid':'r4','type':'lives_in','data':'foo'}");
+            _Graph.AddEdge("maria", "car2", "{'guid':'r5','type':'drives','data':'bar'}");
+            _Graph.AddEdge("jason", "house", "{'guid':'r6','type':'lives_in','data':'baz'}");
+            _Graph.AddEdge("joel", "scott", "{'guid':'r7','type':'friends_with','data':'foo'}");
+            _Graph.AddEdge("maria", "may", "{'guid':'r8','type':'friends_with','data':'bar'}");
+            _Graph.AddEdge("joel", "matt", "{'guid':'r9','type':'worked_with','data':'baz'}");
+            _Graph.AddEdge("matt", "bob", "{'guid':'r10','type':'worked_with','data':'foo'}");
+            _Graph.AddEdge("jason", "maria", "{'guid':'r11','type':'is_child_of','data':'bar'}");
+            _Graph.AddEdge("car1", "car3", "{'guid':'r12','type':'is_a','data':'baz'}");
+            _Graph.AddEdge("maria", "piano", "{'guid':'r13','type':'plays','data':'foo'}");
+        }
+
+        static void LoadDefault2Graph()
+        {
+            // Nodes
+            _Graph.AddNode("{'guid':'a','name':'a','type':'node','data':'node_a'}");
+            _Graph.AddNode("{'guid':'b','name':'b','type':'node','data':'node_b'}");
+            _Graph.AddNode("{'guid':'c','name':'c','type':'node','data':'node_c'}");
+            _Graph.AddNode("{'guid':'d','name':'d','type':'node','data':'node_d'}");
+            _Graph.AddNode("{'guid':'e','name':'e','type':'node','data':'node_e'}");
+            _Graph.AddNode("{'guid':'f','name':'f','type':'node','data':'node_f'}");
+            _Graph.AddNode("{'guid':'g','name':'g','type':'node','data':'node_g'}");
+            _Graph.AddNode("{'guid':'h','name':'h','type':'node','data':'node_h'}");
+            _Graph.AddNode("{'guid':'i','name':'i','type':'node','data':'node_i'}");
+            _Graph.AddNode("{'guid':'j','name':'j','type':'node','data':'node_j'}");
+            _Graph.AddNode("{'guid':'k','name':'k','type':'node','data':'node_k'}");
+            _Graph.AddNode("{'guid':'l','name':'l','type':'node','data':'node_l'}");
+
+            // Edges
+            _Graph.AddEdge("a", "b", "{'guid':'a_b','type':'edge','data':'edge_a_b'}");
+            _Graph.AddEdge("a", "c", "{'guid':'a_c','type':'edge','data':'edge_a_c'}");
+            _Graph.AddEdge("a", "d", "{'guid':'a_d','type':'edge','data':'edge_a_d'}");
+            _Graph.AddEdge("b", "e", "{'guid':'b_e','type':'edge','data':'edge_b_e'}");
+            _Graph.AddEdge("b", "f", "{'guid':'b_f','type':'edge','data':'edge_b_f'}");
+            _Graph.AddEdge("c", "e", "{'guid':'c_e','type':'edge','data':'edge_c_e'}");
+            _Graph.AddEdge("c", "g", "{'guid':'c_g','type':'edge','data':'edge_c_g'}");
+            _Graph.AddEdge("d", "f", "{'guid':'d_f','type':'edge','data':'edge_d_f'}");
+            _Graph.AddEdge("d", "g", "{'guid':'d_g','type':'edge','data':'edge_d_g'}");
+            _Graph.AddEdge("e", "h", "{'guid':'e_h','type':'edge','data':'edge_e_h'}");
+            _Graph.AddEdge("e", "i", "{'guid':'e_i','type':'edge','data':'edge_e_i'}");
+            _Graph.AddEdge("e", "j", "{'guid':'e_j','type':'edge','data':'edge_e_j'}");
+            _Graph.AddEdge("f", "h", "{'guid':'f_h','type':'edge','data':'edge_f_h'}");
+            _Graph.AddEdge("f", "i", "{'guid':'f_i','type':'edge','data':'edge_f_i'}");
+            _Graph.AddEdge("f", "j", "{'guid':'f_j','type':'edge','data':'edge_f_j'}");
+            _Graph.AddEdge("g", "h", "{'guid':'g_h','type':'edge','data':'edge_g_h'}");
+            _Graph.AddEdge("g", "i", "{'guid':'g_i','type':'edge','data':'edge_g_i'}");
+            _Graph.AddEdge("g", "j", "{'guid':'g_j','type':'edge','data':'edge_g_j'}");
+            _Graph.AddEdge("h", "l", "{'guid':'h_l','type':'edge','data':'edge_h_l'}");
+            _Graph.AddEdge("i", "k", "{'guid':'i_k','type':'edge','data':'edge_i_k'}");
+            _Graph.AddEdge("j", "k", "{'guid':'j_k','type':'edge','data':'edge_j_k'}");
         }
 
         static void AddNode()
@@ -321,7 +378,7 @@ namespace Test
             string fromGuid = InputString("From GUID:", null, true);
             string toGuid = InputString("  To GUID:", null, true);
             if (String.IsNullOrEmpty(fromGuid) || String.IsNullOrEmpty(toGuid)) return;
-            Console.WriteLine("Supplied JSON must contain the property '" + _Graph.EdgeGuidProperty + "'");
+            Console.WriteLine("Supplied JSON must contain the properties '" + _Graph.EdgeGuidProperty + "' and '" + _Graph.EdgeTypeProperty + "'");
             string json = InputString("     JSON:", null, true);
             Enumerate(_Graph.AddEdge(fromGuid, toGuid, json));
         }
@@ -370,6 +427,26 @@ namespace Test
             Enumerate(_Graph.SearchEdges(guids, types, filters));
         }
 
+        static void FindRoutes()
+        {
+            string fromGuid = InputString("From GUID:", null, true);
+            if (String.IsNullOrEmpty(fromGuid)) return;
+            string toGuid = InputString("To GUID:", null, true);
+            if (String.IsNullOrEmpty(toGuid)) return;
+
+            RouteFinder finder = new RouteFinder(_Graph);
+            finder.FromGuid = fromGuid;
+            finder.ToGuid = toGuid;
+
+            Enumerate(finder.Find());
+        }
+
+        static void ExportToGexf()
+        {
+            string file = InputString("Output file:", "litegraph.gexf", false);
+            GexfWriter.Write(_Graph, file);
+        }
+
         private static void NodeAdded(object sender, NodeEventArgs args)
         {
             Console.WriteLine("[NodeAdded] " + args.GUID + " " + args.NodeType + " " + args.CreatedUtc.ToString() + ": " + Serialize(args.Properties, false));
@@ -399,6 +476,5 @@ namespace Test
         {
             Console.WriteLine("[EdgeRemoved] " + args.GUID + " " + args.EdgeType + " (" + args.FromGUID + " -> " + args.ToGUID + ") " + args.CreatedUtc.ToString() + ": " + Serialize(args.Properties, false));
         }
-
     }
 }

@@ -15,7 +15,7 @@ namespace LiteGraph
         /// <summary>
         /// The time at which the operation started.
         /// </summary>
-        [JsonProperty(Order = -1)]
+        [JsonProperty(PropertyName = "start", Order = -2)]
         public DateTime? Start
         {
             get
@@ -51,6 +51,7 @@ namespace LiteGraph
         /// <summary>
         /// The time at which the operation ended.
         /// </summary>
+        [JsonProperty(PropertyName = "end", Order = -1)]
         public DateTime? End
         {
             get
@@ -85,7 +86,7 @@ namespace LiteGraph
         /// <summary>
         /// The total number of milliseconds that transpired between Start and End.
         /// </summary>
-        [JsonProperty(Order = 990)]
+        [JsonProperty(PropertyName = "total_ms", Order = 990)]
         public double? TotalMs
         {
             get

@@ -4,6 +4,69 @@
         <name>LiteGraph</name>
     </assembly>
     <members>
+        <member name="T:LiteGraph.Edge">
+            <summary>
+            Edge in the graph.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Edge.Id">
+            <summary>
+            Database row ID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Edge.GUID">
+            <summary>
+            Globally-unique identifier.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Edge.EdgeType">
+            <summary>
+            Edge type.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Edge.FromGUID">
+            <summary>
+            Globally-unique identifier of the from node.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Edge.ToGUID">
+            <summary>
+            Globally-unique identifier of the to node.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Edge.Cost">
+            <summary>
+            Cost.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Edge.CreatedUtc">
+            <summary>
+            Timestamp from creation, in UTC.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Edge.Properties">
+            <summary>
+            JSON properties.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Edge.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Edge.#ctor(System.Int32,System.String,System.String,System.String,System.String,System.Nullable{System.Int32},System.DateTime,Newtonsoft.Json.Linq.JObject)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="id">Database row ID.</param>
+            <param name="guid">Globally-unique identifier.</param>
+            <param name="type">Edge type.</param>
+            <param name="fromGuid">Globally-unique identifier of the from node.</param>
+            <param name="toGuid">Globally-unique identifier of the to node.</param>
+            <param name="cost">Cost.</param>
+            <param name="createdUtc">Timestamp from creation, in UTC.</param>
+            <param name="props">JSON properties.</param>
+        </member>
         <member name="T:LiteGraph.EdgeEventArgs">
             <summary>
             Edge event arguments.
@@ -12,6 +75,11 @@
         <member name="P:LiteGraph.EdgeEventArgs.GUID">
             <summary>
             Globally-unique identifier.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.EdgeEventArgs.EdgeType">
+            <summary>
+            Edge type.
             </summary>
         </member>
         <member name="P:LiteGraph.EdgeEventArgs.FromGUID">
@@ -24,9 +92,9 @@
             Globally-unique identifier of the to node.
             </summary>
         </member>
-        <member name="P:LiteGraph.EdgeEventArgs.EdgeType">
+        <member name="P:LiteGraph.EdgeEventArgs.Cost">
             <summary>
-            Edge type.
+            Cost.
             </summary>
         </member>
         <member name="P:LiteGraph.EdgeEventArgs.CreatedUtc">
@@ -44,16 +112,319 @@
             Instantiate the object.
             </summary>
         </member>
-        <member name="M:LiteGraph.EdgeEventArgs.#ctor(System.String,System.String,System.String,System.String,System.DateTime,Newtonsoft.Json.Linq.JObject)">
+        <member name="M:LiteGraph.EdgeEventArgs.#ctor(System.String,System.String,System.String,System.String,System.Nullable{System.Int32},System.DateTime,Newtonsoft.Json.Linq.JObject)">
             <summary>
             Instantiate the object.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
+            <param name="type">Edge type.</param>
             <param name="fromGuid">Globally-unique identifier of the from node.</param>
             <param name="toGuid">Globally-unique identifier of the to node.</param>
-            <param name="type">Edge type.</param>
+            <param name="cost">Cost for using this edge.</param>
             <param name="created">Timestamp from creation, in UTC.</param>
             <param name="props">JSON properties.</param>
+        </member>
+        <member name="T:LiteGraph.Meta">
+            <summary>
+            Document metadata.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Meta.Creator">
+            <summary>
+            Document creator.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Meta.Description">
+            <summary>
+            Document description.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Meta.LastModifiedDate">
+            <summary>
+            Last modified date.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Meta.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Attribute">
+            <summary>
+            Attribute.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Attribute.Id">
+            <summary>
+            Attribute ID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Attribute.Title">
+            <summary>
+            Attribute title.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Attribute.Type">
+            <summary>
+            Attribute type.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Attribute.Default">
+            <summary>
+            Attribute default value.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Attribute.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="id">Attribute ID.</param>
+            <param name="title">Attribute title.</param>
+            <param name="type">Attribute type.</param>
+        </member>
+        <member name="M:LiteGraph.Attribute.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Attributes">
+            <summary>
+            Attributes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Attributes.AttributeList">
+            <summary>
+            Attributes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Attributes.Class">
+            <summary>
+            Attribute class, i.e. 'node' or 'edge'.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Attributes.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.AttributeValue">
+            <summary>
+            Attribute value.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.AttributeValue.For">
+            <summary>
+            ID of the object to which the attribute is assigned.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.AttributeValue.Value">
+            <summary>
+            Value of the attribute.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.AttributeValue.#ctor(System.String,System.String)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="forGuid">ID of the object to which the attribute is assigned.</param>
+            <param name="value">Value of the attribute.</param>
+        </member>
+        <member name="M:LiteGraph.AttributeValue.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.AttributeValues">
+            <summary>
+            Attribute values.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.AttributeValues.Values">
+            <summary>
+            Attribute values.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.AttributeValues.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.GexfNode">
+            <summary>
+            Node.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfNode.ValueList">
+            <summary>
+            Attribute values.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfNode.Id">
+            <summary>
+            ID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfNode.Label">
+            <summary>
+            Label.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.GexfNode.#ctor(System.String,System.String)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="id">ID.</param>
+            <param name="label">Label.</param>
+        </member>
+        <member name="M:LiteGraph.GexfNode.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.GexfNodes">
+            <summary>
+            Nodes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfNodes.Nodes">
+            <summary>
+            List of nodes.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.GexfNodes.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.GexfEdges">
+            <summary>
+            Edges.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfEdges.Edges">
+            <summary>
+            List of edges.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.GexfEdges.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.GexfEdge">
+            <summary>
+            Edge.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfEdge.ValueList">
+            <summary>
+            Attribute values.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfEdge.Id">
+            <summary>
+            ID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfEdge.Source">
+            <summary>
+            Source.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfEdge.Target">
+            <summary>
+            Target.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.GexfEdge.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="id">ID.</param>
+            <param name="source">Source.</param>
+            <param name="target">Target.</param>
+        </member>
+        <member name="M:LiteGraph.GexfEdge.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Graph">
+            <summary>
+            Graph.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Graph.Attributes">
+            <summary>
+            Attributes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Graph.NodeList">
+            <summary>
+            Nodes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Graph.EdgeList">
+            <summary>
+            Edges.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Graph.DefaultEdgeType">
+            <summary>
+            Default edge type, i.e. 'directed'.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Graph.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.GexfDocument">
+            <summary>
+            Graph Exchange XML Format document.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfDocument.Meta">
+            <summary>
+            Document metadata.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfDocument.Graph">
+            <summary>
+            Graph.  
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfDocument.Xmlns">
+            <summary>
+            XML namespace.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfDocument.SchemaLocation">
+            <summary>
+            Schema location.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GexfDocument.Version">
+            <summary>
+            Version.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.GexfDocument.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.GexfWriter">
+            <summary>
+            GEXF file writer.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.GexfWriter.Write(LiteGraph.LiteGraphClient,System.String)">
+            <summary>
+            Write a GEXF file.
+            </summary>
+            <param name="client">LiteGraphClient.</param>
+            <param name="filename">Output filename.</param>
         </member>
         <member name="T:LiteGraph.GraphOperation">
             <summary>
@@ -145,6 +516,11 @@
             SearchEdges.
             </summary>
         </member>
+        <member name="F:LiteGraph.GraphOperation.FindRoutes">
+            <summary>
+            FindRoutes.
+            </summary>
+        </member>
         <member name="T:LiteGraph.GraphResult">
             <summary>
             Result from a graph operation.
@@ -168,6 +544,11 @@
         <member name="P:LiteGraph.GraphResult.Data">
             <summary>
             Data.  Generally a JArray or JObject.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.GraphResult.Routes">
+            <summary>
+            Routes.
             </summary>
         </member>
         <member name="M:LiteGraph.GraphResult.#ctor(LiteGraph.GraphOperation)">
@@ -194,6 +575,11 @@
         <member name="P:LiteGraph.LiteGraphClient.NodeGuidProperty">
             <summary>
             GUID property that must be present in every node added to the graph.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.LiteGraphClient.NodeNameProperty">
+            <summary>
+            Name property that must be present in every node added to the graph.
             </summary>
         </member>
         <member name="P:LiteGraph.LiteGraphClient.NodeTypeProperty">
@@ -303,24 +689,26 @@
             <param name="maxResults">Maximum number of results to retrieve.</param>
             <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetDescendants(System.String,System.Collections.Generic.List{System.String},System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.GetDescendants(System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32)">
             <summary>
             Retrieve a tree from the supplied node.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
             <param name="types">Types of edges on which to filter.</param>
+            <param name="filters">Filters by which edges should be evaluated.</param>
             <param name="maxDepth">The maximum depth to search.</param>
             <returns>Graph result.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.AddEdge(System.String,System.String,System.String)">
+        <member name="M:LiteGraph.LiteGraphClient.AddEdge(System.String,System.String,System.String,System.Nullable{System.Int32})">
             <summary>
             Add an edge from one node to another.
             The supplied JSON must contain the globally-unique identifier property as specified in EdgeGuidProperty.
             The supplied JSON must contain the type identifier property as specified in EdgeTypeProperty.
             </summary>
             <param name="fromGuid">Globally-unique identifier of the source node.</param>
-            <param name="toGuid">Globally-unique identifier of the target node.</param>
+            <param name="toGuid">Globally-unique identifier of the target node.</param> 
             <param name="json">JSON object.</param>
+            <param name="cost">Cost for using the edge.</param>
             <returns>Graph result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.UpdateEdge(System.String)">
@@ -346,23 +734,55 @@
             <param name="guid">Globally-unique identifier.</param>
             <returns>Graph result.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetAllEdges(System.Collections.Generic.List{System.String},System.Int32,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.GetAllEdges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Retrieve all edges.
             </summary>
-            <param name="types">Types of nodes on which to filter.</param>
+            <param name="types">Types of edges on which to filter.</param>
+            <param name="filters">Filters by which edges should be filtered.</param>
             <param name="indexStart">Starting index.</param>
             <param name="maxResults">Maximum number of results to retrieve.</param>
+            <param name="costMin">Minimum cost to use the edge.</param>
+            <param name="costMax">Maximum cost to use the edge</param>
             <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetEdges(System.String,System.Collections.Generic.List{System.String},System.Int32,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.GetEdges(System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Retrieve all edges to or from a given node.
             </summary>
-            <param name="guid">Globally-unique identifier.</param>
+            <param name="guid">Globally-unique identifier of the node.</param>
             <param name="types">Types of edges on which to filter.</param>
+            <param name="filters">Filters by which edges should be filtered.</param>
             <param name="indexStart">Starting index.</param>
             <param name="maxResults">Maximum number of results to retrieve.</param>
+            <param name="costMin">Minimum cost to use the edge.</param>
+            <param name="costMax">Maximum cost to use the edge</param>
+            <returns>Graph result where 'Data' contains a JArray.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetEdgesFrom(System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Retrieve all edges from a given node.
+            </summary>
+            <param name="guid">Globally-unique identifier of the node.</param>
+            <param name="types">Types of edges on which to filter.</param>
+            <param name="filters">Filters by which edges should be filtered.</param>
+            <param name="indexStart">Starting index.</param>
+            <param name="maxResults">Maximum number of results to retrieve.</param>
+            <param name="costMin">Minimum cost to use the edge.</param>
+            <param name="costMax">Maximum cost to use the edge</param>
+            <returns>Graph result where 'Data' contains a JArray.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetEdgesTo(System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Retrieve all edges to a given node.
+            </summary>
+            <param name="guid">Globally-unique identifier of the node.</param>
+            <param name="types">Types of edges on which to filter.</param>
+            <param name="filters">Filters by which edges should be filtered.</param>
+            <param name="indexStart">Starting index.</param>
+            <param name="maxResults">Maximum number of results to retrieve.</param>
+            <param name="costMin">Minimum cost to use the edge.</param>
+            <param name="costMax">Maximum cost to use the edge</param>
             <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.GetEdge(System.String)">
@@ -372,7 +792,7 @@
             <param name="guid">Globally-unique identifier.</param>
             <returns>Graph result where 'Data' contains a JObject.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.SearchEdges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.SearchEdges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String},System.Collections.Generic.List{LiteGraph.SearchFilter},System.Int32,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Search edges.
             </summary>
@@ -381,6 +801,8 @@
             <param name="filters">Filters to apply against each edge's JSON data.</param>
             <param name="indexStart">Starting index.</param>
             <param name="maxResults">Maximum number of results to retrieve.</param>
+            <param name="costMin">Minimum cost to use the edge.</param>
+            <param name="costMax">Maximum cost to use the edge</param>
             <returns>Graph result where 'Data' contains a JArray.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.Dispose(System.Boolean)">
@@ -459,6 +881,63 @@
             Logging settings.
             </summary>
         </member>
+        <member name="T:LiteGraph.Node">
+            <summary>
+            Node in the graph.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Node.Id">
+            <summary>
+            Database row ID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Node.GUID">
+            <summary>
+            Globally-unique identifier.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Node.Name">
+            <summary>
+            Name.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Node.NodeType">
+            <summary>
+            Node type.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Node.CreatedUtc">
+            <summary>
+            Timestamp from creation, in UTC.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Node.Properties">
+            <summary>
+            JSON properties.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Node.Descendents">
+            <summary>
+            Descendents.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Node.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Node.#ctor(System.Int32,System.String,System.String,System.String,System.DateTime,Newtonsoft.Json.Linq.JObject,System.Collections.Generic.List{LiteGraph.Node})">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="id">Database row ID.</param>
+            <param name="guid">Globally-unique identifier.</param>
+            <param name="name">Name.</param>
+            <param name="type">Node type.</param>
+            <param name="createdUtc">Timestamp from creation, in UTC.</param>
+            <param name="props">JSON properties.</param>
+            <param name="descendents">Descendents.</param>
+        </member>
         <member name="T:LiteGraph.NodeEventArgs">
             <summary>
             Node event arguments.
@@ -467,6 +946,11 @@
         <member name="P:LiteGraph.NodeEventArgs.GUID">
             <summary>
             Globally-unique identifier.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.NodeEventArgs.Name">
+            <summary>
+            Name.
             </summary>
         </member>
         <member name="P:LiteGraph.NodeEventArgs.NodeType">
@@ -489,11 +973,12 @@
             Instantiate the object.
             </summary>
         </member>
-        <member name="M:LiteGraph.NodeEventArgs.#ctor(System.String,System.String,System.DateTime,Newtonsoft.Json.Linq.JObject)">
+        <member name="M:LiteGraph.NodeEventArgs.#ctor(System.String,System.String,System.String,System.DateTime,Newtonsoft.Json.Linq.JObject)">
             <summary>
             Instantiate the object.
             </summary>
             <param name="guid">Globally-unique identifier.</param>
+            <param name="name">Name.</param>
             <param name="type">Node type.</param>
             <param name="created">Timestamp from creation, in UTC.</param>
             <param name="props">JSON properties.</param>
@@ -510,6 +995,64 @@
             <param name="obj">Object.</param>
             <param name="pretty">Enable or disable pretty print.</param>
             <returns>JSON string.</returns>
+        </member>
+        <member name="T:LiteGraph.RouteDetail">
+            <summary>
+            Total cost and ordered list of edges between two nodes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.RouteDetail.TotalCost">
+            <summary>
+            Total cost of the route.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.RouteDetail.Edges">
+            <summary>
+            Ordered list of edges that must be traversed.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.RouteDetail.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.RouteFinder">
+            <summary>
+            Route finder.
+            Uses depth first search.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.RouteFinder.FromGuid">
+            <summary>
+            Globally-unique identifier of the source node.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.RouteFinder.ToGuid">
+            <summary>
+            Globally-unique identifier of the target node.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.RouteFinder.Types">
+            <summary>
+            Subset of edge types in which to search.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.RouteFinder.Filters">
+            <summary>
+            Filters to apply against each edge's JSON data.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.RouteFinder.#ctor(LiteGraph.LiteGraphClient)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="client">LiteGraphClient.</param>
+        </member>
+        <member name="M:LiteGraph.RouteFinder.Find">
+            <summary>
+            Find routes that exist between two nodes.
+            </summary>
+            <returns>Graph result.</returns>
         </member>
         <member name="T:LiteGraph.SearchCondition">
             <summary>
@@ -639,21 +1182,6 @@
         <member name="M:LiteGraph.Timestamps.#ctor">
             <summary>
             Instantiate the object.
-            </summary>
-        </member>
-        <member name="T:LiteGraph.TraversalAlgorithm">
-            <summary>
-            Graph traversal algorithm.
-            </summary>
-        </member>
-        <member name="F:LiteGraph.TraversalAlgorithm.BreadthFirstSearch">
-            <summary>
-            BreadthFirstSearch
-            </summary>
-        </member>
-        <member name="F:LiteGraph.TraversalAlgorithm.DepthFirstSearch">
-            <summary>
-            DepthFirstSearch
             </summary>
         </member>
     </members>
