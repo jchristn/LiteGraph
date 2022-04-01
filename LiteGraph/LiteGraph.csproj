@@ -5,7 +5,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Joel Christner</Authors>
     <Company>Joel Christner</Company>
-    <Product>(c)2021 Joel Christner</Product>
+    <Product>(c)2022 Joel Christner</Product>
     <Description>LiteGraph is a simple graph database using Sqlite with GEXF output support.</Description>
     <Copyright>(c)2021 Joel Christner</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
@@ -15,7 +15,7 @@
     <RepositoryType>github</RepositoryType>
     <PackageTags>graph database search traverse</PackageTags>
     <PackageReleaseNotes>.NET 6 support</PackageReleaseNotes>
-    <Version>1.0.0.2</Version>
+    <Version>1.0.0.3</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">

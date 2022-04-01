@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v3.1": {
-      "LiteGraph/1.0.0.2": {
+      "LiteGraph/1.0.0.3": {
         "dependencies": {
           "Microsoft.Data.Sqlite": "6.0.0",
           "Microsoft.Data.Sqlite.Core": "6.0.0",
@@ -159,7 +159,7 @@
     }
   },
   "libraries": {
-    "LiteGraph/1.0.0.2": {
+    "LiteGraph/1.0.0.3": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

@@ -154,7 +154,7 @@
           "lib/netcoreapp2.1/_._": {}
         }
       },
-      "LiteGraph/1.0.0.2": {
+      "LiteGraph/1.0.0.3": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v3.1",
         "dependencies": {
@@ -264,7 +264,7 @@
           "lib/netcoreapp2.1/_._": {}
         }
       },
-      "LiteGraph/1.0.0.2": {
+      "LiteGraph/1.0.0.3": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v3.1",
         "dependencies": {
@@ -472,7 +472,7 @@
           "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {}
         }
       },
-      "LiteGraph/1.0.0.2": {
+      "LiteGraph/1.0.0.3": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.6.1",
         "dependencies": {
@@ -621,7 +621,7 @@
           "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {}
         }
       },
-      "LiteGraph/1.0.0.2": {
+      "LiteGraph/1.0.0.3": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.6.1",
         "dependencies": {
@@ -790,7 +790,7 @@
           "lib/netcoreapp2.1/_._": {}
         }
       },
-      "LiteGraph/1.0.0.2": {
+      "LiteGraph/1.0.0.3": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
@@ -900,7 +900,7 @@
           "lib/netcoreapp2.1/_._": {}
         }
       },
-      "LiteGraph/1.0.0.2": {
+      "LiteGraph/1.0.0.3": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
@@ -1069,7 +1069,7 @@
           "lib/netcoreapp2.1/_._": {}
         }
       },
-      "LiteGraph/1.0.0.2": {
+      "LiteGraph/1.0.0.3": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
         "dependencies": {
@@ -1179,7 +1179,7 @@
           "lib/netcoreapp2.1/_._": {}
         }
       },
-      "LiteGraph/1.0.0.2": {
+      "LiteGraph/1.0.0.3": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
         "dependencies": {
@@ -1441,7 +1441,7 @@
         "version.txt"
       ]
     },
-    "LiteGraph/1.0.0.2": {
+    "LiteGraph/1.0.0.3": {
       "type": "project",
       "path": "../LiteGraph/LiteGraph.csproj",
       "msbuildProject": "../LiteGraph/LiteGraph.csproj"
@@ -1449,16 +1449,16 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "LiteGraph >= 1.0.0.2"
+      "LiteGraph >= 1.0.0.3"
     ],
     ".NETFramework,Version=v4.6.1": [
-      "LiteGraph >= 1.0.0.2"
+      "LiteGraph >= 1.0.0.3"
     ],
     "net5.0": [
-      "LiteGraph >= 1.0.0.2"
+      "LiteGraph >= 1.0.0.3"
     ],
     "net6.0": [
-      "LiteGraph >= 1.0.0.2"
+      "LiteGraph >= 1.0.0.3"
     ]
   },
   "packageFolders": {

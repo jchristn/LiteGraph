@@ -208,7 +208,7 @@ namespace LiteGraph
 
                 if (edge.ToGUID.Equals(ToGuid))
                 {
-                    _Client.Logger.Log("edge " + edge.GUID + " connects to node " + ToGuid);
+                    _Client.Logger.Log("edge " + edge.GUID + " connects " + FromGuid + " to node " + ToGuid);
                     
                     updatedPath = new List<string>(currentPath);
                     updatedPath.Add(edge.GUID);
