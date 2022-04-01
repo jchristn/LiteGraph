@@ -1029,4 +1029,160 @@
         </member>
         <member name="P:LiteGraph.RouteFinder.ToGuid">
             <summary>
-            G
+            Globally-unique identifier of the target node.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.RouteFinder.Types">
+            <summary>
+            Subset of edge types in which to search.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.RouteFinder.Filters">
+            <summary>
+            Filters to apply against each edge's JSON data.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.RouteFinder.#ctor(LiteGraph.LiteGraphClient)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="client">LiteGraphClient.</param>
+        </member>
+        <member name="M:LiteGraph.RouteFinder.Find">
+            <summary>
+            Find routes that exist between two nodes.
+            </summary>
+            <returns>Graph result.</returns>
+        </member>
+        <member name="T:LiteGraph.SearchCondition">
+            <summary>
+            Available conditions for search filters.
+            </summary> 
+        </member>
+        <member name="F:LiteGraph.SearchCondition.Equals">
+            <summary>
+            The left and right terms are equal to one another.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.NotEquals">
+            <summary>
+            The left and right terms are not equal to one another.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.GreaterThan">
+            <summary>
+            The left term is greater than the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.GreaterThanOrEqualTo">
+            <summary>
+            The left term is greater than or equal to the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.LessThan">
+            <summary>
+            The left term is less than the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.LessThanOrEqualTo">
+            <summary>
+            The left term is less than or equal to the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.IsNull">
+            <summary>
+            The left term is null.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.IsNotNull">
+            <summary>
+            The left term is not null.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.Contains">
+            <summary>
+            The left term is contained within the right term (list).
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.ContainsNot">
+            <summary>
+            The left term is not contained within the right term (list).
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.StartsWith">
+            <summary>
+            The left term starts with the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.EndsWith">
+            <summary>
+            The left term ends with the right term.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchCondition.In">
+            <summary>
+            The left term can be found within the list in the right terme.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.SearchFilter">
+            <summary>
+            A search filter.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.SearchFilter.Field">
+            <summary>
+            The field upon which to match.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.SearchFilter.Condition">
+            <summary>
+            The condition by which the graph is evaluated against the supplied value.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.SearchFilter.Value">
+            <summary>
+            The value to be evaluated using the specified condition.
+            When using GreaterThan, GreaterThanOrEqualTo, LessThan, or LessThanOrEqualTo, the value supplied must be convertible to decimal.
+            When using In, the value supplied 
+            </summary>
+        </member>
+        <member name="M:LiteGraph.SearchFilter.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.SearchFilter.#ctor(System.String,LiteGraph.SearchCondition,System.Object)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="field">Field.</param>
+            <param name="condition">SearchCondition.</param>
+            <param name="value">Value.</param>
+        </member>
+        <member name="T:LiteGraph.Timestamps">
+            <summary>
+            Object used to measure start, end, and total time associated with an operation.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Timestamps.Start">
+            <summary>
+            The time at which the operation started.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Timestamps.End">
+            <summary>
+            The time at which the operation ended.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Timestamps.TotalMs">
+            <summary>
+            The total number of milliseconds that transpired between Start and End.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Timestamps.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+    </members>
+</doc>

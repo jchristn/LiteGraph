@@ -1,29 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {}
+    "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {}
   },
   "projects": {
-    "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {
+    "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {
       "version": "1.0.0.2",
       "restore": {
-        "projectUniqueName": "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj",
+        "projectUniqueName": "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj",
         "projectName": "LiteGraph",
-        "projectPath": "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj",
+        "projectPath": "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj",
         "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-        "outputPath": "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\obj\\",
+        "outputPath": "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\obj\\",
         "projectStyle": "PackageReference",
         "crossTargeting": true,
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\joelc\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net461",
@@ -34,8 +31,8 @@
           "netstandard2.1"
         ],
         "sources": {
-          "https://api.nuget.org/v3/index.json": {},
-          "https://nuget.pkg.github.com/jchristn/index.json": {}
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "netcoreapp3.1": {

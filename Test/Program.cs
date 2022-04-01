@@ -335,7 +335,7 @@ namespace Test
 
         static void AddNode()
         {
-            Console.WriteLine("Supplied JSON must contain the property '" + _Graph.NodeGuidProperty + "'");
+            Console.WriteLine("Supplied JSON must contain the properties " + _Graph.NodeGuidProperty + ", " + _Graph.NodeNameProperty + ", and " + _Graph.NodeTypeProperty + ".");
             string json = InputString("JSON:", null, true);
             if (String.IsNullOrEmpty(json)) return;
             Enumerate(_Graph.AddNode(json));

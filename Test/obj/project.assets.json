@@ -1463,30 +1463,25 @@
   },
   "packageFolders": {
     "C:\\Users\\joelc\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
-    "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Code\\Misc\\LiteGraph-1.0\\Test\\Test.csproj",
+      "projectUniqueName": "C:\\code\\misc\\LiteGraph-1.0\\Test\\Test.csproj",
       "projectName": "Test",
-      "projectPath": "C:\\Code\\Misc\\LiteGraph-1.0\\Test\\Test.csproj",
+      "projectPath": "C:\\code\\misc\\LiteGraph-1.0\\Test\\Test.csproj",
       "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-      "outputPath": "C:\\Code\\Misc\\LiteGraph-1.0\\Test\\obj\\",
+      "outputPath": "C:\\code\\misc\\LiteGraph-1.0\\Test\\obj\\",
       "projectStyle": "PackageReference",
       "crossTargeting": true,
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-        "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
         "C:\\Users\\joelc\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net461",
@@ -1495,39 +1490,39 @@
         "netcoreapp3.1"
       ],
       "sources": {
-        "https://api.nuget.org/v3/index.json": {},
-        "https://nuget.pkg.github.com/jchristn/index.json": {}
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
           "projectReferences": {
-            "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {
-              "projectPath": "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj"
+            "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {
+              "projectPath": "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj"
             }
           }
         },
         "net5.0": {
           "targetAlias": "net5.0",
           "projectReferences": {
-            "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {
-              "projectPath": "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj"
+            "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {
+              "projectPath": "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj"
             }
           }
         },
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
-            "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {
-              "projectPath": "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj"
+            "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {
+              "projectPath": "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj"
             }
           }
         },
         "net461": {
           "targetAlias": "net461",
           "projectReferences": {
-            "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {
-              "projectPath": "C:\\Code\\Misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj"
+            "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj": {
+              "projectPath": "C:\\code\\misc\\LiteGraph-1.0\\LiteGraph\\LiteGraph.csproj"
             }
           }
         }
@@ -1551,6 +1546,12 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[3.1.21, 3.1.21]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
@@ -1570,6 +1571,12 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[5.0.12, 5.0.12]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
