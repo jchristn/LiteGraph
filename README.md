@@ -1,4 +1,4 @@
-![alt tag](https://github.com/jchristn/indexengine/blob/master/assets/icon.png)
+![alt tag](https://github.com/jchristn/LiteGraph/blob/master/assets/favicon.png)
 
 # LiteGraph
 
