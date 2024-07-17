@@ -2,10 +2,16 @@
 
 ## Current Version
 
-v1.0.0
+v2.0.0
 
-- Initial release
+- Major overhaul, refactor, and breaking changes
+- Integrated webserver and RESTful API
+- Extensibility through base repository class
+- Hierarchical expression support while filtering over graph, node, and edge data objects
+- Removal of property constraints on nodes and edges
 
 ## Previous Versions
 
-Notes from previous versions will be listed here.
+v1.0.0
+
+- Initial release

@@ -1,0 +1,22 @@
+services:
+
+  #
+  # LiteGraph
+  # See https://hub.docker.com/r/jchristn/litegraph
+  # and https://github.com/jchristn/LiteGraph
+  #
+
+  litegraph:
+    container_name: 'litegraph'
+    image: 'jchristn/litegraph:v2.0.0'
+    network_mode: 'host'
+    ports:
+      - 8701:8701
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./litegraph.json:/app/litegraph.json
+      - ./litegraph.db:/app/litegraph.db
+      - ./logs/:/app/logs/
+    healthcheck:
+      test: curl --fail http://localhost:8701

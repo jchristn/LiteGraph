@@ -1,0 +1,74 @@
+{
+  "CreatedUtc": "2024-07-17T22:16:59.873301Z",
+  "Logging": {
+    "Enable": true,
+    "Servers": [
+      {
+        "Hostname": "localhost",
+        "Port": 514,
+        "RandomizePorts": true,
+        "MinimumPort": 65000,
+        "MaximumPort": 65535
+      }
+    ],
+    "LogDirectory": "./logs/",
+    "LogFilename": "litegraph.log",
+    "ConsoleLogging": true,
+    "EnableColors": true,
+    "MinimumSeverity": 0,
+    "Header": "[LiteGraph] ",
+    "LogQueries": false,
+    "LogResults": false
+  },
+  "Rest": {
+    "Hostname": "*",
+    "Port": 8701,
+    "IO": {
+      "StreamBufferSize": 65536,
+      "MaxRequests": 1024,
+      "ReadTimeoutMs": 10000,
+      "MaxIncomingHeadersSize": 65536,
+      "EnableKeepAlive": false
+    },
+    "Ssl": {
+      "Enable": false,
+      "MutuallyAuthenticate": false,
+      "AcceptInvalidAcertificates": true
+    },
+    "Headers": {
+      "IncludeContentLength": true,
+      "DefaultHeaders": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS, HEAD, GET, PUT, POST, DELETE, PATCH",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Expose-Headers": "",
+        "Accept": "*/*",
+        "Accept-Language": "en-US, en",
+        "Accept-Charset": "ISO-8859-1, utf-8",
+        "Cache-Control": "no-cache",
+        "Connection": "close",
+        "Host": "localhost:8000"
+      }
+    },
+    "AccessControl": {
+      "DenyList": {},
+      "PermitList": {},
+      "Mode": "DefaultPermit"
+    },
+    "Debug": {
+      "AccessControl": false,
+      "Routing": false,
+      "Requests": false,
+      "Responses": false
+    }
+  },
+  "LiteGraph": {
+    "Filename": "litegraph.db",
+    "MaxConcurrentOperations": 4
+  },
+  "Debug": {
+    "Authentication": false,
+    "Exceptions": false,
+    "Requests": false
+  }
+}

@@ -3,9 +3,9 @@
     using System;
 
     /// <summary>
-    /// Node in the graph.
+    /// Graph.
     /// </summary>
-    public class Node
+    public class Graph
     {
         #region Public-Members
 
@@ -15,24 +15,19 @@
         public Guid GUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// Globally-unique identifier for the graph.
-        /// </summary>
-        public Guid GraphGUID { get; set; } = Guid.NewGuid();
-
-        /// <summary>
         /// Name.
         /// </summary>
         public string Name { get; set; } = null;
 
         /// <summary>
-        /// Object data.
-        /// </summary>
-        public object Data { get; set; } = null;
-
-        /// <summary>
         /// Timestamp from creation, in UTC.
         /// </summary>
         public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
+
+        /// <summary>
+        /// Object data.
+        /// </summary>
+        public object Data { get; set; } = null;
 
         #endregion
 
@@ -45,7 +40,7 @@
         /// <summary>
         /// Instantiate the object.
         /// </summary>
-        public Node()
+        public Graph()
         {
 
         }

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
-
-namespace LiteGraph
+﻿namespace LiteGraph
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     /// <summary>
     /// Total cost and ordered list of edges between two nodes.
     /// </summary>
@@ -15,18 +14,36 @@ namespace LiteGraph
         /// <summary>
         /// Total cost of the route.
         /// </summary>
-        [JsonProperty(PropertyName = "total_cost", Order = -1)]
-        public int? TotalCost { get; set; } = null;
+        public int TotalCost
+        {
+            get
+            {
+                if (_Edges == null || _Edges.Count < 1) return 0;
+                return _Edges.Sum(e => e.Cost);
+            }
+        }
 
         /// <summary>
-        /// Ordered list of edges that must be traversed.
+        /// Edges.
         /// </summary>
-        [JsonProperty(PropertyName = "edges", Order = 990)]
-        public List<Edge> Edges { get; set; } = new List<Edge>();
+        public List<Edge> Edges
+        {
+            get
+            {
+                return _Edges;
+            }
+            set
+            {
+                if (value == null) value = new List<Edge>();
+                _Edges = value;
+            }
+        }
 
         #endregion
 
         #region Private-Members
+
+        private List<Edge> _Edges = new List<Edge>();
 
         #endregion
 

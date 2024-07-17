@@ -1,0 +1,1 @@
+rm -f litegraph.db

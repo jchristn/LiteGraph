@@ -1,146 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using Microsoft.Data.Sqlite;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-namespace LiteGraph
+﻿namespace LiteGraph
 {
+    using System;
+    using ExpressionTree;
+    using System.Collections.Generic;
+    using LiteGraph.Repositories;
+    using System.Threading;
+    using System.Xml.Linq;
+    using System.Linq;
+    using System.Runtime.InteropServices.ObjectiveC;
+    using LiteGraph.Gexf;
+    using LiteGraph.Serialization;
+
     /// <summary>
     /// LiteGraph client.
     /// </summary>
     public class LiteGraphClient : IDisposable
     {
         #region Public-Members
-         
+
         /// <summary>
-        /// Logger settings.
+        /// Logging settings.
         /// </summary>
-        public LoggerSettings Logger
+        public LoggingSettings Logging
         {
             get
             {
-                return _Logging;
+                return _Repository.Logging;
             }
             set
             {
-                if (value == null) _Logging = new LoggerSettings();
-                else _Logging = value;
+                if (value == null) value = new LoggingSettings();
+                _Repository.Logging = value;
             }
         }
 
         /// <summary>
-        /// Maximum supported statement length.
+        /// Maximum number of concurrent operations.
+        /// For higher concurrency, use a lower number (e.g. 1).
+        /// For lower concurrency, use a higher number (e.g. 10).
+        /// This value dictates the maximum number of operations that may be operating in parallel at any one given time.
         /// </summary>
-        public int MaxStatementLength
+        public int MaxConcurrentOperations
         {
             get
             {
-                // https://www.sqlite.org/limits.html
-                return 1000000;
+                return _MaxConcurrentOperations;
             }
         }
 
         /// <summary>
-        /// GUID property that must be present in every node added to the graph.
+        /// Serialization helper.
         /// </summary>
-        public string NodeGuidProperty
+        public SerializationHelper Serializer
         {
             get
             {
-                return _NodeGuidProperty;
+                return _Serializer;
             }
             set
             {
-                if (String.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(NodeGuidProperty));
-                _NodeGuidProperty = value;
-            }
-        }
-
-        /// <summary>
-        /// Name property that must be present in every node added to the graph.
-        /// </summary>
-        public string NodeNameProperty
-        {
-            get
-            {
-                return _NodeNameProperty;
-            }
-            set
-            {
-                if (String.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(NodeNameProperty));
-                _NodeNameProperty = value;
-            }
-        }
-
-        /// <summary>
-        /// Type property that must be present in every node added to the graph.
-        /// </summary>
-        public string NodeTypeProperty
-        {
-            get
-            {
-                return _NodeTypeProperty;
-            }
-            set
-            {
-                if (String.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(NodeTypeProperty));
-                _NodeTypeProperty = value;
-            }
-        }
-
-        /// <summary>
-        /// GUID property that must be present in every edge added to the graph.
-        /// </summary>
-        public string EdgeGuidProperty
-        {
-            get
-            {
-                return _EdgeGuidProperty;
-            }
-            set
-            {
-                if (String.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(EdgeGuidProperty));
-                _EdgeGuidProperty = value;
-            }
-        }
-
-        /// <summary>
-        /// Type property that must be present in every edge added to the graph.
-        /// </summary>
-        public string EdgeTypeProperty
-        {
-            get
-            {
-                return _EdgeTypeProperty;
-            }
-            set
-            {
-                if (String.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(EdgeTypeProperty));
-                _EdgeTypeProperty = value;
-            }
-        }
-
-        /// <summary>
-        /// JSON.NET formatting mode.
-        /// </summary>
-        public Formatting JsonFormatting { get; set; } = Formatting.None;
-
-        /// <summary>
-        /// LiteGraph events.
-        /// </summary>
-        public LiteGraphEvents Events
-        {
-            get
-            {
-                return _Events;
-            }
-            set
-            {
-                if (value == null) _Events = new LiteGraphEvents();
-                else _Events = value;
+                if (value == null) throw new ArgumentNullException(nameof(Serializer));
+                _Serializer = value;
             }
         }
 
@@ -149,41 +69,41 @@ namespace LiteGraph
         #region Private-Members
 
         private bool _Disposed = false;
-        private readonly object _Lock = new object();
-        private LoggerSettings _Logging = new LoggerSettings();
-        private LiteGraphEvents _Events = new LiteGraphEvents();
-
-        private string _Filename = null;
-        private string _ConnectionString = null;
-        private string _NodeGuidProperty = "guid";
-        private string _NodeNameProperty = "name";
-        private string _NodeTypeProperty = "type";
-        private string _EdgeGuidProperty = "guid";
-        private string _EdgeTypeProperty = "type";
-        private int _MaxResultsLimit = 100;
-
-        private JsonSerializer _JsonSerializer = JsonSerializer.Create(new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore
-        });
+        private RepositoryBase _Repository = new SqliteRepository();
+        private int _MaxConcurrentOperations = 4;
+        private SemaphoreSlim _Semaphore = null;
+        private SerializationHelper _Serializer = new SerializationHelper();
+        private GexfWriter _Gexf = new GexfWriter();
 
         #endregion
 
         #region Constructors-and-Factories
 
         /// <summary>
-        /// LiteGraph client.
+        /// Instantiate LiteGraph client.
         /// </summary>
-        public LiteGraphClient(string filename, LoggerSettings logging = null)
+        /// <param name="repository">Repository driver.</param>
+        /// <param name="logging">Logging.</param>
+        /// <param name="maxConcurrentOperations">
+        /// Maximum number of concurrent operations allowed.  
+        /// For higher concurrency, use a lower number (e.g. 1).
+        /// For lower concurrency, use a higher number (e.g. 10).
+        /// This value dictates the maximum number of operations that may be operating in parallel at any one given time.
+        /// </param>
+        public LiteGraphClient(
+            RepositoryBase repository = null,
+            LoggingSettings logging = null,
+            int maxConcurrentOperations = 4)
         {
-            if (String.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
+            if (repository != null) _Repository = repository;
+            
+            if (logging != null) Logging = logging;
+            else Logging = new LoggingSettings();
 
-            _Filename = filename;
-            _ConnectionString = "Data Source=" + filename;
+            if (maxConcurrentOperations < 1) throw new ArgumentOutOfRangeException(nameof(maxConcurrentOperations));
 
-            if (logging != null) _Logging = logging;
-
-            InitializeTables();
+            _MaxConcurrentOperations = maxConcurrentOperations;
+            _Semaphore = new SemaphoreSlim(_MaxConcurrentOperations);
         }
 
         #endregion
@@ -199,619 +119,816 @@ namespace LiteGraph
             GC.SuppressFinalize(this);
         }
 
-        #region Node
-
         /// <summary>
-        /// Add a node.
-        /// The supplied JSON must contain the globally-unique identifier property as specified in NodeGuidProperty.
-        /// The supplied JSON must contain the type identifier property as specified in NodeTypeProperty.
+        /// Initialize the repository.
         /// </summary>
-        /// <param name="json">JSON object</param>
-        /// <returns>Graph result.</returns>
-        public GraphResult AddNode(string json)
+        public void InitializeRepository()
         {
-            if (String.IsNullOrEmpty(json)) throw new ArgumentNullException(nameof(json));
-            GraphResult r = new GraphResult(GraphOperation.AddNode);
-
-            JObject j = JObject.Parse(json);
-            if (!j.ContainsKey(_NodeGuidProperty)) throw new ArgumentException("Supplied JSON does not contain the globally-unique identifier property '" + _NodeGuidProperty + "'.  To use a different property name, modify the 'NodeGuidProperty' field.");
-            if (!j.ContainsKey(_NodeNameProperty)) throw new ArgumentException("Supplied JSON does not contain the name property '" + _NodeNameProperty + "'.  To use a different property name, modify the 'NodeNameProperty' field.");
-            if (!j.ContainsKey(_NodeTypeProperty)) throw new ArgumentException("Supplied JSON does not contain the type property '" + _NodeTypeProperty + "'.  To use a different property name, modify the 'NodeTypeProperty' field.");
-
-            string guid = j[_NodeGuidProperty].ToString();
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentException("Supplied unique identifier in property '" + _NodeGuidProperty + "' is null or empty.");
-
-            string name = j[_NodeNameProperty].ToString();
-            if (String.IsNullOrEmpty(name)) throw new ArgumentException("Supplied identifier in property '" + _NodeNameProperty + "' is null or empty.");
-
-            string type = j[_NodeTypeProperty].ToString();
-            if (String.IsNullOrEmpty(type)) throw new ArgumentException("Supplied identifier in property '" + _NodeTypeProperty + "' is null or empty.");
-             
-            GraphResult existsResult = NodeExists(guid);
-            if ((bool)existsResult.Result) throw new ArgumentException("Node with unique identifier '" + guid + "' already exists.");
-
-            DateTime ts = DateTime.Now.ToUniversalTime();
-            Node n = new Node(0, guid, name, type, DateTime.Now.ToUniversalTime(), j);
-            Query(DatabaseHelper.Nodes.InsertQuery(n));
-
-            _Events.HandleNodeAdded(this, new NodeEventArgs(guid, name, type, ts, j));
-
-            r.Time.End = DateTime.Now;
-            return r;
+            _Repository.InitializeRepository();
         }
 
         /// <summary>
-        /// Update a node.
-        /// The supplied JSON must contain the globally-unique identifier property as specified in GuidProperty.
-        /// The supplied JSON must contain the type identifier property as specified in NodeTypeProperty.
+        /// Convert data associated with a graph, node, or edge to a specific type.
         /// </summary>
-        /// <param name="json">JSON object.</param>
-        /// <returns>Graph result.</returns>
-        public GraphResult UpdateNode(string json)
+        /// <typeparam name="T">Type.</typeparam>
+        /// <param name="data">Data.</param>
+        /// <returns>Instance.</returns>
+        public T ConvertData<T>(object data) where T : class, new()
         {
-            if (String.IsNullOrEmpty(json)) throw new ArgumentNullException(nameof(json));
-            GraphResult r = new GraphResult(GraphOperation.UpdateNode);
-
-            JObject j = JObject.Parse(json);
-            if (!j.ContainsKey(_NodeGuidProperty)) throw new ArgumentException("Supplied JSON does not contain the globally-unique identifier property '" + _NodeGuidProperty + "'.  To use a different property name, modify the 'NodeGuidProperty' field.");
-            if (!j.ContainsKey(_NodeNameProperty)) throw new ArgumentException("Supplied JSON does not contain the name property '" + _NodeNameProperty + "'.  To use a different property name, modify the 'NodeNameProperty' field.");
-            if (!j.ContainsKey(_NodeTypeProperty)) throw new ArgumentException("Supplied JSON does not contain the type property '" + _NodeTypeProperty + "'.  To use a different property name, modify the 'NodeTypeProperty' field.");
-
-            string guid = j[_NodeGuidProperty].ToString();
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentException("Supplied unique identifier in property '" + _NodeGuidProperty + "' is null or empty.");
-
-            string name = j[_NodeNameProperty].ToString();
-            if (String.IsNullOrEmpty(name)) throw new ArgumentException("Supplied identifier in property '" + _NodeNameProperty + "' is null or empty.");
-
-            string type = j[_NodeTypeProperty].ToString();
-            if (String.IsNullOrEmpty(type)) throw new ArgumentException("Supplied identifier in property '" + _NodeTypeProperty + "' is null or empty.");
-
-            DataTable result = Query(DatabaseHelper.Nodes.SelectByGuid(guid));
-            if (result == null || result.Rows.Count < 1) throw new ArgumentException("Node with globally-unique identifier '" + guid + "' not found.");
-            Node n = DatabaseHelper.Nodes.FromDataRow(result.Rows[0]);
-            n.Properties = JObject.Parse(json);
-            Query(DatabaseHelper.Nodes.UpdateQuery(n));
-
-            _Events.HandleNodeUpdated(this, new NodeEventArgs(n.GUID, n.Name, n.NodeType, n.CreatedUtc, n.Properties));
-
-            r.Time.End = DateTime.Now;
-            return r;
+            if (data == null) return null;
+            return _Serializer.DeserializeJson<T>(data.ToString());
         }
 
-        /// <summary>
-        /// Remove a node and its edges by the node's globally-unique identifier.
-        /// </summary>
-        /// <param name="guid">Globally-unique identifier.</param>
-        /// <returns>Graph result.</returns>
-        public GraphResult RemoveNode(string guid)
-        {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.RemoveNode);
-
-            DataTable result = Query(DatabaseHelper.Nodes.SelectByGuid(guid));
-            if (result == null || result.Rows.Count < 1) throw new ArgumentException("Node with globally-unique identifier '" + guid + "' not found.");
-            Node n = DatabaseHelper.Nodes.FromDataRow(result.Rows[0]);
-
-            Query(DatabaseHelper.Nodes.DeleteQuery(guid));
-            Query(DatabaseHelper.Edges.DeleteNodeEdgesQuery(guid));
-
-            _Events.HandleNodeRemoved(this, new NodeEventArgs(n.GUID, n.Name, n.NodeType, n.CreatedUtc, n.Properties));
-
-            r.Time.End = DateTime.Now;
-            return r;
-        }
+        #region Graphs
 
         /// <summary>
-        /// Check if a node exists by its globally-unique identifier.
+        /// Create a graph using a unique name.
         /// </summary>
-        /// <param name="guid">Globally-unique identifier.</param>
-        /// <returns>Graph result.</returns>
-        public GraphResult NodeExists(string guid)
+        /// <param name="name">Unique name.</param>
+        /// <param name="data">Data.</param>
+        /// <returns>Graph.</returns>
+        public Graph CreateGraph(string name, object data = null)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.NodeExists);
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            DataTable result = Query(DatabaseHelper.Nodes.ExistsQuery(guid));
-            if (result != null && result.Rows.Count > 0)
+            if (ExistsGraph(name)) return ReadGraph(name);
+
+            _Semaphore.Wait();
+            try
             {
-                r.Result = true;
+                Graph graph = _Repository.CreateGraph(name, data);
+                Logging.Log(SeverityEnum.Info, "created graph name " + name + " GUID " + graph.GUID);
+                return graph;
             }
-            else
-            {
-                r.Result = false;
-            }
-             
-            r.Time.End = DateTime.Now;
-            return r;
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Retrieve all nodes.
+        /// Read graphs.
         /// </summary>
-        /// <param name="types">Types of nodes on which to filter.</param>
-        /// <param name="indexStart">Starting index.</param>
-        /// <param name="maxResults">Maximum number of results to retrieve.</param>
-        /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult GetAllNodes(List<string> types = default, int indexStart = 0, int maxResults = 100)
+        /// <param name="expr">
+        /// Graph filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Graphs.</returns>
+        public IEnumerable<Graph> ReadGraphs(
+            Expr expr = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            GraphResult r = new GraphResult(GraphOperation.GetAllNodes);
+            if (order == EnumerationOrderEnum.CostAscending
+                || order == EnumerationOrderEnum.CostDescending)
+                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            DataTable result = Query(DatabaseHelper.Nodes.SelectByFilter(null, types, null, indexStart, maxResults));
-            if (result != null && result.Rows.Count > 0)
+            _Semaphore.Wait();
+            try
             {
-                List<Node> nodes = DatabaseHelper.Nodes.FromDataTable(result);
-                if (nodes != null && nodes.Count > 0)
+                Logging.Log(SeverityEnum.Debug, "retrieving graphs");
+
+                foreach (Graph graph in _Repository.ReadGraphs(expr, order))
                 {
-                    r.Data = JArray.FromObject(nodes, _JsonSerializer);
-                }
-                else
-                {
-                    r.Data = JArray.FromObject(new List<Node>(), _JsonSerializer);
+                    yield return graph;
                 }
             }
-            else
-            {
-                r.Data = JArray.FromObject(new List<Node>(), _JsonSerializer);
-            }
-             
-            r.Time.End = DateTime.Now;
-            return r;
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Retrieve a node.
+        /// Read a graph by name.
         /// </summary>
-        /// <param name="guid">Globally-unique identifier.</param>
-        /// <returns>Graph result where 'Data' contains a JObject.</returns>
-        public GraphResult GetNode(string guid)
+        /// <param name="name">Name.</param>
+        /// <returns>Graph.</returns>
+        public Graph ReadGraph(string name)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.GetNode);
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            DataTable result = Query(DatabaseHelper.Nodes.SelectByGuid(guid));
-            if (result == null || result.Rows.Count < 1)
+            _Semaphore.Wait();
+            try
             {
-                r.Data = JObject.FromObject(new object(), _JsonSerializer);
-            }
-            else
-            {
-                Node n = DatabaseHelper.Nodes.FromDataRow(result.Rows[0]);
-                r.Data = JObject.FromObject(n, _JsonSerializer);
-            }
+                Logging.Log(SeverityEnum.Debug, "retrieving graph with name " + name);
 
-            r.Time.End = DateTime.Now;
-            return r;
+                return _Repository.ReadGraph(name);
+            }
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Retrieve a node's neighbors.
-        /// If supplied, edge filters are evaluated before node filters are evaluated.
+        /// Read a graph by GUID.
         /// </summary>
-        /// <param name="guid">Globally-unique identifier.</param>
-        /// <param name="types">Types of edges on which to filter.</param>
-        /// <param name="edgeFilters">Filters to apply against edges when searching for connected nodes.</param>
-        /// <param name="nodeFilters">Filters to apply against nodes that are connected via matching edge filters.</param>
-        /// <param name="indexStart">Starting index.</param>
-        /// <param name="maxResults">Maximum number of results to retrieve.</param>
-        /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult GetNeighbors(string guid, List<string> types = default, List<SearchFilter> nodeFilters = default, List<SearchFilter> edgeFilters = default, int indexStart = 0, int maxResults = 100)
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <returns>Graph.</returns>
+        public Graph ReadGraph(Guid graphGuid)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.GetNeighbors);
-
-            DataTable edgeResult = Query(DatabaseHelper.Edges.SelectByFilter(new List<string> { guid }, types, edgeFilters, indexStart, maxResults));
-            if (edgeResult != null && edgeResult.Rows.Count > 0)
+            _Semaphore.Wait();
+            try
             {
-                List<Edge> edges = DatabaseHelper.Edges.FromDataTable(edgeResult);
-                List<string> guids = new List<string>();
-                foreach (Edge edge in edges)
+                Logging.Log(SeverityEnum.Debug, "retrieving graph with GUID " + graphGuid);
+
+                return _Repository.ReadGraph(graphGuid);
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Update a graph.
+        /// </summary>
+        /// <param name="graph">Graph.</param>
+        /// <returns>Graph.</returns>
+        public Graph UpdateGraph(Graph graph)
+        {
+            if (graph == null) throw new ArgumentNullException(nameof(graph));
+
+            _Semaphore.Wait();
+            try
+            {
+                Logging.Log(SeverityEnum.Debug, "updating graph with name " + graph.Name + " GUID " + graph.GUID);
+
+                return _Repository.UpdateGraph(graph);
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Delete a graph.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="force">True to force deletion of nodes and edges.</param>
+        public void DeleteGraph(string name, bool force = false)
+        {
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+
+            _Semaphore.Wait();
+            
+            Graph graph = ReadGraph(name);
+            if (graph == null) return;
+
+            try
+            {
+                Logging.Log(SeverityEnum.Info, "deleting graph with name " + graph.Name + " GUID " + graph.GUID);
+
+                if (force)
                 {
-                    guids.Add(edge.FromGUID);
-                    guids.Add(edge.ToGUID);
-                }
-                guids = guids.Distinct().ToList();
-                while (guids.Contains(guid)) guids.Remove(guid);
+                    Logging.Log(SeverityEnum.Info, "deleting graph edges and nodes for graph GUID " + graph.GUID);
 
-                DataTable nodeResult = Query(DatabaseHelper.Nodes.SelectByFilter(guids, types, nodeFilters, indexStart, maxResults));
-                if (nodeResult != null && nodeResult.Rows.Count > 0)
-                {
-                    List<Node> nodes = DatabaseHelper.Nodes.FromDataTable(nodeResult);
-                    r.Data = JArray.FromObject(nodes, _JsonSerializer);
+                    _Repository.DeleteEdges(graph.GUID);
+                    _Repository.DeleteNodes(graph.GUID);
                 }
-                else
-                {
-                    r.Data = JArray.FromObject(new List<Node>(), _JsonSerializer);
-                }
-            }
-            else
-            {
-                r.Data = JArray.FromObject(new List<Node>(), _JsonSerializer);
-            }
 
-            r.Time.End = DateTime.Now;
-            return r;
+                if (_Repository.ReadNodes(graph.GUID).Count() > 0)
+                    throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
+
+                if (_Repository.ReadEdges(graph.GUID).Count() > 0)
+                    throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
+
+                _Repository.DeleteGraph(name, force);
+            }
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Search nodes.
+        /// Delete a graph.
         /// </summary>
-        /// <param name="guids">Subset of node GUIDs to search.</param>
-        /// <param name="types">Types of nodes on which to filter.</param>
-        /// <param name="filters">Filters to apply against each node's JSON data.</param>
-        /// <param name="indexStart">Starting index.</param>
-        /// <param name="maxResults">Maximum number of results to retrieve.</param>
-        /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult SearchNodes(List<string> guids, List<string> types, List<SearchFilter> filters, int indexStart = 0, int maxResults = 100)
+        /// <param name="graphGuid">GUID.</param>
+        /// <param name="force">True to force deletion of nodes and edges.</param>
+        public void DeleteGraph(Guid graphGuid, bool force = false)
         {
-            GraphResult r = new GraphResult(GraphOperation.SearchNodes);
+            _Semaphore.Wait();
 
-            if (indexStart < 0) throw new ArgumentException("Index start must be zero or greater.");
-            if (maxResults < 1) throw new ArgumentException("Max results must be greater than zero.");
-            if (maxResults > _MaxResultsLimit) throw new ArgumentException("Max results must not exceed " + _MaxResultsLimit);
-            DataTable result = Query(DatabaseHelper.Nodes.SelectByFilter(guids, types, filters, indexStart, maxResults));
-            if (result != null && result.Rows.Count > 0)
-            {
-                List<Node> nodes = DatabaseHelper.Nodes.FromDataTable(result);
-                r.Data = JArray.FromObject(nodes, _JsonSerializer);
-            }
-            else
-            {
-                r.Data = JArray.FromObject(new List<Node>(), _JsonSerializer);
-            }
+            Graph graph = ReadGraph(graphGuid);
+            if (graph == null) return;
 
-            r.Time.End = DateTime.Now;
-            return r;
+            try
+            {
+                Logging.Log(SeverityEnum.Info, "deleting graph with name " + graph.Name + " GUID " + graph.GUID);
+
+                if (force)
+                {
+                    Logging.Log(SeverityEnum.Info, "deleting graph edges and nodes for graph GUID " + graph.GUID);
+
+                    _Repository.DeleteEdges(graph.GUID);
+                    _Repository.DeleteNodes(graph.GUID);
+                }
+
+                if (_Repository.ReadNodes(graph.GUID).Count() > 0)
+                    throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
+
+                if (_Repository.ReadEdges(graph.GUID).Count() > 0)
+                    throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
+
+                _Repository.DeleteGraph(graph.GUID, force);
+            }
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Retrieve a tree from the supplied node.
+        /// Check if a graph exists by name.
         /// </summary>
-        /// <param name="guid">Globally-unique identifier.</param>
-        /// <param name="types">Types of edges on which to filter.</param>
-        /// <param name="filters">Filters by which edges should be evaluated.</param>
-        /// <param name="maxDepth">The maximum depth to search.</param>
-        /// <returns>Graph result.</returns>
-        public GraphResult GetDescendants(string guid, List<string> types, List<SearchFilter> filters = null, int maxDepth = 5)
+        /// <param name="name">Name.</param>
+        /// <returns>True if exists.</returns>
+        public bool ExistsGraph(string name)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.GetDescendants);
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            DataTable result = Query(DatabaseHelper.Nodes.SelectByGuid(guid));
-            if (result != null && result.Rows.Count > 0)
+            _Semaphore.Wait();
+            try
             {
-                Node n = DatabaseHelper.Nodes.FromDataRow(result.Rows[0]);
-                n.Descendents = GetDescendantsFromNode(n, types, filters, n.GUID, 0, maxDepth);
-                r.Data = JObject.FromObject(n, _JsonSerializer);
+                return _Repository.ExistsGraph(name);
             }
+            finally { _Semaphore.Release(); }
+        }
 
-            r.Time.End = DateTime.Now;
-            return r;
+        /// <summary>
+        /// Check if a graph exists by GUID.
+        /// </summary>
+        /// <param name="guid">GUID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ExistsGraph(Guid guid)
+        {
+            _Semaphore.Wait();
+            try
+            {
+                return _Repository.ExistsGraph(guid);
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Export graph to GEXF.
+        /// </summary>
+        /// <param name="guid">GUID.</param>
+        /// <param name="filename">Filename.</param>
+        /// <param name="includeData">True to include data.</param>
+        public void ExportGraphToGexfFile(Guid guid, string filename, bool includeData = false)
+        {
+            if (String.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
+            _Gexf.ExportToFile(this, guid, filename, includeData);
+        }
+
+        /// <summary>
+        /// Render a graph as GEXF.
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <param name="includeData"></param>
+        /// <returns></returns>
+        public string RenderGraphAsGexf(Guid guid, bool includeData = false)
+        {
+            return _Gexf.RenderAsGexf(this, guid, includeData);
         }
 
         #endregion
 
-        #region Edge
+        #region Nodes
 
         /// <summary>
-        /// Add an edge from one node to another.
-        /// The supplied JSON must contain the globally-unique identifier property as specified in EdgeGuidProperty.
-        /// The supplied JSON must contain the type identifier property as specified in EdgeTypeProperty.
+        /// Create a node.
         /// </summary>
-        /// <param name="fromGuid">Globally-unique identifier of the source node.</param>
-        /// <param name="toGuid">Globally-unique identifier of the target node.</param> 
-        /// <param name="json">JSON object.</param>
-        /// <param name="cost">Cost for using the edge.</param>
-        /// <returns>Graph result.</returns>
-        public GraphResult AddEdge(string fromGuid, string toGuid, string json, int? cost = null)
+        /// <param name="node">Node.</param>
+        /// <returns>Node.</returns>
+        public Node CreateNode(Node node)
         {
-            GraphResult r = new GraphResult(GraphOperation.AddEdge);
+            if (node == null) throw new ArgumentNullException(nameof(node));
 
-            if (String.IsNullOrEmpty(fromGuid)) throw new ArgumentNullException(nameof(fromGuid));
-            if (String.IsNullOrEmpty(toGuid)) throw new ArgumentNullException(nameof(toGuid));
-            if (String.IsNullOrEmpty(json)) throw new ArgumentNullException(nameof(json));
-
-            JObject j = JObject.Parse(json);
-            if (!j.ContainsKey(_EdgeGuidProperty)) throw new ArgumentException("Supplied JSON does not contain the globally-unique identifier property '" + _EdgeGuidProperty + "'.  To use a different property name, modify the 'EdgeGuidProperty' field.");
-            if (!j.ContainsKey(_EdgeTypeProperty)) throw new ArgumentException("Supplied JSON does not contain the type property '" + _EdgeTypeProperty + "'.  To use a different property name, modify the 'EdgeTypeProperty' field.");
-
-            string guid = j[_EdgeGuidProperty].ToString();
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentException("Supplied unique identifier in property '" + _EdgeGuidProperty + "' is null or empty.");
-
-            string type = j[_EdgeTypeProperty].ToString();
-            if (String.IsNullOrEmpty(type)) throw new ArgumentException("Supplied type identifier in property '" + _EdgeTypeProperty + "' is null or empty.");
-
-            GraphResult existsResult = EdgeExists(guid);
-            if ((bool)existsResult.Result) throw new ArgumentException("Edge with unique identifier '" + guid + "' already exists.");
-
-            existsResult = NodeExists(fromGuid);
-            if (!(bool)existsResult.Result) throw new ArgumentException("Node with unique identifier '" + fromGuid + "' not found.");
-
-            existsResult = NodeExists(toGuid);
-            if (!(bool)existsResult.Result) throw new ArgumentException("Node with unique identifier '" + toGuid + "' not found.");
-
-            DateTime ts = DateTime.Now.ToUniversalTime();
-            Edge e = new Edge(0, guid, type, fromGuid, toGuid, cost, ts, j);
-            Query(DatabaseHelper.Edges.InsertQuery(e));
-
-            _Events.HandleEdgeAdded(this, new EdgeEventArgs(guid, type, fromGuid, toGuid, e.Cost, ts, j));
-
-            r.Time.End = DateTime.Now;
-            return r;
-        }
-
-        /// <summary>
-        /// Update an edge's properties.
-        /// The supplied JSON must contain the globally-unique identifier property as specified in EdgeGuidProperty.
-        /// The supplied JSON must contain the type identifier property as specified in EdgeTypeProperty.
-        /// </summary>
-        /// <param name="json">JSON object.</param>
-        /// <returns>Graph result.</returns>
-        public GraphResult UpdateEdge(string json)
-        {
-            if (String.IsNullOrEmpty(json)) throw new ArgumentNullException(nameof(json));
-            GraphResult r = new GraphResult(GraphOperation.UpdateEdge);
-
-            JObject j = JObject.Parse(json);
-            if (!j.ContainsKey(_EdgeGuidProperty)) throw new ArgumentException("Supplied JSON does not contain the globally-unique identifier property '" + _EdgeGuidProperty + "'.  To use a different property name, modify the 'EdgeGuidProperty' field.");
-            if (!j.ContainsKey(_EdgeTypeProperty)) throw new ArgumentException("Supplied JSON does not contain the type property '" + _EdgeTypeProperty + "'.  To use a different property name, modify the 'EdgeTypeProperty' field.");
-
-            string guid = j[_EdgeGuidProperty].ToString();
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentException("Supplied unique identifier in property '" + _EdgeGuidProperty + "' is null or empty.");
-
-            string type = j[_EdgeTypeProperty].ToString();
-            if (String.IsNullOrEmpty(type)) throw new ArgumentException("Supplied identifier in property '" + _EdgeTypeProperty + "' is null or empty.");
-
-            DataTable result = Query(DatabaseHelper.Edges.SelectByGuid(guid));
-            if (result == null || result.Rows.Count < 1) throw new ArgumentException("Edge with globally-unique identifier '" + guid + "' not found.");
-
-            Edge e = DatabaseHelper.Edges.FromDataRow(result.Rows[0]);
-            e.Properties = JObject.Parse(json);
-            Query(DatabaseHelper.Edges.UpdateQuery(e));
-
-            _Events.HandleEdgeUpdated(this, new EdgeEventArgs(e.GUID, e.EdgeType, e.FromGUID, e.ToGUID, e.Cost, e.CreatedUtc, e.Properties));
-
-            r.Time.End = DateTime.Now;
-            return r;
-        }
-
-        /// <summary>
-        /// Remove an edge by its globally-unique identifier.
-        /// </summary>
-        /// <param name="guid">Globally-unique identifier.</param>
-        /// <returns>Graph result.</returns>
-        public GraphResult RemoveEdge(string guid)
-        {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.RemoveEdge);
-
-            DataTable result = Query(DatabaseHelper.Edges.SelectByGuid(guid));
-            if (result == null || result.Rows.Count < 1) throw new ArgumentException("Edge with globally-unique identifier '" + guid + "' not found.");
-            Edge e = DatabaseHelper.Edges.FromDataRow(result.Rows[0]);
-
-            Query(DatabaseHelper.Edges.DeleteQuery(guid));
-
-            _Events.HandleEdgeRemoved(this, new EdgeEventArgs(e.GUID, e.EdgeType, e.FromGUID, e.ToGUID, e.Cost, e.CreatedUtc, e.Properties));
-
-            r.Time.End = DateTime.Now;
-            return r;
-        }
-
-        /// <summary>
-        /// Check if an edge exists by its globally-unique identifier.
-        /// </summary>
-        /// <param name="guid">Globally-unique identifier.</param>
-        /// <returns>Graph result.</returns>
-        public GraphResult EdgeExists(string guid)
-        {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.EdgeExists);
-
-            DataTable result = Query(DatabaseHelper.Edges.ExistsQuery(guid));
-            if (result != null && result.Rows.Count > 0)
+            _Semaphore.Wait();
+            try
             {
-                r.Result = true;
+                if (!_Repository.ExistsGraph(node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
+                if (_Repository.ExistsNode(node.GraphGUID, node.GUID)) throw new ArgumentException("A node with GUID '" + node.GUID + "' already exists in graph '" + node.GraphGUID + "'.");
+
+                Node created = _Repository.CreateNode(node);
+
+                Logging.Log(SeverityEnum.Debug, "created node " + created.GUID + " in graph " + created.GraphGUID);
+
+                return created;
             }
-            else
-            {
-                r.Result = false;
-            }
-
-            r.Time.End = DateTime.Now;
-            return r;
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Retrieve all edges.
+        /// Read nodes.
         /// </summary>
-        /// <param name="types">Types of edges on which to filter.</param>
-        /// <param name="filters">Filters by which edges should be filtered.</param>
-        /// <param name="indexStart">Starting index.</param>
-        /// <param name="maxResults">Maximum number of results to retrieve.</param>
-        /// <param name="costMin">Minimum cost to use the edge.</param>
-        /// <param name="costMax">Maximum cost to use the edge</param>
-        /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult GetAllEdges(List<string> types = default, List<SearchFilter> filters = null, int indexStart = 0, int maxResults = 100, int? costMin = null, int? costMax = null)
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="expr">
+        /// Node filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Nodes.</returns>
+        public IEnumerable<Node> ReadNodes(
+            Guid graphGuid,
+            Expr expr = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            GraphResult r = new GraphResult(GraphOperation.GetAllEdges);
+            if (order == EnumerationOrderEnum.CostAscending
+                || order == EnumerationOrderEnum.CostDescending)
+                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            DataTable result = Query(DatabaseHelper.Edges.SelectByFilter(null, types, filters, indexStart, maxResults, costMin, costMax));
-            if (result != null && result.Rows.Count > 0)
+            _Semaphore.Wait();
+            try
             {
-                List<Edge> edges = DatabaseHelper.Edges.FromDataTable(result);
-                if (edges != null && edges.Count > 0)
+                foreach (Node node in _Repository.ReadNodes(graphGuid, expr, order))
                 {
-                    r.Data = JArray.FromObject(edges, _JsonSerializer);
-                }
-                else
-                {
-                    r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
+                    yield return node;
                 }
             }
-            else
-            {
-                r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
-            }
-
-            r.Time.End = DateTime.Now;
-            return r;
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Retrieve all edges to or from a given node.
+        /// Read node.
         /// </summary>
-        /// <param name="guid">Globally-unique identifier of the node.</param>
-        /// <param name="types">Types of edges on which to filter.</param>
-        /// <param name="filters">Filters by which edges should be filtered.</param>
-        /// <param name="indexStart">Starting index.</param>
-        /// <param name="maxResults">Maximum number of results to retrieve.</param>
-        /// <param name="costMin">Minimum cost to use the edge.</param>
-        /// <param name="costMax">Maximum cost to use the edge</param>
-        /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult GetEdges(string guid, List<string> types = default, List<SearchFilter> filters = null, int indexStart = 0, int maxResults = 100, int? costMin = null, int? costMax = null)
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <returns>Node.</returns>
+        public Node ReadNode(Guid graphGuid, Guid nodeGuid)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.GetEdges);
-
-            List<string> guids = new List<string>();
-            guids.Add(guid);
-
-            DataTable result = Query(DatabaseHelper.Edges.SelectByFilter(guids, types, filters, indexStart, maxResults, costMin, costMax));
-            if (result != null && result.Rows.Count > 0)
+            _Semaphore.Wait();
+            try
             {
-                List<Edge> edges = DatabaseHelper.Edges.FromDataTable(result);
-                r.Data = JArray.FromObject(edges, _JsonSerializer);
+                return _Repository.ReadNode(graphGuid, nodeGuid);
             }
-            else
-            {
-                r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
-            }
-
-            r.Time.End = DateTime.Now;
-            return r;
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Retrieve all edges from a given node.
+        /// Update node.
         /// </summary>
-        /// <param name="guid">Globally-unique identifier of the node.</param>
-        /// <param name="types">Types of edges on which to filter.</param>
-        /// <param name="filters">Filters by which edges should be filtered.</param>
-        /// <param name="indexStart">Starting index.</param>
-        /// <param name="maxResults">Maximum number of results to retrieve.</param>
-        /// <param name="costMin">Minimum cost to use the edge.</param>
-        /// <param name="costMax">Maximum cost to use the edge</param>
-        /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult GetEdgesFrom(string guid, List<string> types = default, List<SearchFilter> filters = null, int indexStart = 0, int maxResults = 100, int? costMin = null, int? costMax = null)
+        /// <param name="node"></param>
+        /// <returns>Node.</returns>
+        public Node UpdateNode(Node node)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.GetEdges);
+            if (node == null) throw new ArgumentNullException(nameof(node));
 
-            DataTable result = Query(DatabaseHelper.Edges.SelectEdgesFrom(guid, types, filters, indexStart, maxResults, costMin, costMax));
-            if (result != null && result.Rows.Count > 0)
+            _Semaphore.Wait();
+            try
             {
-                List<Edge> edges = DatabaseHelper.Edges.FromDataTable(result);
-                r.Data = JArray.FromObject(edges, _JsonSerializer);
-            }
-            else
-            {
-                r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
-            }
+                if (!_Repository.ExistsGraph(node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
+                if (!_Repository.ExistsNode(node.GraphGUID, node.GUID)) throw new ArgumentException("No node with GUID '" + node.GUID + "' exists in graph '" + node.GraphGUID + "'.");
+                
+                Node updated = _Repository.UpdateNode(node);
 
-            r.Time.End = DateTime.Now;
-            return r;
+                Logging.Log(SeverityEnum.Debug, "updated node " + updated.GUID + " in graph " + updated.GraphGUID);
+
+                return updated;
+            }
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Retrieve all edges to a given node.
+        /// Delete a node and all associated edges.
         /// </summary>
-        /// <param name="guid">Globally-unique identifier of the node.</param>
-        /// <param name="types">Types of edges on which to filter.</param>
-        /// <param name="filters">Filters by which edges should be filtered.</param>
-        /// <param name="indexStart">Starting index.</param>
-        /// <param name="maxResults">Maximum number of results to retrieve.</param>
-        /// <param name="costMin">Minimum cost to use the edge.</param>
-        /// <param name="costMax">Maximum cost to use the edge</param>
-        /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult GetEdgesTo(string guid, List<string> types = default, List<SearchFilter> filters = null, int indexStart = 0, int maxResults = 100, int? costMin = null, int? costMax = null)
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        public void DeleteNode(Guid graphGuid,Guid nodeGuid)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.GetEdges);
-             
-            DataTable result = Query(DatabaseHelper.Edges.SelectEdgesTo(guid, types, filters, indexStart, maxResults, costMin, costMax));
-            if (result != null && result.Rows.Count > 0)
-            {
-                List<Edge> edges = DatabaseHelper.Edges.FromDataTable(result);
-                r.Data = JArray.FromObject(edges, _JsonSerializer);
-            }
-            else
-            {
-                r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
-            }
+            _Semaphore.Wait();
 
-            r.Time.End = DateTime.Now;
-            return r;
+            try
+            {
+                Node node = _Repository.ReadNode(graphGuid, nodeGuid);
+                if (node != null)
+                {
+                    Logging.Log(SeverityEnum.Info, "deleting edges connected to node " + nodeGuid + " in graph " + graphGuid);
+
+                    foreach (Edge edge in _Repository.GetConnectedEdges(graphGuid, nodeGuid))
+                        _Repository.DeleteEdge(graphGuid, edge.GUID);
+
+                    Logging.Log(SeverityEnum.Info, "deleting node " + nodeGuid + " in graph " + graphGuid);
+
+                    _Repository.DeleteNode(graphGuid, nodeGuid);
+                }
+            }
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Retrieve an edge.
+        /// Check existence of a node.
         /// </summary>
-        /// <param name="guid">Globally-unique identifier.</param>
-        /// <returns>Graph result where 'Data' contains a JObject.</returns>
-        public GraphResult GetEdge(string guid)
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ExistsNode(Guid graphGuid, Guid nodeGuid)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            GraphResult r = new GraphResult(GraphOperation.GetEdge);
-
-            DataTable result = Query(DatabaseHelper.Edges.SelectByGuid(guid));
-            if (result == null || result.Rows.Count < 1)
+            _Semaphore.Wait();
+            try
             {
-                r.Data = JObject.FromObject(new object(), _JsonSerializer);
+                return _Repository.ExistsNode(graphGuid,nodeGuid);
             }
-            else
-            {
-                Edge e = DatabaseHelper.Edges.FromDataRow(result.Rows[0]);
-                r.Data = JObject.FromObject(e, _JsonSerializer);
-            }
-
-            r.Time.End = DateTime.Now;
-            return r;
+            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
-        /// Search edges.
+        /// Get parents for a given node.
         /// </summary>
-        /// <param name="guids">Subset of edge GUIDs, from node GUIDs, and to node GUIDs to search.</param>
-        /// <param name="types">Subset of edge types in which to search.</param>
-        /// <param name="filters">Filters to apply against each edge's JSON data.</param>
-        /// <param name="indexStart">Starting index.</param>
-        /// <param name="maxResults">Maximum number of results to retrieve.</param>
-        /// <param name="costMin">Minimum cost to use the edge.</param>
-        /// <param name="costMax">Maximum cost to use the edge</param>
-        /// <returns>Graph result where 'Data' contains a JArray.</returns>
-        public GraphResult SearchEdges(List<string> guids, List<string> types, List<SearchFilter> filters, int indexStart = 0, int maxResults = 100, int? costMin = null, int? costMax = null)
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Nodes.</returns>
+        public IEnumerable<Node> GetParents(
+            Guid graphGuid,
+            Guid nodeGuid,
+            Expr edgeFilter = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            if (indexStart < 0) throw new ArgumentException("Index start must be zero or greater.");
-            if (maxResults < 1) throw new ArgumentException("Max results must be greater than zero.");
-            if (maxResults > _MaxResultsLimit) throw new ArgumentException("Max results must not exceed " + _MaxResultsLimit);
-            GraphResult r = new GraphResult(GraphOperation.SearchEdges);
+            if (order == EnumerationOrderEnum.CostAscending
+                || order == EnumerationOrderEnum.CostDescending)
+                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            DataTable result = Query(DatabaseHelper.Edges.SelectByFilter(guids, types, filters, indexStart, maxResults, costMin, costMax));
-            if (result != null && result.Rows.Count > 0)
+            _Semaphore.Wait();
+            try
             {
-                List<Edge> edges = DatabaseHelper.Edges.FromDataTable(result);
-                r.Data = JArray.FromObject(edges, _JsonSerializer);
+                foreach (Node node in _Repository.GetParents(graphGuid, nodeGuid, edgeFilter, order))
+                {
+                    yield return node;
+                }
             }
-            else
-            {
-                r.Data = JArray.FromObject(new List<Edge>(), _JsonSerializer);
-            }
+            finally { _Semaphore.Release(); }
+        }
 
-            r.Time.End = DateTime.Now;
-            return r;
+        /// <summary>
+        /// Get children for a given node.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Nodes.</returns>
+        public IEnumerable<Node> GetChildren(
+            Guid graphGuid,
+            Guid nodeGuid,
+            Expr edgeFilter = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            if (order == EnumerationOrderEnum.CostAscending
+                || order == EnumerationOrderEnum.CostDescending)
+                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
+
+            _Semaphore.Wait();
+            try
+            {
+                foreach (Node node in _Repository.GetChildren(graphGuid, nodeGuid, edgeFilter, order))
+                {
+                    yield return node;
+                }
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Get neighbors for a given node.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="nodeFilter">
+        /// Node filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Nodes.</returns>
+        public IEnumerable<Node> GetNeighbors(
+            Guid graphGuid,
+            Guid nodeGuid,
+            Expr edgeFilter = null,
+            Expr nodeFilter = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            if (order == EnumerationOrderEnum.CostAscending
+                || order == EnumerationOrderEnum.CostDescending)
+                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
+
+            _Semaphore.Wait();
+            try
+            {
+                foreach (Node node in _Repository.GetNeighbors(graphGuid, nodeGuid, edgeFilter, nodeFilter, order))
+                {
+                    yield return node;
+                }
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Get routes between two nodes.
+        /// </summary>
+        /// <param name="searchType">Search type.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="fromNodeGuid">From node GUID.</param>
+        /// <param name="toNodeGuid">To node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="nodeFilter">
+        /// Node filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <returns>Route details.</returns>
+        public IEnumerable<RouteDetail> GetRoutes(
+            SearchTypeEnum searchType,
+            Guid graphGuid,
+            Guid fromNodeGuid,
+            Guid toNodeGuid,
+            Expr edgeFilter = null,
+            Expr nodeFilter = null)
+        {
+            _Semaphore.Wait();
+            try
+            {
+                foreach (RouteDetail route in _Repository.GetRoutes(
+                    searchType, 
+                    graphGuid, 
+                    fromNodeGuid, 
+                    toNodeGuid, 
+                    edgeFilter,
+                    nodeFilter))
+                {
+                    yield return route;
+                }
+            }
+            finally { _Semaphore.Release(); }
         }
 
         #endregion
-         
+
+        #region Edges
+
+        /// <summary>
+        /// Create an edge between two nodes.
+        /// </summary>
+        /// <param name="edge">Edge.</param>
+        /// <returns>Edge.</returns>
+        public Edge CreateEdge(Edge edge)
+        {
+            if (edge == null) throw new ArgumentNullException(nameof(edge));
+
+            _Semaphore.Wait();
+            try
+            {
+                if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
+                if (_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("An edge with GUID '" + edge.GUID + "' already exists in graph '" + edge.GraphGUID + "'.");
+
+                if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
+                if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
+
+                Edge created = _Repository.CreateEdge(edge);
+
+                Logging.Log(SeverityEnum.Debug, "created edge " + created.GUID + " in graph " + created.GraphGUID);
+
+                return created;
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Create an edge between two nodes.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="fromNode">From node.</param>
+        /// <param name="toNode">To node.</param>
+        /// <param name="name">Name.</param>
+        /// <param name="cost">Cost.</param>
+        /// <param name="data">Data.</param>
+        /// <returns>Edge.</returns>
+        public Edge CreateEdge(
+            Guid graphGuid, 
+            Node fromNode, 
+            Node toNode, 
+            string name, 
+            int cost = 0, 
+            object data = null)
+        {
+            if (fromNode == null) throw new ArgumentNullException(nameof(fromNode));
+            if (toNode == null) throw new ArgumentNullException(nameof(toNode));
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+
+            Edge edge = new Edge
+            {
+                GraphGUID = graphGuid,
+                From = fromNode.GUID,
+                Name = name,
+                To = toNode.GUID,
+                Cost = cost,
+                Data = data
+            };
+
+            _Semaphore.Wait();
+            try
+            {
+                if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
+                if (_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("An edge with GUID '" + edge.GUID + "' already exists in graph '" + edge.GraphGUID + "'.");
+
+                if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
+                if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
+
+                Edge created = _Repository.CreateEdge(edge);
+
+                Logging.Log(SeverityEnum.Debug, "created edge " + created.GUID + " in graph " + created.GraphGUID);
+
+                return created;
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Read edges.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="expr">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Edges.</returns>
+        public IEnumerable<Edge> ReadEdges(
+            Guid graphGuid,
+            Expr expr = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            _Semaphore.Wait();
+            try
+            {
+                foreach (Edge edge in _Repository.ReadEdges(graphGuid, expr, order))
+                {
+                    yield return edge;
+                }
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Read edge.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <returns>Edge.</returns>
+        public Edge ReadEdge(Guid graphGuid, Guid edgeGuid)
+        {
+            _Semaphore.Wait();
+            try
+            {
+                return _Repository.ReadEdge(graphGuid, edgeGuid);
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Update edge.
+        /// </summary>
+        /// <param name="edge">Edge.</param>
+        /// <returns>Edge.</returns>
+        public Edge UpdateEdge(Edge edge)
+        {
+            if (edge == null) throw new ArgumentNullException(nameof(edge));
+
+            _Semaphore.Wait();
+            try
+            {
+                if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
+                if (!_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("No edge with GUID '" + edge.GUID + "' exists in graph '" + edge.GraphGUID + "'");
+
+                if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
+                if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
+
+                Edge updated = _Repository.UpdateEdge(edge);
+
+                Logging.Log(SeverityEnum.Debug, "updated edge " + updated.GUID + " in graph " + updated.GraphGUID);
+
+                return updated;
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Delete edge.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        public void DeleteEdge(Guid graphGuid, Guid edgeGuid)
+        {
+            _Semaphore.Wait();
+            try
+            {
+                Edge edge = _Repository.ReadEdge(graphGuid, edgeGuid);
+                if (edge != null)
+                {
+                    _Repository.DeleteEdge(graphGuid, edgeGuid);
+                    Logging.Log(SeverityEnum.Debug, "deleted edge " + edgeGuid + " in graph " + graphGuid);
+                }
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Check if an edge exists by GUID.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ExistsEdge(Guid graphGuid, Guid edgeGuid)
+        {
+            _Semaphore.Wait();
+            try
+            {
+                return _Repository.ExistsEdge(graphGuid, edgeGuid);
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Get edges from a given node.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="fromNodeGuid">From node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Edges.</returns>
+        public IEnumerable<Edge> GetEdgesFrom(
+            Guid graphGuid,
+            Guid fromNodeGuid,
+            Expr edgeFilter = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            _Semaphore.Wait();
+            try
+            {
+                foreach (Edge edge in _Repository.GetEdgesFrom(graphGuid, fromNodeGuid, edgeFilter, order))
+                {
+                    yield return edge;
+                }
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Get edges to a given node.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="toNodeGuid">To node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Edges.</returns>
+        public IEnumerable<Edge> GetEdgesTo(
+            Guid graphGuid,
+            Guid toNodeGuid,
+            Expr edgeFilter = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            _Semaphore.Wait();
+            try
+            {
+                return _Repository.GetEdgesTo(graphGuid, toNodeGuid, edgeFilter, order);
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Get edges between two nodes.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="fromNodeGuid">From node GUID.</param>
+        /// <param name="toNodeGuid">To node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Edges.</returns>
+        public IEnumerable<Edge> GetEdgesBetween(
+            Guid graphGuid,
+            Guid fromNodeGuid,
+            Guid toNodeGuid,
+            Expr edgeFilter = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            _Semaphore.Wait();
+            try
+            {
+                foreach (Edge edge in _Repository.GetEdgesBetween(graphGuid, fromNodeGuid, toNodeGuid, edgeFilter, order))
+                {
+                    yield return edge;
+                }
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        #endregion
+
         #endregion
 
         #region Private-Methods
@@ -829,112 +946,11 @@ namespace LiteGraph
 
             if (disposing)
             {
-                // placeholder
+                _Repository = null;
+                Logging = null;
             }
 
             _Disposed = true;
-        }
-         
-        private void InitializeTables()
-        { 
-            Query(DatabaseHelper.Nodes.CreateTableQuery);
-            Query(DatabaseHelper.Edges.CreateTableQuery);
-        }
-
-        private DataTable Query(string query)
-        {
-            if (String.IsNullOrEmpty(query)) throw new ArgumentNullException(query);
-            if (query.Length > MaxStatementLength) throw new ArgumentException("Query exceeds maximum statement length of " + MaxStatementLength + " characters.");
-
-            DataTable result = new DataTable();
-
-            if (Logger.LogQueries) Logger.Log("query: " + query);
-
-            try
-            {
-                using (SqliteConnection conn = new SqliteConnection(_ConnectionString))
-                {
-                    conn.Open();
-
-#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
-                    using (SqliteCommand cmd = new SqliteCommand(query, conn))
-#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
-                    {
-                        using (SqliteDataReader rdr = cmd.ExecuteReader())
-                        {
-                            result.Load(rdr);
-                        }
-                    }
-
-                    conn.Close();
-                }
-
-                if (Logger.LogResults) Logger.Log("query: " + query + "  result: " + (result != null ? result.Rows.Count + " rows" : "(null)"));
-                return result;
-            }
-            catch (Exception e)
-            {
-                e.Data.Add("Query", query);
-                throw;
-            }
-        }
-
-        private List<Node> GetDescendantsFromNode(Node n, List<string> edgeTypes, List<SearchFilter> filters, string startingGuid, int currentDepth, int maxDepth)
-        {
-            List<Node> ret = null;
-             
-            DataTable edgeResult = Query(DatabaseHelper.Edges.SelectEdgesFrom(n.GUID, edgeTypes, filters, 0, 0));
-            if (edgeResult != null && edgeResult.Rows.Count > 0)
-            { 
-                List<Edge> edges = DatabaseHelper.Edges.FromDataTable(edgeResult);
-                foreach (Edge edge in edges)
-                {
-                    if (edge.ToGUID.Equals(startingGuid))
-                    {
-                        _Logging.Log("cycle detected from starting node " + startingGuid + " with edge " + edge.GUID);
-                        continue;
-                    }
-                    else
-                    {
-                        DataTable nodeResult = Query(DatabaseHelper.Nodes.SelectByGuid(edge.ToGUID));
-                        if (nodeResult != null && nodeResult.Rows.Count > 0)
-                        {
-                            Node node = DatabaseHelper.Nodes.FromDataRow(nodeResult.Rows[0]);
-                            if (currentDepth < maxDepth) node.Descendents = GetDescendantsFromNode(node, edgeTypes, filters, startingGuid, (currentDepth + 1), maxDepth);
-                            if (ret == null) ret = new List<Node>();
-                            ret.Add(node);
-                        }
-                    }
-                }
-            }
-
-            return ret;
-        }
-
-        private GraphResult FindRoutesBfs(string fromGuid, string toGuid, List<string> types = default, List<SearchFilter> filters = null, int? costMin = null, int? costMax = null )
-        {
-            GraphResult r = new GraphResult(GraphOperation.FindRoutes);
-
-            GraphResult edgesFrom = GetEdgesFrom(fromGuid, types, filters, 0, 0, null, null);
-            if (edgesFrom.Data != null)
-            {
-                List<Edge> edges = ((JArray)edgesFrom.Data).ToObject<List<Edge>>();
-                if (edges != null && edges.Count > 0)
-                {
-
-                }
-            }
-
-            r.Time.End = DateTime.Now;
-            return r;
-        }
-
-        private GraphResult FindRoutesDfs(string fromGuid, string toGuid, List<string> types = default, List<SearchFilter> filters = null, int? costMin = null, int? costMax = null)
-        {
-            GraphResult r = new GraphResult(GraphOperation.FindRoutes);
-
-            r.Time.End = DateTime.Now;
-            return r;
         }
 
         #endregion
