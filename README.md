@@ -1,4 +1,4 @@
-![alt tag](https://github.com/jchristn/LiteGraph/blob/master/assets/favicon.png)
+<img src="https://github.com/jchristn/LiteGraph/blob/main/assets/favicon.png" width="256" height="256">
 
 # LiteGraph
 
