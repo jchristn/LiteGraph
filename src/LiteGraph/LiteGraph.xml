@@ -546,13 +546,6 @@
             <param name="order">Enumeration order.</param>
             <returns>Graphs.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.ReadGraph(System.String)">
-            <summary>
-            Read a graph by name.
-            </summary>
-            <param name="name">Name.</param>
-            <returns>Graph.</returns>
-        </member>
         <member name="M:LiteGraph.LiteGraphClient.ReadGraph(System.Guid)">
             <summary>
             Read a graph by GUID.
@@ -567,26 +560,12 @@
             <param name="graph">Graph.</param>
             <returns>Graph.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.DeleteGraph(System.String,System.Boolean)">
-            <summary>
-            Delete a graph.
-            </summary>
-            <param name="name">Name.</param>
-            <param name="force">True to force deletion of nodes and edges.</param>
-        </member>
         <member name="M:LiteGraph.LiteGraphClient.DeleteGraph(System.Guid,System.Boolean)">
             <summary>
             Delete a graph.
             </summary>
             <param name="graphGuid">GUID.</param>
             <param name="force">True to force deletion of nodes and edges.</param>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.ExistsGraph(System.String)">
-            <summary>
-            Check if a graph exists by name.
-            </summary>
-            <param name="name">Name.</param>
-            <returns>True if exists.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.ExistsGraph(System.Guid)">
             <summary>
@@ -972,13 +951,6 @@
             <param name="order">Enumeration order.</param>
             <returns>Graphs.</returns>
         </member>
-        <member name="M:LiteGraph.Repositories.RepositoryBase.ReadGraph(System.String)">
-            <summary>
-            Read a graph by name.
-            </summary>
-            <param name="name">Name.</param>
-            <returns>Graph.</returns>
-        </member>
         <member name="M:LiteGraph.Repositories.RepositoryBase.ReadGraph(System.Guid)">
             <summary>
             Read a graph by GUID.
@@ -993,26 +965,12 @@
             <param name="graph">Graph.</param>
             <returns>Graph.</returns>
         </member>
-        <member name="M:LiteGraph.Repositories.RepositoryBase.DeleteGraph(System.String,System.Boolean)">
-            <summary>
-            Delete a graph.
-            </summary>
-            <param name="name">Name.</param>
-            <param name="force">True to force deletion of nodes and edges.</param>
-        </member>
         <member name="M:LiteGraph.Repositories.RepositoryBase.DeleteGraph(System.Guid,System.Boolean)">
             <summary>
             Delete a graph.
             </summary>
             <param name="guid">GUID.</param>
             <param name="force">True to force deletion of nodes and edges.</param>
-        </member>
-        <member name="M:LiteGraph.Repositories.RepositoryBase.ExistsGraph(System.String)">
-            <summary>
-            Check if a graph exists by name.
-            </summary>
-            <param name="name">Name.</param>
-            <returns>True if exists.</returns>
         </member>
         <member name="M:LiteGraph.Repositories.RepositoryBase.ExistsGraph(System.Guid)">
             <summary>
@@ -1291,22 +1249,13 @@
         <member name="M:LiteGraph.Repositories.SqliteRepository.ReadGraphs(ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.Repositories.SqliteRepository.ReadGraph(System.String)">
-            <inheritdoc />
-        </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.ReadGraph(System.Guid)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.UpdateGraph(LiteGraph.Graph)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.Repositories.SqliteRepository.DeleteGraph(System.String,System.Boolean)">
-            <inheritdoc />
-        </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.DeleteGraph(System.Guid,System.Boolean)">
-            <inheritdoc />
-        </member>
-        <member name="M:LiteGraph.Repositories.SqliteRepository.ExistsGraph(System.String)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.ExistsGraph(System.Guid)">

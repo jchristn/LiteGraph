@@ -6,6 +6,7 @@
     using System.Data;
     using System.Linq;
     using System.Threading.Tasks;
+    using Caching;
     using ExpressionTree;
     using LiteGraph;
     using LiteGraph.Serialization;
@@ -102,6 +103,8 @@
         private string _TimestampFormat = "yyyy-MM-dd HH:mm:ss.ffffff";
         private readonly object _QueryLock = new object();
 
+        private LRUCache<Guid, Graph> _GraphCache = new LRUCache<Guid, Graph>(32, 8);
+
         #endregion
 
         #region Constructors-and-Factories
@@ -139,8 +142,7 @@
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            return
-                GraphFromDataRow(
+            Graph created = GraphFromDataRow(
                     Query(
                         InsertGraphQuery(new Graph
                         {
@@ -151,6 +153,10 @@
                         true
                     )
                     .Rows[0]);
+
+            _GraphCache.AddReplace(created.GUID, created);
+
+            return created;
         }
 
         /// <inheritdoc />
@@ -174,17 +180,9 @@
         }
 
         /// <inheritdoc />
-        public override Graph ReadGraph(string name)
-        {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            DataTable result = Query(SelectGraphQuery(name));
-            if (result != null && result.Rows.Count == 1) return GraphFromDataRow(result.Rows[0]);
-            return null;
-        }
-
-        /// <inheritdoc />
         public override Graph ReadGraph(Guid guid)
         {
+            if (_GraphCache.Contains(guid)) return _GraphCache.Get(guid);
             DataTable result = Query(SelectGraphQuery(guid));
             if (result != null && result.Rows.Count == 1) return GraphFromDataRow(result.Rows[0]);
             return null;
@@ -195,25 +193,9 @@
         {
             if (graph == null) throw new ArgumentNullException(nameof(graph));
             ValidateGraphExists(graph.GUID);
-            return GraphFromDataRow(Query(UpdateGraphQuery(graph), true).Rows[0]);
-        }
-
-        /// <inheritdoc />
-        public override void DeleteGraph(string name, bool force = false)
-        {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
-            Graph graph = ReadGraph(name);
-            if (graph != null)
-            {
-                if (force)
-                {
-                    Query(DeleteGraphEdgesQuery(graph.GUID), true);
-                    Query(DeleteGraphNodesQuery(graph.GUID), true);
-                }
-
-                Query(DeleteGraphQuery(name), true);
-            }
+            Graph updated = GraphFromDataRow(Query(UpdateGraphQuery(graph), true).Rows[0]);
+            _GraphCache.AddReplace(updated.GUID, updated);
+            return updated;
         }
 
         /// <inheritdoc />
@@ -228,15 +210,9 @@
                     Query(DeleteGraphNodesQuery(graph.GUID), true);
                 }
 
+                _GraphCache.Remove(graph.GUID);
                 Query(DeleteGraphQuery(graphGuid), true);
             }
-        }
-
-        /// <inheritdoc />
-        public override bool ExistsGraph(string name)
-        {
-            if (ReadGraph(name) != null) return true;
-            return false;
         }
 
         /// <inheritdoc />
@@ -1374,8 +1350,8 @@
 
         private void ValidateGraphExists(Guid graphGuid)
         {
-            Graph graph = ReadGraph(graphGuid);
-            if (graph == null) throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
+            if (!ExistsGraph(graphGuid))
+                throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
         }
 
         #endregion

@@ -151,8 +151,6 @@
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            if (ExistsGraph(name)) return ReadGraph(name);
-
             _Semaphore.Wait();
             try
             {
@@ -189,25 +187,6 @@
                 {
                     yield return graph;
                 }
-            }
-            finally { _Semaphore.Release(); }
-        }
-
-        /// <summary>
-        /// Read a graph by name.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <returns>Graph.</returns>
-        public Graph ReadGraph(string name)
-        {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
-            _Semaphore.Wait();
-            try
-            {
-                Logging.Log(SeverityEnum.Debug, "retrieving graph with name " + name);
-
-                return _Repository.ReadGraph(name);
             }
             finally { _Semaphore.Release(); }
         }
@@ -251,43 +230,6 @@
         /// <summary>
         /// Delete a graph.
         /// </summary>
-        /// <param name="name">Name.</param>
-        /// <param name="force">True to force deletion of nodes and edges.</param>
-        public void DeleteGraph(string name, bool force = false)
-        {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
-            _Semaphore.Wait();
-            
-            Graph graph = ReadGraph(name);
-            if (graph == null) return;
-
-            try
-            {
-                Logging.Log(SeverityEnum.Info, "deleting graph with name " + graph.Name + " GUID " + graph.GUID);
-
-                if (force)
-                {
-                    Logging.Log(SeverityEnum.Info, "deleting graph edges and nodes for graph GUID " + graph.GUID);
-
-                    _Repository.DeleteEdges(graph.GUID);
-                    _Repository.DeleteNodes(graph.GUID);
-                }
-
-                if (_Repository.ReadNodes(graph.GUID).Count() > 0)
-                    throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
-
-                if (_Repository.ReadEdges(graph.GUID).Count() > 0)
-                    throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
-
-                _Repository.DeleteGraph(name, force);
-            }
-            finally { _Semaphore.Release(); }
-        }
-
-        /// <summary>
-        /// Delete a graph.
-        /// </summary>
         /// <param name="graphGuid">GUID.</param>
         /// <param name="force">True to force deletion of nodes and edges.</param>
         public void DeleteGraph(Guid graphGuid, bool force = false)
@@ -316,23 +258,6 @@
                     throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
 
                 _Repository.DeleteGraph(graph.GUID, force);
-            }
-            finally { _Semaphore.Release(); }
-        }
-
-        /// <summary>
-        /// Check if a graph exists by name.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <returns>True if exists.</returns>
-        public bool ExistsGraph(string name)
-        {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
-            _Semaphore.Wait();
-            try
-            {
-                return _Repository.ExistsGraph(name);
             }
             finally { _Semaphore.Release(); }
         }

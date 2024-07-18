@@ -51,6 +51,27 @@
 					"response": []
 				},
 				{
+					"name": "Exists",
+					"request": {
+						"method": "HEAD",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"b4a19d9b-1951-4bea-acbd-fba11bc020db"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create",
 					"request": {
 						"method": "PUT",
@@ -63,7 +84,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Name\": \"My test graph\"\r\n}",
+							"raw": "{\r\n    \"Name\": \"My test graph\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -197,7 +218,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes",
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/ce9d3867-360c-4b1d-bd2c-389cb0e4021b/nodes",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -206,7 +227,7 @@
 							"path": [
 								"v1.0",
 								"graphs",
-								"443f2e21-d93f-4348-9b18-a018b02fa050",
+								"ce9d3867-360c-4b1d-bd2c-389cb0e4021b",
 								"nodes"
 							]
 						}
@@ -237,6 +258,29 @@
 					"response": []
 				},
 				{
+					"name": "Exists",
+					"request": {
+						"method": "HEAD",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/nodes/784cfa37-fb06-4f81-b10d-f1167dfe2b22",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"b4a19d9b-1951-4bea-acbd-fba11bc020db",
+								"nodes",
+								"784cfa37-fb06-4f81-b10d-f1167dfe2b22"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create",
 					"request": {
 						"method": "PUT",
@@ -249,7 +293,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"GUID\": \"11111111-1111-1111-1111-111111111111\",\r\n    \"GraphGUID\": \"443f2e21-d93f-4348-9b18-a018b02fa050\",\r\n    \"Name\": \"My test node 1\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    },\r\n    \"CreatedUtc\": \"2024-07-01 15:43:06.991834\"\r\n}",
+							"raw": "{\r\n    \"GraphGUID\": \"efc59548-cb8c-44c4-b5e1-18db50294eca\",\r\n    \"Name\": \"My test node 1\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -360,7 +404,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges",
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/edges",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -369,7 +413,7 @@
 							"path": [
 								"v1.0",
 								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+								"b4a19d9b-1951-4bea-acbd-fba11bc020db",
 								"edges"
 							]
 						}
@@ -400,6 +444,29 @@
 					"response": []
 				},
 				{
+					"name": "Exists",
+					"request": {
+						"method": "HEAD",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/edges/3a35b214-150e-442e-bb4e-3515b3fa7cfe",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"b4a19d9b-1951-4bea-acbd-fba11bc020db",
+								"edges",
+								"3a35b214-150e-442e-bb4e-3515b3fa7cfe"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create",
 					"request": {
 						"method": "PUT",
@@ -412,7 +479,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"GUID\": \"FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF\",\r\n    \"GraphGUID\": \"4fd09750-bfdf-448d-89d5-7f5ae6c300b8\",\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"11111111-1111-1111-1111-111111111111\",\r\n    \"To\": \"22222222-2222-2222-2222-222222222222\",\r\n    \"Cost\": 10,\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    },\r\n    \"CreatedUtc\": \"2024-07-01 15:43:06.991834\"\r\n}",
+							"raw": "{\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"2b1520be-d285-4f22-8c74-f296047162b9\",\r\n    \"To\": \"784cfa37-fb06-4f81-b10d-f1167dfe2b22\",\r\n    \"Cost\": 10,\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    },\r\n    \"CreatedUtc\": \"2024-07-01 15:43:06.991834\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -420,7 +487,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges",
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/edges",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -429,7 +496,7 @@
 							"path": [
 								"v1.0",
 								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+								"b4a19d9b-1951-4bea-acbd-fba11bc020db",
 								"edges"
 							]
 						}
@@ -759,6 +826,12 @@
 			"key": "port",
 			"value": "8701",
 			"type": "string"
+		},
+		{
+			"key": "hostname",
+			"value": "host.docker.internal",
+			"type": "string",
+			"disabled": true
 		}
 	]
 }

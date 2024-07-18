@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-		<Version>2.0.1</Version>
+		<Version>2.0.2</Version>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>Joel Christner</Authors>
 		<Company>Joel Christner</Company>
@@ -74,6 +74,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Caching" Version="3.1.1" />
 		<PackageReference Include="ExpressionTree" Version="1.0.2" />
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.7" />
 		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.7" />

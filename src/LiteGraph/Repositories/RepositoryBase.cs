@@ -91,13 +91,6 @@
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending);
 
         /// <summary>
-        /// Read a graph by name.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <returns>Graph.</returns>
-        public abstract Graph ReadGraph(string name);
-
-        /// <summary>
         /// Read a graph by GUID.
         /// </summary>
         /// <param name="guid">GUID.</param>
@@ -114,23 +107,9 @@
         /// <summary>
         /// Delete a graph.
         /// </summary>
-        /// <param name="name">Name.</param>
-        /// <param name="force">True to force deletion of nodes and edges.</param>
-        public abstract void DeleteGraph(string name, bool force = false);
-
-        /// <summary>
-        /// Delete a graph.
-        /// </summary>
         /// <param name="guid">GUID.</param>
         /// <param name="force">True to force deletion of nodes and edges.</param>
         public abstract void DeleteGraph(Guid guid, bool force = false);
-
-        /// <summary>
-        /// Check if a graph exists by name.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <returns>True if exists.</returns>
-        public abstract bool ExistsGraph(string name);
 
         /// <summary>
         /// Check if a graph exists by GUID.

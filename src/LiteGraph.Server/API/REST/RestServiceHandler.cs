@@ -82,6 +82,7 @@
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs", GraphCreateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}", GraphReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}", GraphExistsRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs", GraphReadManyRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}", GraphUpdateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}", GraphDeleteRoute, ExceptionRoute);
@@ -89,12 +90,14 @@
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/nodes", NodeCreateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeExistsRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes", NodeReadManyRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeUpdateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeDeleteRoute, ExceptionRoute);
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/edges", EdgeCreateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeExistsRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges", EdgeReadManyRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeUpdateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeDeleteRoute, ExceptionRoute);
@@ -226,6 +229,20 @@
             }
         }
 
+        private async Task GraphExistsRoute(HttpContextBase ctx)
+        {
+            Graph graph = _LiteGraph.ReadGraph(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]));
+            if (graph == null)
+            {
+                ctx.Response.StatusCode = 404;
+                await ctx.Response.Send();
+            }
+            else
+            {
+                await ctx.Response.Send();
+            }
+        }
+
         private async Task GraphUpdateRoute(HttpContextBase ctx)
         {
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
@@ -328,7 +345,7 @@
         private async Task NodeReadRoute(HttpContextBase ctx)
         {
             Node node = _LiteGraph.ReadNode(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]), 
+                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
                 Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]));
 
             if (node == null)
@@ -339,6 +356,23 @@
             else
             {
                 await ctx.Response.Send(Serializer.SerializeJson(node, true));
+            }
+        }
+
+        private async Task NodeExistsRoute(HttpContextBase ctx)
+        {
+            Node node = _LiteGraph.ReadNode(
+                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
+                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]));
+
+            if (node == null)
+            {
+                ctx.Response.StatusCode = 404;
+                await ctx.Response.Send();
+            }
+            else
+            {
+                await ctx.Response.Send();
             }
         }
 
@@ -421,6 +455,23 @@
             else
             {
                 await ctx.Response.Send(Serializer.SerializeJson(edge, true));
+            }
+        }
+
+        private async Task EdgeExistsRoute(HttpContextBase ctx)
+        {
+            Edge edge = _LiteGraph.ReadEdge(
+                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
+                Guid.Parse(ctx.Request.Url.Parameters["edgeGuid"]));
+
+            if (edge == null)
+            {
+                ctx.Response.StatusCode = 404;
+                await ctx.Response.Send();
+            }
+            else
+            {
+                await ctx.Response.Send();
             }
         }
 
