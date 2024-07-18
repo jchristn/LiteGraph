@@ -1,4 +1,4 @@
-﻿namespace LiteGraph
+﻿namespace LiteGraph.Sdk
 {
     using System;
     using System.Collections.Generic;

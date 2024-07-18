@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+		<Version>2.0.1</Version>
+		<ApplicationIcon>assets\favicon.ico</ApplicationIcon>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<DocumentationFile>LiteGraph.Sdk.xml</DocumentationFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>LiteGraph.Sdk</Title>
+		<Authors>Joel Christner</Authors>
+		<Description>SDK for LiteGraph, a simple graph database abstraction with a RESTful interface, JSON data query support, and GEXF output support.</Description>
+		<Copyright>(c)2024 Joel Christner</Copyright>
+		<PackageProjectUrl>https://github.com/jchristn/litegraph</PackageProjectUrl>
+		<PackageIcon>favicon.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/jchristn/litegraph</RepositoryUrl>
+		<RepositoryType>Github</RepositoryType>
+		<PackageTags>litegraph sdk rest graph node edge routing route traversal</PackageTags>
+		<PackageReleaseNotes>Initial release</PackageReleaseNotes>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Include="assets\favicon.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="RestWrapper" Version="3.0.20" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\LICENSE.md">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+		</None>
+		<None Include="assets\favicon.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="assets\favicon.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+</Project>

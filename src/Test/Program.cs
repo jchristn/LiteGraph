@@ -72,6 +72,7 @@
             Console.WriteLine("  ?               help, this menu");
             Console.WriteLine("  q               quit");
             Console.WriteLine("  cls             clear the screen");
+            Console.WriteLine("");
             Console.WriteLine("  load1           load sample graph 1");
             Console.WriteLine("  load2           load sample graph 2");
             Console.WriteLine("  route           find routes between two nodes");

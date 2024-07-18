@@ -138,6 +138,7 @@
         public override Graph CreateGraph(string name, object data = null)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+
             return
                 GraphFromDataRow(
                     Query(
@@ -193,6 +194,7 @@
         public override Graph UpdateGraph(Graph graph)
         {
             if (graph == null) throw new ArgumentNullException(nameof(graph));
+            ValidateGraphExists(graph.GUID);
             return GraphFromDataRow(Query(UpdateGraphQuery(graph), true).Rows[0]);
         }
 
@@ -252,6 +254,7 @@
         public override Node CreateNode(Node node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
+            ValidateGraphExists(node.GraphGUID);
             return NodeFromDataRow(Query(InsertNodeQuery(node), true).Rows[0]);
         }
 
@@ -261,6 +264,7 @@
             Expr nodeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
+            ValidateGraphExists(graphGuid);
             int skip = 0;
 
             while (true)
@@ -279,6 +283,7 @@
         /// <inheritdoc />
         public override Node ReadNode(Guid graphGuid, Guid nodeGuid)
         {
+            ValidateGraphExists(graphGuid);
             DataTable result = Query(SelectNodeQuery(graphGuid, nodeGuid));
             if (result != null && result.Rows.Count == 1) return NodeFromDataRow(result.Rows[0]);
             return null;
@@ -288,24 +293,28 @@
         public override Node UpdateNode(Node node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
+            ValidateGraphExists(node.GraphGUID);
             return NodeFromDataRow(Query(UpdateNodeQuery(node), true).Rows[0]);
         }
 
         /// <inheritdoc />
         public override void DeleteNode(Guid graphGuid, Guid nodeGuid)
         {
+            ValidateGraphExists(graphGuid);
             Query(DeleteNodeQuery(graphGuid, nodeGuid), true);
         }
 
         /// <inheritdoc />
         public override void DeleteNodes(Guid graphGuid)
         {
+            ValidateGraphExists(graphGuid);
             Query(DeleteNodesQuery(graphGuid), true);
         }
 
         /// <inheritdoc />
         public override bool ExistsNode(Guid graphGuid, Guid nodeGuid)
         {
+            ValidateGraphExists(graphGuid);
             if (ReadNode(graphGuid, nodeGuid) != null) return true;
             return false;
         }
@@ -317,6 +326,7 @@
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
+            ValidateGraphExists(graphGuid);
             int skip = 0;
 
             while (true)
@@ -346,6 +356,7 @@
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
+            ValidateGraphExists(graphGuid);
             int skip = 0;
 
             while (true)
@@ -376,6 +387,7 @@
             Expr nodeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
+            ValidateGraphExists(graphGuid);
             int skip = 0;
 
             while (true)
@@ -463,6 +475,7 @@
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
+            ValidateGraphExists(graphGuid);
             int skip = 0;
 
             while (true)
@@ -490,6 +503,7 @@
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
+            ValidateGraphExists(graphGuid);
             int skip = 0;
 
             while (true)
@@ -517,6 +531,7 @@
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
+            ValidateGraphExists(graphGuid);
             int skip = 0;
 
             while (true)
@@ -545,6 +560,7 @@
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
+            ValidateGraphExists(graphGuid);
             int skip = 0;
 
             while (true)
@@ -569,6 +585,7 @@
         public override Edge CreateEdge(Edge edge)
         {
             if (edge == null) throw new ArgumentNullException(nameof(edge));
+            ValidateGraphExists(edge.GraphGUID);
             Edge created = EdgeFromDataRow(Query(InsertEdgeQuery(edge), true).Rows[0]);
             return created;
         }
@@ -579,6 +596,7 @@
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
+            ValidateGraphExists(graphGuid);
             int skip = 0;
 
             while (true)
@@ -597,6 +615,7 @@
         /// <inheritdoc />
         public override Edge ReadEdge(Guid graphGuid, Guid edgeGuid)
         {
+            ValidateGraphExists(graphGuid);
             DataTable result = Query(SelectEdgeQuery(graphGuid, edgeGuid));
             if (result != null && result.Rows.Count == 1) return EdgeFromDataRow(result.Rows[0]);
             return null;
@@ -606,18 +625,21 @@
         public override Edge UpdateEdge(Edge edge)
         {
             if (edge == null) throw new ArgumentNullException(nameof(edge));
+            ValidateGraphExists(edge.GraphGUID);
             return EdgeFromDataRow(Query(UpdateEdgeQuery(edge), true).Rows[0]);
         }
 
         /// <inheritdoc />
         public override void DeleteEdge(Guid graphGuid, Guid edgeGuid)
         {
+            ValidateGraphExists(graphGuid);
             Query(DeleteEdgeQuery(graphGuid, edgeGuid), true);
         }
 
         /// <inheritdoc />
         public override void DeleteEdges(Guid graphGuid)
         {
+            ValidateGraphExists(graphGuid);
             Query(DeleteEdgesQuery(graphGuid), true);
         }
 
@@ -1350,6 +1372,12 @@
             return clause;
         }
 
+        private void ValidateGraphExists(Guid graphGuid)
+        {
+            Graph graph = ReadGraph(graphGuid);
+            if (graph == null) throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
+        }
+
         #endregion
 
         #region Graphs
@@ -1431,6 +1459,8 @@
 
         private Graph GraphFromDataRow(DataRow row)
         {
+            if (row == null) return null;
+
             return new Graph
             {
                 GUID = Guid.Parse(row["id"].ToString()),
@@ -1522,6 +1552,8 @@
 
         private Node NodeFromDataRow(DataRow row)
         {
+            if (row == null) return null;
+
             return new Node
             {
                 GUID = Guid.Parse(row["id"].ToString()),
@@ -1707,8 +1739,10 @@
 
         private Edge EdgeFromDataRow(DataRow row)
         {
+            if (row == null) return null;
+
             return new Edge
-            {
+            { 
                 GUID = Guid.Parse(row["id"].ToString()),
                 GraphGUID = Guid.Parse(row["graphid"].ToString()),
                 Name = GetDataRowStringValue(row, "name"),

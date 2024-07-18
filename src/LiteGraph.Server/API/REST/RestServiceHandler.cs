@@ -157,6 +157,11 @@
                 ctx.Response.StatusCode = 400;
                 await ctx.Response.Send(Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.DeserializationError), true));
             }
+            else if (e is ArgumentException)
+            {
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
+            }
             else
             {
                 ctx.Response.StatusCode = 500;
@@ -232,7 +237,15 @@
             Graph graph = Serializer.DeserializeJson<Graph>(ctx.Request.DataAsString);
             graph = _LiteGraph.UpdateGraph(graph);
 
-            await ctx.Response.Send(Serializer.SerializeJson(graph, true));
+            if (graph == null)
+            {
+                ctx.Response.StatusCode = 404;
+                await ctx.Response.Send(Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound), true));
+            }
+            else
+            {
+                await ctx.Response.Send(Serializer.SerializeJson(graph, true));
+            }
         }
 
         private async Task GraphDeleteRoute(HttpContextBase ctx)

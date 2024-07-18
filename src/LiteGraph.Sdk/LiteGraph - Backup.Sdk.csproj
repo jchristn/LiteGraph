@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+		<ApplicationIcon>assets\favicon.ico</ApplicationIcon>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<DocumentationFile>LiteGraph.Sdk.xml</DocumentationFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>LiteGraph.Sdk</Title>
+		<Authors>Joel Christner</Authors>
+		<Description>SDK for LiteGraph, a simple graph database abstraction with a RESTful interface, JSON data query support, and GEXF output support.</Description>
+		<Copyright>(c)2024 Joel Christner</Copyright>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Include="assets\favicon.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="RestWrapper" Version="3.0.20" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="assets\favicon.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="assets\favicon.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+</Project>
