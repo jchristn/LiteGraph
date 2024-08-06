@@ -69,7 +69,7 @@
         /// </summary>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Graphs.</returns>
-        public async Task<IEnumerable> ReadGraphs(CancellationToken token = default)
+        public async Task<IEnumerable<Graph>> ReadGraphs(CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs";
             return await GetMany<Graph>(url, token).ConfigureAwait(false);
@@ -164,7 +164,7 @@
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Nodes.</returns>
-        public async Task<IEnumerable> ReadNodes(Guid graphGuid, CancellationToken token = default)
+        public async Task<IEnumerable<Node>> ReadNodes(Guid graphGuid, CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes";
             return await GetMany<Node>(url, token).ConfigureAwait(false);
@@ -245,7 +245,7 @@
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Edges.</returns>
-        public async Task<IEnumerable> ReadEdges(Guid graphGuid, CancellationToken token = default)
+        public async Task<IEnumerable<Edge>> ReadEdges(Guid graphGuid, CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges";
             return await GetMany<Edge>(url, token).ConfigureAwait(false);
@@ -301,7 +301,7 @@
         /// <param name="nodeGuid">Node GUID.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Edges.</returns>
-        public async Task<IEnumerable> GetEdgesFromNode(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
+        public async Task<IEnumerable<Edge>> GetEdgesFromNode(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/" + nodeGuid + "/edges/from";
             return await GetMany<Edge>(url, token).ConfigureAwait(false);
@@ -314,7 +314,7 @@
         /// <param name="nodeGuid">Node GUID.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Edges.</returns>
-        public async Task<IEnumerable> GetEdgesToNode(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
+        public async Task<IEnumerable<Edge>> GetEdgesToNode(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/" + nodeGuid + "/edges/to";
             return await GetMany<Edge>(url, token).ConfigureAwait(false);
@@ -327,7 +327,7 @@
         /// <param name="nodeGuid">Node GUID.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Edges.</returns>
-        public async Task<IEnumerable> GetAllNodeEdges(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
+        public async Task<IEnumerable<Edge>> GetAllNodeEdges(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/" + nodeGuid + "/edges";
             return await GetMany<Edge>(url, token).ConfigureAwait(false);
@@ -340,7 +340,7 @@
         /// <param name="nodeGuid">Node GUID.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Nodes.</returns>
-        public async Task<IEnumerable> GetChildrenFromNode(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
+        public async Task<IEnumerable<Node>> GetChildrenFromNode(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/" + nodeGuid + "/children";
             return await GetMany<Node>(url, token).ConfigureAwait(false);
@@ -353,7 +353,7 @@
         /// <param name="nodeGuid">Node GUID.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Nodes.</returns>
-        public async Task<IEnumerable> GetParentsFromNode(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
+        public async Task<IEnumerable<Node>> GetParentsFromNode(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/" + nodeGuid + "/parents";
             return await GetMany<Node>(url, token).ConfigureAwait(false);
@@ -366,7 +366,7 @@
         /// <param name="nodeGuid">Node GUID.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Nodes.</returns>
-        public async Task<IEnumerable> GetNodeNeighbors(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
+        public async Task<IEnumerable<Node>> GetNodeNeighbors(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/" + nodeGuid + "/neighbors";
             return await GetMany<Node>(url, token).ConfigureAwait(false);
