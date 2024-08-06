@@ -39,6 +39,18 @@
         #region Graph-Routes
 
         /// <summary>
+        /// Check if a graph exists by GUID.
+        /// </summary>
+        /// <param name="guid">GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>True if exists.</returns>
+        public async Task<bool> GraphExists(Guid guid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/graphs/" + guid;
+            return await Head(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Create a graph.
         /// </summary>
         /// <param name="name">Name.</param>
@@ -121,6 +133,19 @@
         #region Node-Routes
 
         /// <summary>
+        /// Check if a node exists by GUID.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>True if exists.</returns>
+        public async Task<bool> NodeExists(Guid graphGuid, Guid guid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/" + guid;
+            return await Head(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Create a node.
         /// </summary>
         /// <param name="node">Node.</param>
@@ -187,6 +212,19 @@
         #endregion
 
         #region Edge-Routes
+
+        /// <summary>
+        /// Check if an edge exists by GUID.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>True if exists.</returns>
+        public async Task<bool> EdgeExists(Guid graphGuid, Guid guid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges/" + guid;
+            return await Head(url, token).ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Create an edge.

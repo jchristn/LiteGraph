@@ -38,6 +38,9 @@
                         Console.Clear();
                         break;
 
+                    case "graph exists":
+                        GraphExists();
+                        break;
                     case "graph create":
                         GraphCreate();
                         break;
@@ -54,6 +57,9 @@
                         GraphDelete();
                         break;
 
+                    case "node exists":
+                        NodeExists();
+                        break;
                     case "node create":
                         NodeCreate();
                         break;
@@ -80,6 +86,9 @@
                         NodeChildren();
                         break;
 
+                    case "edge exists":
+                        EdgeExists();
+                        break;
                     case "edge create":
                         EdgeCreate();
                         break;
@@ -121,15 +130,17 @@
             Console.WriteLine("  cls             clear the screen");
             Console.WriteLine("");
             Console.WriteLine("Graph commands:");
-            Console.WriteLine("  graph create   graph update   graph all    graph read     graph update    graph delete");
+            Console.WriteLine("  graph create   graph update   graph all      graph read");
+            Console.WriteLine("  graph update   graph delete   graph exists");
             Console.WriteLine("");
             Console.WriteLine("Node commands:");
-            Console.WriteLine("  node create    node update    node all     node read      node update     node delete");
+            Console.WriteLine("  node create    node update    node all       node read");
+            Console.WriteLine("  node update    node delete");
             Console.WriteLine("  node edges     node parents   node children");
             Console.WriteLine("");
             Console.WriteLine("Edge commands:");
-            Console.WriteLine("  edge create    edge update    edge all     edge read      edge update     edge delete");
-            Console.WriteLine("  edges from     edges to");
+            Console.WriteLine("  edge create    edge update    edge all       edge read");
+            Console.WriteLine("  edge update    edge delete    edges from     edges to");
             Console.WriteLine("");
             Console.WriteLine("Routing commands:");
             Console.WriteLine("  route");
@@ -179,6 +190,11 @@
 
         #region Graph
 
+        private static void GraphExists()
+        {
+            EnumerateResult(_Sdk.GraphExists(GetGuid("GUID:")).Result);
+        }
+
         private static void GraphCreate()
         {
             EnumerateResult(_Sdk.CreateGraph(GetName(), GetData()).Result);
@@ -207,6 +223,16 @@
         #endregion
 
         #region Node
+
+        private static void NodeExists()
+        {
+            EnumerateResult(
+                _Sdk.NodeExists(
+                    GetGuid("Graph GUID:"),
+                    GetGuid("Node GUID:")
+                )
+                .Result);
+        }
 
         private static void NodeCreate()
         {
@@ -284,6 +310,16 @@
 
         #region Edge
 
+        private static void EdgeExists()
+        {
+            EnumerateResult(
+                _Sdk.EdgeExists(
+                    GetGuid("Graph GUID:"),
+                    GetGuid("Edge GUID:")
+                )
+                .Result);
+        }
+
         private static void EdgeCreate()
         {
             EnumerateResult(
@@ -295,7 +331,7 @@
 
         private static void EdgeAll()
         {
-            EnumerateResult(_Sdk.ReadNodes(GetGuid("Graph GUID:")).Result);
+            EnumerateResult(_Sdk.ReadEdges(GetGuid("Graph GUID:")).Result);
         }
 
         private static void EdgeRead()

@@ -266,6 +266,14 @@
             </summary>
             <param name="endpoint">Endpoint URL.</param>
         </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.GraphExists(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Check if a graph exists by GUID.
+            </summary>
+            <param name="guid">GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if exists.</returns>
+        </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateGraph(System.String,System.Object,System.Threading.CancellationToken)">
             <summary>
             Create a graph.
@@ -315,6 +323,15 @@
             <param name="token">Cancellation token.</param>
             <returns>String containing GEXF XML data.</returns>
         </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.NodeExists(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Check if a node exists by GUID.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="guid">GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if exists.</returns>
+        </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateNode(LiteGraph.Sdk.Node,System.Threading.CancellationToken)">
             <summary>
             Create a node.
@@ -356,6 +373,15 @@
             <param name="nodeGuid">Node GUID.</param>
             <param name="token">Cancellation token.</param>
             <returns>Task.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.EdgeExists(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Check if an edge exists by GUID.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="guid">GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if exists.</returns>
         </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateEdge(LiteGraph.Sdk.Edge,System.Threading.CancellationToken)">
             <summary>

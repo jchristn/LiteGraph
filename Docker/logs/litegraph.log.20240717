@@ -1,7 +1,0 @@
-2024-07-17 22:31:16 docker-desktop 1 Debug [LiteGraphServer] logging initialized
-2024-07-17 22:31:16 docker-desktop 1 Info [RestServiceHandler] starting REST server on http://*:8701/
-2024-07-17 22:31:16 docker-desktop 1 Info [LiteGraphServer] starting at 07/17/2024 22:31:16 using process ID 1
-2024-07-17 22:31:46 docker-desktop 9 Debug [RestServiceHandler] GET / 200 9.05ms
-2024-07-17 22:33:20 docker-desktop 1 Debug [LiteGraphServer] logging initialized
-2024-07-17 22:33:20 docker-desktop 1 Info [RestServiceHandler] starting REST server on http://*:8701/
-2024-07-17 22:33:20 docker-desktop 1 Info [LiteGraphServer] starting at 07/17/2024 22:33:20 using process ID 1
