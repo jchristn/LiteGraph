@@ -76,6 +76,29 @@
         }
 
         /// <summary>
+        /// Search graphs.
+        /// </summary>
+        /// <param name="searchReq">Search request.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Search result.</returns>
+        public async Task<SearchResult> SearchGraphs(SearchRequest searchReq, CancellationToken token = default)
+        {
+            if (searchReq == null) throw new ArgumentNullException(nameof(searchReq));
+
+            string url = Endpoint + "v1.0/graphs/" + searchReq.GraphGUID + "/search";
+
+            byte[] bytes = await Post(url, Encoding.UTF8.GetBytes(Serializer.SerializeJson(searchReq, true)), "application/json", token).ConfigureAwait(false);
+
+            if (bytes != null && bytes.Length > 0)
+            {
+                SearchResult result = Serializer.DeserializeJson<SearchResult>(Encoding.UTF8.GetString(bytes));
+                return result;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Read graph.
         /// </summary>
         /// <param name="guid">GUID.</param>
@@ -171,6 +194,29 @@
         }
 
         /// <summary>
+        /// Search nodes.
+        /// </summary>
+        /// <param name="searchReq">Search request.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Search result.</returns>
+        public async Task<SearchResult> SearchNodes(SearchRequest searchReq, CancellationToken token = default)
+        {
+            if (searchReq == null) throw new ArgumentNullException(nameof(searchReq));
+
+            string url = Endpoint + "v1.0/graphs/" + searchReq.GraphGUID + "/nodes/search";
+
+            byte[] bytes = await Post(url, Encoding.UTF8.GetBytes(Serializer.SerializeJson(searchReq, true)), "application/json", token).ConfigureAwait(false);
+
+            if (bytes != null && bytes.Length > 0)
+            {
+                SearchResult result = Serializer.DeserializeJson<SearchResult>(Encoding.UTF8.GetString(bytes));
+                return result;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Read a node.
         /// </summary>
         /// <param name="graphGuid">Graph GUID.</param>
@@ -249,6 +295,29 @@
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges";
             return await GetMany<Edge>(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Search edges.
+        /// </summary>
+        /// <param name="searchReq">Search request.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Search result.</returns>
+        public async Task<SearchResult> SearchEdges(SearchRequest searchReq, CancellationToken token = default)
+        {
+            if (searchReq == null) throw new ArgumentNullException(nameof(searchReq));
+
+            string url = Endpoint + "v1.0/graphs/" + searchReq.GraphGUID + "/edges/search";
+
+            byte[] bytes = await Post(url, Encoding.UTF8.GetBytes(Serializer.SerializeJson(searchReq, true)), "application/json", token).ConfigureAwait(false);
+
+            if (bytes != null && bytes.Length > 0)
+            {
+                SearchResult result = Serializer.DeserializeJson<SearchResult>(Encoding.UTF8.GetString(bytes));
+                return result;
+            }
+
+            return null;
         }
 
         /// <summary>

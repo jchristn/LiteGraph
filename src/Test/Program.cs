@@ -3,10 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.Design;
+    using System.Linq;
     using ExpressionTree;
     using GetSomeInput;
     using LiteGraph;
-    using SerializationHelper;
 
     class Program
     {
@@ -50,6 +50,7 @@
                             else if (parts[1].Equals("exists")) Exists(parts[0]);
                             else if (parts[1].Equals("update")) Update(parts[0]);
                             else if (parts[1].Equals("delete")) Delete(parts[0]);
+                            else if (parts[1].Equals("search")) Search(parts[0]);
 
                             if (parts[0].Equals("node"))
                             {
@@ -79,8 +80,9 @@
             Console.WriteLine("  test2           validate node retrieval by properties");
             Console.WriteLine("");
             Console.WriteLine("  [type] [cmd]    execute a command against a given type");
-            Console.WriteLine("    Available [type] : graph node edge");
-            Console.WriteLine("    Available [cmd]  : create all read exists update delete");
+            Console.WriteLine("  where:");
+            Console.WriteLine("    [type] : graph node edge");
+            Console.WriteLine("    [cmd]  : create all read exists update delete search");
             Console.WriteLine("");
             Console.WriteLine("  For node operations, additional commands are available");
             Console.WriteLine("    edgesto edgesfrom parents children neighbors");
@@ -169,15 +171,15 @@
 
             #region Objects
 
-            Person joel = new Person { Name = "Joel", Age = 47 };
-            Person yip = new Person { Name = "Yip", Age = 39 };
-            Person keith = new Person { Name = "Keith", Age = 48 };
-            Person alex = new Person { Name = "Alex", Age = 34 };
-            Person blake = new Person { Name = "Blake", Age = 34 };
+            Person joel = new Person { Name = "Joel", Age = 47, Hobby = new Hobby { Name = "BJJ", HoursPerWeek = 8 } };
+            Person yip = new Person { Name = "Yip", Age = 39, Hobby = new Hobby { Name = "Law", HoursPerWeek = 40 } };
+            Person keith = new Person { Name = "Keith", Age = 48, Hobby = new Hobby { Name = "Planes", HoursPerWeek = 10 } };
+            Person alex = new Person { Name = "Alex", Age = 34, Hobby = new Hobby { Name = "Art", HoursPerWeek = 10 } };
+            Person blake = new Person { Name = "Blake", Age = 34, Hobby = new Hobby { Name = "Music", HoursPerWeek = 20 } };
 
-            ISP xfi = new ISP { Name = "Xfinity" };
-            ISP starlink = new ISP { Name = "Starlink" };
-            ISP att = new ISP { Name = "AT&T" };
+            ISP xfi = new ISP { Name = "Xfinity", Mbps = 1000 };
+            ISP starlink = new ISP { Name = "Starlink", Mbps = 100 };
+            ISP att = new ISP { Name = "AT&T", Mbps = 500 };
 
             Internet internet = new Internet();
 
@@ -389,6 +391,60 @@
                 Guid guid = Inputty.GetGuid("Edge GUID :", default(Guid));
                 _Client.DeleteEdge(graphGuid, guid);
             }
+        }
+
+        static void Search(string str)
+        {
+            if (!str.Equals("graph") && !str.Equals("node") && !str.Equals("edge")) return;
+
+            Expr expr = GetExpression();
+            string resultJson = null;
+
+            if (str.Equals("graph"))
+            {
+                IEnumerable<Graph> graphResult = _Client.ReadGraphs(expr, EnumerationOrderEnum.CreatedDescending);
+                if (graphResult != null) resultJson = Serializer.SerializeJson(graphResult.ToList());
+            }
+            else if (str.Equals("node"))
+            {
+                Guid graphGuid = Inputty.GetGuid("Graph GUID:", _GraphGuid);
+                IEnumerable<Node> nodeResult = _Client.ReadNodes(graphGuid, expr, EnumerationOrderEnum.CreatedDescending);
+                if (nodeResult != null) resultJson = Serializer.SerializeJson(nodeResult.ToList());
+            }
+            else if (str.Equals("edge"))
+            {
+                Guid graphGuid = Inputty.GetGuid("Graph GUID:", _GraphGuid);
+                IEnumerable<Edge> edgeResult = _Client.ReadEdges(graphGuid, expr, EnumerationOrderEnum.CreatedDescending);
+                if (edgeResult != null) resultJson = Serializer.SerializeJson(edgeResult.ToList());
+            }
+
+            Console.WriteLine("");
+            if (!String.IsNullOrEmpty(resultJson)) Console.WriteLine(resultJson);
+            else Console.WriteLine("(null)");
+            Console.WriteLine("");
+        }
+
+        static Expr GetExpression()
+        {
+            Console.WriteLine("");
+            Console.WriteLine("Example expressions:");
+
+            Expr e1 = new Expr("Age", OperatorEnum.GreaterThan, 38);
+            e1.PrependAnd("Hobby.Name", OperatorEnum.Equals, "BJJ");
+            Console.WriteLine(Serializer.SerializeJson(e1, false));
+
+            Expr e2 = new Expr("Mbps", OperatorEnum.GreaterThan, 250);
+            Console.WriteLine(Serializer.SerializeJson(e2, false));
+            Console.WriteLine("");
+
+            string json = Inputty.GetString("JSON:", null, true);
+            if (String.IsNullOrEmpty(json)) return null;
+
+            Expr expr = Serializer.DeserializeJson<Expr>(json);
+            Console.WriteLine("");
+            Console.WriteLine("Using expression: " + expr.ToString());
+            Console.WriteLine("");
+            return expr;
         }
 
         static void NodeEdgesTo()

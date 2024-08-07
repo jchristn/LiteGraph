@@ -180,6 +180,72 @@
         /// <returns>True if exists.</returns>
         public abstract bool ExistsNode(Guid graphGuid, Guid nodeGuid);
 
+        #endregion
+
+        #region Edges
+
+        /// <summary>
+        /// Create an edge between two nodes.
+        /// </summary>
+        /// <param name="edge">Edge.</param>
+        /// <returns>Edge.</returns>
+        public abstract Edge CreateEdge(Edge edge);
+
+        /// <summary>
+        /// Read edges.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Edges.</returns>
+        public abstract IEnumerable<Edge> ReadEdges(
+            Guid graphGuid,
+            Expr edgeFilter = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending);
+
+        /// <summary>
+        /// Read edge.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <returns>Edge.</returns>
+        public abstract Edge ReadEdge(Guid graphGuid, Guid edgeGuid);
+
+        /// <summary>
+        /// Update edge.
+        /// </summary>
+        /// <param name="edge">Edge.</param>
+        /// <returns>Edge.</returns>
+        public abstract Edge UpdateEdge(Edge edge);
+
+        /// <summary>
+        /// Delete edge.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        public abstract void DeleteEdge(Guid graphGuid, Guid edgeGuid);
+
+        /// <summary>
+        /// Delete all edges from a graph.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        public abstract void DeleteEdges(Guid graphGuid);
+
+        /// <summary>
+        /// Check if an edge exists by GUID.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <returns>True if exists.</returns>
+        public abstract bool ExistsEdge(Guid graphGuid, Guid edgeGuid);
+
+        #endregion
+
+        #region Routes-and-Traversal
+
         /// <summary>
         /// Get nodes that have edges connecting to the specified node.
         /// </summary>
@@ -259,68 +325,6 @@
             Guid toNodeGuid,
             Expr edgeFilter = null,
             Expr nodeFilter = null);
-
-        #endregion
-
-        #region Edges
-
-        /// <summary>
-        /// Create an edge between two nodes.
-        /// </summary>
-        /// <param name="edge">Edge.</param>
-        /// <returns>Edge.</returns>
-        public abstract Edge CreateEdge(Edge edge);
-
-        /// <summary>
-        /// Read edges.
-        /// </summary>
-        /// <param name="graphGuid">Graph GUID.</param>
-        /// <param name="edgeFilter">
-        /// Edge filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-        /// <param name="order">Enumeration order.</param>
-        /// <returns>Edges.</returns>
-        public abstract IEnumerable<Edge> ReadEdges(
-            Guid graphGuid,
-            Expr edgeFilter = null,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending);
-
-        /// <summary>
-        /// Read edge.
-        /// </summary>
-        /// <param name="graphGuid">Graph GUID.</param>
-        /// <param name="edgeGuid">Edge GUID.</param>
-        /// <returns>Edge.</returns>
-        public abstract Edge ReadEdge(Guid graphGuid, Guid edgeGuid);
-
-        /// <summary>
-        /// Update edge.
-        /// </summary>
-        /// <param name="edge">Edge.</param>
-        /// <returns>Edge.</returns>
-        public abstract Edge UpdateEdge(Edge edge);
-
-        /// <summary>
-        /// Delete edge.
-        /// </summary>
-        /// <param name="graphGuid">Graph GUID.</param>
-        /// <param name="edgeGuid">Edge GUID.</param>
-        public abstract void DeleteEdge(Guid graphGuid, Guid edgeGuid);
-
-        /// <summary>
-        /// Delete all edges from a graph.
-        /// </summary>
-        /// <param name="graphGuid">Graph GUID.</param>
-        public abstract void DeleteEdges(Guid graphGuid);
-
-        /// <summary>
-        /// Check if an edge exists by GUID.
-        /// </summary>
-        /// <param name="graphGuid">Graph GUID.</param>
-        /// <param name="edgeGuid">Edge GUID.</param>
-        /// <returns>True if exists.</returns>
-        public abstract bool ExistsEdge(Guid graphGuid, Guid edgeGuid);
 
         /// <summary>
         /// Get edges connected to or initiated from a given node.

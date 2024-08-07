@@ -3,12 +3,10 @@
     using System;
     using ExpressionTree;
     using System.Collections.Generic;
-    using LiteGraph.Repositories;
     using System.Threading;
-    using System.Xml.Linq;
     using System.Linq;
-    using System.Runtime.InteropServices.ObjectiveC;
     using LiteGraph.Gexf;
+    using LiteGraph.Repositories;
     using LiteGraph.Serialization;
 
     /// <summary>
@@ -441,148 +439,6 @@
             finally { _Semaphore.Release(); }
         }
 
-        /// <summary>
-        /// Get parents for a given node.
-        /// </summary>
-        /// <param name="graphGuid">Graph GUID.</param>
-        /// <param name="nodeGuid">Node GUID.</param>
-        /// <param name="edgeFilter">
-        /// Edge filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-        /// <param name="order">Enumeration order.</param>
-        /// <returns>Nodes.</returns>
-        public IEnumerable<Node> GetParents(
-            Guid graphGuid,
-            Guid nodeGuid,
-            Expr edgeFilter = null,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            if (order == EnumerationOrderEnum.CostAscending
-                || order == EnumerationOrderEnum.CostDescending)
-                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
-
-            _Semaphore.Wait();
-            try
-            {
-                foreach (Node node in _Repository.GetParents(graphGuid, nodeGuid, edgeFilter, order))
-                {
-                    yield return node;
-                }
-            }
-            finally { _Semaphore.Release(); }
-        }
-
-        /// <summary>
-        /// Get children for a given node.
-        /// </summary>
-        /// <param name="graphGuid">Graph GUID.</param>
-        /// <param name="nodeGuid">Node GUID.</param>
-        /// <param name="edgeFilter">
-        /// Edge filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-        /// <param name="order">Enumeration order.</param>
-        /// <returns>Nodes.</returns>
-        public IEnumerable<Node> GetChildren(
-            Guid graphGuid,
-            Guid nodeGuid,
-            Expr edgeFilter = null,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            if (order == EnumerationOrderEnum.CostAscending
-                || order == EnumerationOrderEnum.CostDescending)
-                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
-
-            _Semaphore.Wait();
-            try
-            {
-                foreach (Node node in _Repository.GetChildren(graphGuid, nodeGuid, edgeFilter, order))
-                {
-                    yield return node;
-                }
-            }
-            finally { _Semaphore.Release(); }
-        }
-
-        /// <summary>
-        /// Get neighbors for a given node.
-        /// </summary>
-        /// <param name="graphGuid">Graph GUID.</param>
-        /// <param name="nodeGuid">Node GUID.</param>
-        /// <param name="edgeFilter">
-        /// Edge filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-        /// <param name="nodeFilter">
-        /// Node filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-        /// <param name="order">Enumeration order.</param>
-        /// <returns>Nodes.</returns>
-        public IEnumerable<Node> GetNeighbors(
-            Guid graphGuid,
-            Guid nodeGuid,
-            Expr edgeFilter = null,
-            Expr nodeFilter = null,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            if (order == EnumerationOrderEnum.CostAscending
-                || order == EnumerationOrderEnum.CostDescending)
-                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
-
-            _Semaphore.Wait();
-            try
-            {
-                foreach (Node node in _Repository.GetNeighbors(graphGuid, nodeGuid, edgeFilter, nodeFilter, order))
-                {
-                    yield return node;
-                }
-            }
-            finally { _Semaphore.Release(); }
-        }
-
-        /// <summary>
-        /// Get routes between two nodes.
-        /// </summary>
-        /// <param name="searchType">Search type.</param>
-        /// <param name="graphGuid">Graph GUID.</param>
-        /// <param name="fromNodeGuid">From node GUID.</param>
-        /// <param name="toNodeGuid">To node GUID.</param>
-        /// <param name="edgeFilter">
-        /// Edge filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-        /// <param name="nodeFilter">
-        /// Node filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-        /// <returns>Route details.</returns>
-        public IEnumerable<RouteDetail> GetRoutes(
-            SearchTypeEnum searchType,
-            Guid graphGuid,
-            Guid fromNodeGuid,
-            Guid toNodeGuid,
-            Expr edgeFilter = null,
-            Expr nodeFilter = null)
-        {
-            _Semaphore.Wait();
-            try
-            {
-                foreach (RouteDetail route in _Repository.GetRoutes(
-                    searchType, 
-                    graphGuid, 
-                    fromNodeGuid, 
-                    toNodeGuid, 
-                    edgeFilter,
-                    nodeFilter))
-                {
-                    yield return route;
-                }
-            }
-            finally { _Semaphore.Release(); }
-        }
-
         #endregion
 
         #region Edges
@@ -765,6 +621,152 @@
             try
             {
                 return _Repository.ExistsEdge(graphGuid, edgeGuid);
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        #endregion
+
+        #region Routes-and-Traversal
+
+        /// <summary>
+        /// Get parents for a given node.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Nodes.</returns>
+        public IEnumerable<Node> GetParents(
+            Guid graphGuid,
+            Guid nodeGuid,
+            Expr edgeFilter = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            if (order == EnumerationOrderEnum.CostAscending
+                || order == EnumerationOrderEnum.CostDescending)
+                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
+
+            _Semaphore.Wait();
+            try
+            {
+                foreach (Node node in _Repository.GetParents(graphGuid, nodeGuid, edgeFilter, order))
+                {
+                    yield return node;
+                }
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Get children for a given node.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Nodes.</returns>
+        public IEnumerable<Node> GetChildren(
+            Guid graphGuid,
+            Guid nodeGuid,
+            Expr edgeFilter = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            if (order == EnumerationOrderEnum.CostAscending
+                || order == EnumerationOrderEnum.CostDescending)
+                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
+
+            _Semaphore.Wait();
+            try
+            {
+                foreach (Node node in _Repository.GetChildren(graphGuid, nodeGuid, edgeFilter, order))
+                {
+                    yield return node;
+                }
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Get neighbors for a given node.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="nodeFilter">
+        /// Node filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Nodes.</returns>
+        public IEnumerable<Node> GetNeighbors(
+            Guid graphGuid,
+            Guid nodeGuid,
+            Expr edgeFilter = null,
+            Expr nodeFilter = null,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            if (order == EnumerationOrderEnum.CostAscending
+                || order == EnumerationOrderEnum.CostDescending)
+                throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
+
+            _Semaphore.Wait();
+            try
+            {
+                foreach (Node node in _Repository.GetNeighbors(graphGuid, nodeGuid, edgeFilter, nodeFilter, order))
+                {
+                    yield return node;
+                }
+            }
+            finally { _Semaphore.Release(); }
+        }
+
+        /// <summary>
+        /// Get routes between two nodes.
+        /// </summary>
+        /// <param name="searchType">Search type.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="fromNodeGuid">From node GUID.</param>
+        /// <param name="toNodeGuid">To node GUID.</param>
+        /// <param name="edgeFilter">
+        /// Edge filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <param name="nodeFilter">
+        /// Node filter expression for Data JSON body.
+        /// Expression left terms must follow the form of Sqlite JSON paths.
+        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+        /// <returns>Route details.</returns>
+        public IEnumerable<RouteDetail> GetRoutes(
+            SearchTypeEnum searchType,
+            Guid graphGuid,
+            Guid fromNodeGuid,
+            Guid toNodeGuid,
+            Expr edgeFilter = null,
+            Expr nodeFilter = null)
+        {
+            _Semaphore.Wait();
+            try
+            {
+                foreach (RouteDetail route in _Repository.GetRoutes(
+                    searchType,
+                    graphGuid,
+                    fromNodeGuid,
+                    toNodeGuid,
+                    edgeFilter,
+                    nodeFilter))
+                {
+                    yield return route;
+                }
             }
             finally { _Semaphore.Release(); }
         }

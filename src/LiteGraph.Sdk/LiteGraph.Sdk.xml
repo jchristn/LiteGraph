@@ -290,6 +290,14 @@
             <param name="token">Cancellation token.</param>
             <returns>Graphs.</returns>
         </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.SearchGraphs(LiteGraph.Sdk.SearchRequest,System.Threading.CancellationToken)">
+            <summary>
+            Search graphs.
+            </summary>
+            <param name="searchReq">Search request.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Search result.</returns>
+        </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadGraph(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Read graph.
@@ -348,6 +356,14 @@
             <param name="token">Cancellation token.</param>
             <returns>Nodes.</returns>
         </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.SearchNodes(LiteGraph.Sdk.SearchRequest,System.Threading.CancellationToken)">
+            <summary>
+            Search nodes.
+            </summary>
+            <param name="searchReq">Search request.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Search result.</returns>
+        </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadNode(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Read a node.
@@ -398,6 +414,14 @@
             <param name="graphGuid">Graph GUID.</param>
             <param name="token">Cancellation token.</param>
             <returns>Edges.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.SearchEdges(LiteGraph.Sdk.SearchRequest,System.Threading.CancellationToken)">
+            <summary>
+            Search edges.
+            </summary>
+            <param name="searchReq">Search request.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Search result.</returns>
         </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadEdge(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
@@ -805,6 +829,56 @@
             <param name="contentType">Content-type.</param>
             <param name="token">Cancellation token.</param>
             <returns>Bytes.</returns>
+        </member>
+        <member name="T:LiteGraph.Sdk.SearchRequest">
+            <summary>
+            Search request.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.SearchRequest.GraphGUID">
+            <summary>
+            Graph GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.SearchRequest.Ordering">
+            <summary>
+            Ordering.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.SearchRequest.Expr">
+            <summary>
+            Expression.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Sdk.SearchRequest.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Sdk.SearchResult">
+            <summary>
+            Search result.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.SearchResult.Graphs">
+            <summary>
+            Graphs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.SearchResult.Nodes">
+            <summary>
+            Nodes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.SearchResult.Edges">
+            <summary>
+            Edges.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Sdk.SearchResult.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
         </member>
         <member name="T:LiteGraph.Sdk.SearchTypeEnum">
             <summary>

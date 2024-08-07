@@ -10,8 +10,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="SerializationHelper" Version="1.0.3" />
-		<PackageReference Include="Watson" Version="6.2.1" />
+		<PackageReference Include="Watson" Version="6.2.2" />
 	</ItemGroup>
 
 	<ItemGroup>

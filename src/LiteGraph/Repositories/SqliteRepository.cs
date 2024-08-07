@@ -732,6 +732,8 @@
                     try
                     {
                         conn.Open();
+                        
+                        if (Logging.LogQueries) Logging.Log(SeverityEnum.Debug, "query: " + query);
 
                         using (SqliteCommand cmd = new SqliteCommand(query, conn))
                         {
@@ -757,7 +759,7 @@
                     }
                 }
 
-                if (Logging.LogResults) Logging.Log(SeverityEnum.Debug, "query: " + query + "  result: " + (result != null ? result.Rows.Count + " rows" : "(null)"));
+                if (Logging.LogResults) Logging.Log(SeverityEnum.Debug, "result: " + query + ": " + (result != null ? result.Rows.Count + " rows" : "(null)"));
                 return result;
             }
         }
@@ -906,12 +908,9 @@
         private string ExpressionToWhereClause(Expr expr)
         {
             if (expr == null) return null;
-
-            string clause = "";
-
             if (expr.Left == null) return null;
 
-            clause += "(";
+            string clause = "";
 
             if (expr.Left is Expr)
             {
@@ -924,7 +923,7 @@
                     throw new ArgumentException("Left term must be of type Expression or String");
                 }
 
-                clause += "json_extract(data, '" + Sanitize(expr.Left.ToString()) + "') ";
+                clause += "json_extract(data, '$." + Sanitize(expr.Left.ToString()) + "') ";
             }
 
             switch (expr.Operator)
@@ -1114,9 +1113,9 @@
                     {
                         clause +=
                             "(" +
-                            "'" + Sanitize(expr.Left.ToString()) + "' LIKE ('%" + Sanitize(expr.Right.ToString()) + "') " +
-                            "OR '" + Sanitize(expr.Left.ToString()) + "' LIKE ('%" + Sanitize(expr.Right.ToString()) + "%') " +
-                            "OR '" + Sanitize(expr.Left.ToString()) + "' LIKE ('" + Sanitize(expr.Right.ToString()) + "%')" +
+                            "'$." + Sanitize(expr.Left.ToString()) + "' LIKE ('%" + Sanitize(expr.Right.ToString()) + "') " +
+                            "OR '$." + Sanitize(expr.Left.ToString()) + "' LIKE ('%" + Sanitize(expr.Right.ToString()) + "%') " +
+                            "OR '$." + Sanitize(expr.Left.ToString()) + "' LIKE ('" + Sanitize(expr.Right.ToString()) + "%')" +
                             ")";
                     }
                     else
@@ -1135,9 +1134,9 @@
                     {
                         clause +=
                             "(" +
-                            "'" + Sanitize(expr.Left.ToString()) + "' NOT LIKE '%" + Sanitize(expr.Right.ToString()) + "' " +
-                            "AND '" + Sanitize(expr.Left.ToString()) + "' NOT LIKE '%" + Sanitize(expr.Right.ToString()) + "%' " +
-                            "AND '" + Sanitize(expr.Left.ToString()) + "' NOT LIKE '" + Sanitize(expr.Right.ToString()) + "%'" +
+                            "'$." + Sanitize(expr.Left.ToString()) + "' NOT LIKE '%" + Sanitize(expr.Right.ToString()) + "' " +
+                            "AND '$." + Sanitize(expr.Left.ToString()) + "' NOT LIKE '%" + Sanitize(expr.Right.ToString()) + "%' " +
+                            "AND '$." + Sanitize(expr.Left.ToString()) + "' NOT LIKE '" + Sanitize(expr.Right.ToString()) + "%'" +
                             ")";
                     }
                     else
@@ -1154,7 +1153,7 @@
                     if (expr.Right == null) return null;
                     if (expr.Right is string)
                     {
-                        clause += "('" + Sanitize(expr.Left.ToString()) + "' LIKE '" + Sanitize(expr.Right.ToString()) + "%')";
+                        clause += "('$." + Sanitize(expr.Left.ToString()) + "' LIKE '" + Sanitize(expr.Right.ToString()) + "%')";
                     }
                     else
                     {
@@ -1170,7 +1169,7 @@
                     if (expr.Right == null) return null;
                     if (expr.Right is string)
                     {
-                        clause += "('" + Sanitize(expr.Left.ToString()) + "' NOT LIKE '" + Sanitize(expr.Right.ToString()) + "%'";
+                        clause += "('$." + Sanitize(expr.Left.ToString()) + "' NOT LIKE '" + Sanitize(expr.Right.ToString()) + "%'";
                     }
                     else
                     {
@@ -1186,7 +1185,7 @@
                     if (expr.Right == null) return null;
                     if (expr.Right is string)
                     {
-                        clause += "('" + Sanitize(expr.Left.ToString()) + " LIKE '%" + Sanitize(expr.Right.ToString()) + "')";
+                        clause += "('$." + Sanitize(expr.Left.ToString()) + " LIKE '%" + Sanitize(expr.Right.ToString()) + "')";
                     }
                     else
                     {
@@ -1202,7 +1201,7 @@
                     if (expr.Right == null) return null;
                     if (expr.Right is string)
                     {
-                        clause += "('" + Sanitize(expr.Left.ToString()) + " NOT LIKE '%" + Sanitize(expr.Right.ToString()) + "')";
+                        clause += "('$." + Sanitize(expr.Left.ToString()) + " NOT LIKE '%" + Sanitize(expr.Right.ToString()) + "')";
                     }
                     else
                     {
@@ -1225,7 +1224,7 @@
                     {
                         if (expr.Right is DateTime || expr.Right is DateTime?)
                         {
-                            clause += "'" + Convert.ToDateTime(expr.Right).ToString(TimestampFormat) + "'";
+                            clause += "'$." + Convert.ToDateTime(expr.Right).ToString(TimestampFormat) + "'";
                         }
                         else if (expr.Right is int || expr.Right is long || expr.Right is decimal)
                         {
@@ -1343,7 +1342,7 @@
                     #endregion
             }
 
-            clause += ") ";
+            clause += " ";
 
             return clause;
         }

@@ -6,9 +6,9 @@
     using System.Text;
     using System.Threading;
     using LiteGraph.Repositories;
+    using LiteGraph.Serialization;
     using LiteGraph.Server.API.REST;
     using LiteGraph.Server.Classes;
-    using SerializationHelper;
     using SyslogLogging;
     using WatsonWebserver;
 
@@ -30,6 +30,7 @@
         private static LoggingModule _Logging = null;
         private static LiteGraphClient _LiteGraph = null;
 
+        private static SerializationHelper _Serializer = new SerializationHelper();
         private static RestServiceHandler _RestService = null;
 
         private static CancellationTokenSource _TokenSource = new CancellationTokenSource();
@@ -98,11 +99,11 @@
             if (!File.Exists(Constants.SettingsFile))
             {
                 Console.WriteLine("Settings file '" + Constants.SettingsFile + "' does not exist, creating");
-                File.WriteAllBytes(Constants.SettingsFile, Encoding.UTF8.GetBytes(Serializer.SerializeJson(_Settings, true)));
+                File.WriteAllBytes(Constants.SettingsFile, Encoding.UTF8.GetBytes(_Serializer.SerializeJson(_Settings, true)));
             }
             else
             {
-                _Settings = Serializer.DeserializeJson<Settings>(File.ReadAllText(Constants.SettingsFile));
+                _Settings = _Serializer.DeserializeJson<Settings>(File.ReadAllText(Constants.SettingsFile));
             }
         }
 
@@ -192,7 +193,8 @@
             _RestService = new RestServiceHandler(
                 _Settings,
                 _Logging,
-                _LiteGraph);
+                _LiteGraph,
+                _Serializer);
 
             #endregion
 

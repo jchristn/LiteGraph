@@ -56,6 +56,9 @@
                     case "graph delete":
                         GraphDelete();
                         break;
+                    case "graph search":
+                        GraphSearch();
+                        break;
 
                     case "node exists":
                         NodeExists();
@@ -74,6 +77,9 @@
                         break;
                     case "node delete":
                         NodeDelete();
+                        break;
+                    case "node search":
+                        NodeSearch();
                         break;
 
                     case "node edges":
@@ -104,6 +110,9 @@
                     case "edge delete":
                         EdgeDelete();
                         break;
+                    case "edge search":
+                        EdgeSearch();
+                        break;
 
                     case "edges from":
                         EdgesFrom();
@@ -131,16 +140,17 @@
             Console.WriteLine("");
             Console.WriteLine("Graph commands:");
             Console.WriteLine("  graph create   graph update   graph all      graph read");
-            Console.WriteLine("  graph update   graph delete   graph exists");
+            Console.WriteLine("  graph update   graph delete   graph exists   graph search");
             Console.WriteLine("");
             Console.WriteLine("Node commands:");
             Console.WriteLine("  node create    node update    node all       node read");
-            Console.WriteLine("  node update    node delete");
+            Console.WriteLine("  node update    node delete    node search");
             Console.WriteLine("  node edges     node parents   node children");
             Console.WriteLine("");
             Console.WriteLine("Edge commands:");
             Console.WriteLine("  edge create    edge update    edge all       edge read");
             Console.WriteLine("  edge update    edge delete    edges from     edges to");
+            Console.WriteLine("  edge search");
             Console.WriteLine("");
             Console.WriteLine("Routing commands:");
             Console.WriteLine("  route");
@@ -177,6 +187,40 @@
         private static bool GetBoolean(string prompt)
         {
             return Inputty.GetBoolean(prompt, true);
+        }
+
+        private static SearchRequest BuildSearchRequest()
+        {
+            Expr expr = GetExpression();
+            if (expr == null) return null;
+
+            SearchRequest req = new SearchRequest();
+            req.GraphGUID = Inputty.GetGuid("Graph GUID:", default(Guid));
+            req.Expr = expr;
+            return req;
+        }
+
+        static Expr GetExpression()
+        {
+            Console.WriteLine("");
+            Console.WriteLine("Example expressions:");
+
+            Expr e1 = new Expr("Age", OperatorEnum.GreaterThan, 38);
+            e1.PrependAnd("Hobby.Name", OperatorEnum.Equals, "BJJ");
+            Console.WriteLine(Serializer.SerializeJson(e1, false));
+
+            Expr e2 = new Expr("Mbps", OperatorEnum.GreaterThan, 250);
+            Console.WriteLine(Serializer.SerializeJson(e2, false));
+            Console.WriteLine("");
+
+            string json = Inputty.GetString("JSON:", null, true);
+            if (String.IsNullOrEmpty(json)) return null;
+
+            Expr expr = Serializer.DeserializeJson<Expr>(json);
+            Console.WriteLine("");
+            Console.WriteLine("Using expression: " + expr.ToString());
+            Console.WriteLine("");
+            return expr;
         }
 
         private static void EnumerateResult(object obj)
@@ -218,6 +262,13 @@
         private static void GraphDelete()
         {
             _Sdk.DeleteGraph(GetGuid("GUID:"), GetBoolean("Force:")).Wait();
+        }
+
+        private static void GraphSearch()
+        {
+            SearchRequest req = BuildSearchRequest();
+            if (req == null) return;
+            EnumerateResult(_Sdk.SearchGraphs(req).Result);
         }
 
         #endregion
@@ -276,6 +327,13 @@
                 .Wait();
         }
         
+        private static void NodeSearch()
+        {
+            SearchRequest req = BuildSearchRequest();
+            if (req == null) return;
+            EnumerateResult(_Sdk.SearchNodes(req).Result);
+        }
+
         private static void NodeEdges()
         {
             EnumerateResult(
@@ -360,6 +418,13 @@
                 GetGuid("Edge GUID:")
                 )
                 .Wait();
+        }
+
+        private static void EdgeSearch()
+        {
+            SearchRequest req = BuildSearchRequest();
+            if (req == null) return;
+            EnumerateResult(_Sdk.SearchEdges(req).Result);
         }
 
         private static void EdgesFrom()

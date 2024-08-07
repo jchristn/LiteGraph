@@ -639,67 +639,6 @@
             <param name="nodeGuid">Node GUID.</param>
             <returns>True if exists.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetParents(System.Guid,System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
-            <summary>
-            Get parents for a given node.
-            </summary>
-            <param name="graphGuid">Graph GUID.</param>
-            <param name="nodeGuid">Node GUID.</param>
-            <param name="edgeFilter">
-            Edge filter expression for Data JSON body.
-            Expression left terms must follow the form of Sqlite JSON paths.
-            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-            <param name="order">Enumeration order.</param>
-            <returns>Nodes.</returns>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetChildren(System.Guid,System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
-            <summary>
-            Get children for a given node.
-            </summary>
-            <param name="graphGuid">Graph GUID.</param>
-            <param name="nodeGuid">Node GUID.</param>
-            <param name="edgeFilter">
-            Edge filter expression for Data JSON body.
-            Expression left terms must follow the form of Sqlite JSON paths.
-            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-            <param name="order">Enumeration order.</param>
-            <returns>Nodes.</returns>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetNeighbors(System.Guid,System.Guid,ExpressionTree.Expr,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
-            <summary>
-            Get neighbors for a given node.
-            </summary>
-            <param name="graphGuid">Graph GUID.</param>
-            <param name="nodeGuid">Node GUID.</param>
-            <param name="edgeFilter">
-            Edge filter expression for Data JSON body.
-            Expression left terms must follow the form of Sqlite JSON paths.
-            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-            <param name="nodeFilter">
-            Node filter expression for Data JSON body.
-            Expression left terms must follow the form of Sqlite JSON paths.
-            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-            <param name="order">Enumeration order.</param>
-            <returns>Nodes.</returns>
-        </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetRoutes(LiteGraph.SearchTypeEnum,System.Guid,System.Guid,System.Guid,ExpressionTree.Expr,ExpressionTree.Expr)">
-            <summary>
-            Get routes between two nodes.
-            </summary>
-            <param name="searchType">Search type.</param>
-            <param name="graphGuid">Graph GUID.</param>
-            <param name="fromNodeGuid">From node GUID.</param>
-            <param name="toNodeGuid">To node GUID.</param>
-            <param name="edgeFilter">
-            Edge filter expression for Data JSON body.
-            Expression left terms must follow the form of Sqlite JSON paths.
-            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-            <param name="nodeFilter">
-            Node filter expression for Data JSON body.
-            Expression left terms must follow the form of Sqlite JSON paths.
-            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-            <returns>Route details.</returns>
-        </member>
         <member name="M:LiteGraph.LiteGraphClient.CreateEdge(LiteGraph.Edge)">
             <summary>
             Create an edge between two nodes.
@@ -760,6 +699,67 @@
             <param name="graphGuid">Graph GUID.</param>
             <param name="edgeGuid">Edge GUID.</param>
             <returns>True if exists.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetParents(System.Guid,System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
+            <summary>
+            Get parents for a given node.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+            <param name="edgeFilter">
+            Edge filter expression for Data JSON body.
+            Expression left terms must follow the form of Sqlite JSON paths.
+            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+            <param name="order">Enumeration order.</param>
+            <returns>Nodes.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetChildren(System.Guid,System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
+            <summary>
+            Get children for a given node.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+            <param name="edgeFilter">
+            Edge filter expression for Data JSON body.
+            Expression left terms must follow the form of Sqlite JSON paths.
+            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+            <param name="order">Enumeration order.</param>
+            <returns>Nodes.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetNeighbors(System.Guid,System.Guid,ExpressionTree.Expr,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
+            <summary>
+            Get neighbors for a given node.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+            <param name="edgeFilter">
+            Edge filter expression for Data JSON body.
+            Expression left terms must follow the form of Sqlite JSON paths.
+            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+            <param name="nodeFilter">
+            Node filter expression for Data JSON body.
+            Expression left terms must follow the form of Sqlite JSON paths.
+            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+            <param name="order">Enumeration order.</param>
+            <returns>Nodes.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.GetRoutes(LiteGraph.SearchTypeEnum,System.Guid,System.Guid,System.Guid,ExpressionTree.Expr,ExpressionTree.Expr)">
+            <summary>
+            Get routes between two nodes.
+            </summary>
+            <param name="searchType">Search type.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="fromNodeGuid">From node GUID.</param>
+            <param name="toNodeGuid">To node GUID.</param>
+            <param name="edgeFilter">
+            Edge filter expression for Data JSON body.
+            Expression left terms must follow the form of Sqlite JSON paths.
+            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+            <param name="nodeFilter">
+            Node filter expression for Data JSON body.
+            Expression left terms must follow the form of Sqlite JSON paths.
+            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+            <returns>Route details.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.GetEdgesFrom(System.Guid,System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
@@ -1034,6 +1034,61 @@
             <param name="nodeGuid">Node GUID.</param>
             <returns>True if exists.</returns>
         </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.CreateEdge(LiteGraph.Edge)">
+            <summary>
+            Create an edge between two nodes.
+            </summary>
+            <param name="edge">Edge.</param>
+            <returns>Edge.</returns>
+        </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.ReadEdges(System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
+            <summary>
+            Read edges.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edgeFilter">
+            Edge filter expression for Data JSON body.
+            Expression left terms must follow the form of Sqlite JSON paths.
+            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
+            <param name="order">Enumeration order.</param>
+            <returns>Edges.</returns>
+        </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.ReadEdge(System.Guid,System.Guid)">
+            <summary>
+            Read edge.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edgeGuid">Edge GUID.</param>
+            <returns>Edge.</returns>
+        </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.UpdateEdge(LiteGraph.Edge)">
+            <summary>
+            Update edge.
+            </summary>
+            <param name="edge">Edge.</param>
+            <returns>Edge.</returns>
+        </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.DeleteEdge(System.Guid,System.Guid)">
+            <summary>
+            Delete edge.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edgeGuid">Edge GUID.</param>
+        </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.DeleteEdges(System.Guid)">
+            <summary>
+            Delete all edges from a graph.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+        </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.ExistsEdge(System.Guid,System.Guid)">
+            <summary>
+            Check if an edge exists by GUID.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edgeGuid">Edge GUID.</param>
+            <returns>True if exists.</returns>
+        </member>
         <member name="M:LiteGraph.Repositories.RepositoryBase.GetParents(System.Guid,System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
             Get nodes that have edges connecting to the specified node.
@@ -1094,61 +1149,6 @@
             Expression left terms must follow the form of Sqlite JSON paths.
             For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
             <returns>Route details.</returns>
-        </member>
-        <member name="M:LiteGraph.Repositories.RepositoryBase.CreateEdge(LiteGraph.Edge)">
-            <summary>
-            Create an edge between two nodes.
-            </summary>
-            <param name="edge">Edge.</param>
-            <returns>Edge.</returns>
-        </member>
-        <member name="M:LiteGraph.Repositories.RepositoryBase.ReadEdges(System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
-            <summary>
-            Read edges.
-            </summary>
-            <param name="graphGuid">Graph GUID.</param>
-            <param name="edgeFilter">
-            Edge filter expression for Data JSON body.
-            Expression left terms must follow the form of Sqlite JSON paths.
-            For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-            <param name="order">Enumeration order.</param>
-            <returns>Edges.</returns>
-        </member>
-        <member name="M:LiteGraph.Repositories.RepositoryBase.ReadEdge(System.Guid,System.Guid)">
-            <summary>
-            Read edge.
-            </summary>
-            <param name="graphGuid">Graph GUID.</param>
-            <param name="edgeGuid">Edge GUID.</param>
-            <returns>Edge.</returns>
-        </member>
-        <member name="M:LiteGraph.Repositories.RepositoryBase.UpdateEdge(LiteGraph.Edge)">
-            <summary>
-            Update edge.
-            </summary>
-            <param name="edge">Edge.</param>
-            <returns>Edge.</returns>
-        </member>
-        <member name="M:LiteGraph.Repositories.RepositoryBase.DeleteEdge(System.Guid,System.Guid)">
-            <summary>
-            Delete edge.
-            </summary>
-            <param name="graphGuid">Graph GUID.</param>
-            <param name="edgeGuid">Edge GUID.</param>
-        </member>
-        <member name="M:LiteGraph.Repositories.RepositoryBase.DeleteEdges(System.Guid)">
-            <summary>
-            Delete all edges from a graph.
-            </summary>
-            <param name="graphGuid">Graph GUID.</param>
-        </member>
-        <member name="M:LiteGraph.Repositories.RepositoryBase.ExistsEdge(System.Guid,System.Guid)">
-            <summary>
-            Check if an edge exists by GUID.
-            </summary>
-            <param name="graphGuid">Graph GUID.</param>
-            <param name="edgeGuid">Edge GUID.</param>
-            <returns>True if exists.</returns>
         </member>
         <member name="M:LiteGraph.Repositories.RepositoryBase.GetConnectedEdges(System.Guid,System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
@@ -1343,6 +1343,56 @@
             </summary>
         </member>
         <member name="M:LiteGraph.RouteDetail.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.SearchRequest">
+            <summary>
+            Search request.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.SearchRequest.GraphGUID">
+            <summary>
+            Graph GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.SearchRequest.Ordering">
+            <summary>
+            Ordering.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.SearchRequest.Expr">
+            <summary>
+            Expression.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.SearchRequest.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.SearchResult">
+            <summary>
+            Search result.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.SearchResult.Graphs">
+            <summary>
+            Graphs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.SearchResult.Nodes">
+            <summary>
+            Nodes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.SearchResult.Edges">
+            <summary>
+            Edges.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.SearchResult.#ctor">
             <summary>
             Instantiate the object.
             </summary>

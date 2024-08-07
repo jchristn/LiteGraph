@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="Inputty" Version="1.0.12" />
-    <PackageReference Include="SerializationHelper" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup>

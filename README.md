@@ -6,13 +6,14 @@
 
 LiteGraph is a lightweight graph database built using Sqlite with support for exporting to GEXF.
 
-## New in v2.0.0
+## New in v2.0.x
 
 - Major overhaul, refactor, and breaking changes
 - Integrated webserver and RESTful API
 - Extensibility through base repository class
 - Hierarchical expression support while filtering over graph, node, and edge data objects
 - Removal of property constraints on nodes and edges
+- Search APIs in the SDK for graphs, nodes, and edges
 
 ## Bugs, Feedback, or Enhancement Requests
 
@@ -119,7 +120,7 @@ Important!
 
 ## Running in Docker
 
-A Docker image is available in Docker Hub under `jchristn/litegraph:v2.0.0`.  Use the Docker Compose start (`compose-up.sh` and `compose-up.bat`) and stop (`compose-down.sh` and `compose-down.bat`) scripts in the `Docker` directory if you wish to run within Docker Compose.  Ensure that you have a valid database file (e.g. `litegraph.db`) and configuration file (e.g. `litegraph.json`) exposed into your container.
+A Docker image is available in [Docker Hub](https://hub.docker.com/repository/docker/jchristn/litegraph) under `jchristn/litegraph:v2.0.3`.  Use the Docker Compose start (`compose-up.sh` and `compose-up.bat`) and stop (`compose-down.sh` and `compose-down.bat`) scripts in the `Docker` directory if you wish to run within Docker Compose.  Ensure that you have a valid database file (e.g. `litegraph.db`) and configuration file (e.g. `litegraph.json`) exposed into your container.
 
 ## Version History
 

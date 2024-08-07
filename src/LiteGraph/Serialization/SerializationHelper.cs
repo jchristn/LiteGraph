@@ -3,19 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.Specialized;
-    using System.ComponentModel;
     using System.Globalization;
-    using System.IO;
     using System.Linq;
     using System.Net;
-    using System.Text;
     using System.Text.Json;
     using System.Text.Json.Serialization;
-    using System.Text.RegularExpressions;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Xml;
-    using System.Xml.Serialization;
+    using ExpressionTree;
 
     /// <summary>
     /// Serialization helper.
@@ -42,7 +35,16 @@
         public T DeserializeJson<T>(string json)
         {
             if (String.IsNullOrEmpty(json)) throw new ArgumentNullException(nameof(json));
-            return JsonSerializer.Deserialize<T>(json);
+
+            JsonSerializerOptions options = new JsonSerializerOptions();
+            options.Converters.Add(new ExceptionConverter<Exception>());
+            options.Converters.Add(new NameValueCollectionConverter());
+            options.Converters.Add(new JsonStringEnumConverter());
+            options.Converters.Add(new DateTimeConverter());
+            options.Converters.Add(new IPAddressConverter());
+            options.Converters.Add(new ExpressionConverter());
+
+            return JsonSerializer.Deserialize<T>(json, options);
         }
 
         /// <inheritdoc/>
@@ -58,6 +60,7 @@
             options.Converters.Add(new JsonStringEnumConverter());
             options.Converters.Add(new DateTimeConverter());
             options.Converters.Add(new IPAddressConverter());
+            options.Converters.Add(new ExpressionConverter());
 
             if (pretty)
             {
@@ -182,6 +185,142 @@
                 "MM/dd/yyyy h:mm tt",
                 "MM/dd/yyyy HH:mm:ss"
             };
+        }
+
+        private class ExpressionConverter : JsonConverter<Expr>
+        {
+            public override Expr Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                if (reader.TokenType != JsonTokenType.StartObject)
+                {
+                    throw new JsonException("Expected start of object");
+                }
+
+                Expr expr = new Expr();
+
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonTokenType.EndObject)
+                    {
+                        return expr;
+                    }
+
+                    if (reader.TokenType == JsonTokenType.PropertyName)
+                    {
+                        string propertyName = reader.GetString();
+                        reader.Read();
+
+                        switch (propertyName)
+                        {
+                            case "Left":
+                                expr.Left = ReadValue(ref reader);
+                                break;
+                            case "Operator":
+                                expr.Operator = Enum.Parse<OperatorEnum>(reader.GetString());
+                                break;
+                            case "Right":
+                                expr.Right = ReadValue(ref reader);
+                                break;
+                            default:
+                                reader.Skip();
+                                break;
+                        }
+                    }
+                }
+
+                return expr;
+            }
+
+            private object ReadValue(ref Utf8JsonReader reader)
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.String:
+                        return reader.GetString();
+                    case JsonTokenType.Number:
+                        if (reader.TryGetInt64(out long longValue))
+                            return longValue;
+                        return reader.GetDouble();
+                    case JsonTokenType.True:
+                        return true;
+                    case JsonTokenType.False:
+                        return false;
+                    case JsonTokenType.Null:
+                        return null;
+                    case JsonTokenType.StartObject:
+                        return JsonSerializer.Deserialize<Expr>(ref reader, new JsonSerializerOptions { Converters = { new ExpressionConverter() } });
+                    case JsonTokenType.StartArray:
+                        List<object> list = new List<object>();
+                        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                        {
+                            list.Add(ReadValue(ref reader));
+                        }
+                        return list;
+                    default:
+                        throw new JsonException($"Unexpected token type: {reader.TokenType}");
+                }
+            }
+
+            public override void Write(Utf8JsonWriter writer, Expr value, JsonSerializerOptions options)
+            {
+                writer.WriteStartObject();
+
+                writer.WritePropertyName("Left");
+                WriteValue(writer, value.Left);
+
+                writer.WritePropertyName("Operator");
+                writer.WriteStringValue(value.Operator.ToString());
+
+                writer.WritePropertyName("Right");
+                WriteValue(writer, value.Right);
+
+                writer.WriteEndObject();
+            }
+
+            private void WriteValue(Utf8JsonWriter writer, object value)
+            {
+                if (value == null)
+                {
+                    writer.WriteNullValue();
+                }
+                else if (value is string str)
+                {
+                    writer.WriteStringValue(str);
+                }
+                else if (value is long l)
+                {
+                    writer.WriteNumberValue(l);
+                }
+                else if (value is int i)
+                {
+                    writer.WriteNumberValue(i);
+                }
+                else if (value is double d)
+                {
+                    writer.WriteNumberValue(d);
+                }
+                else if (value is bool b)
+                {
+                    writer.WriteBooleanValue(b);
+                }
+                else if (value is Expr expr)
+                {
+                    Write(writer, expr, null);
+                }
+                else if (value is IEnumerable<object> list)
+                {
+                    writer.WriteStartArray();
+                    foreach (var item in list)
+                    {
+                        WriteValue(writer, item);
+                    }
+                    writer.WriteEndArray();
+                }
+                else
+                {
+                    throw new JsonException($"Unexpected value type: {value.GetType()}");
+                }
+            }
         }
     }
 }
