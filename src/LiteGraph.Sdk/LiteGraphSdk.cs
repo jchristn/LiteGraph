@@ -85,9 +85,9 @@
         {
             if (searchReq == null) throw new ArgumentNullException(nameof(searchReq));
 
-            string url = Endpoint + "v1.0/graphs/" + searchReq.GraphGUID + "/search";
-
-            byte[] bytes = await Post(url, Encoding.UTF8.GetBytes(Serializer.SerializeJson(searchReq, true)), "application/json", token).ConfigureAwait(false);
+            string url = Endpoint + "v1.0/graphs/search";
+            string json = Serializer.SerializeJson(searchReq, true);
+            byte[] bytes = await Post(url, Encoding.UTF8.GetBytes(json), "application/json", token).ConfigureAwait(false);
 
             if (bytes != null && bytes.Length > 0)
             {

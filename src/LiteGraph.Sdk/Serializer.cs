@@ -129,6 +129,7 @@
                 options.Converters.Add(new JsonStringEnumConverter());
                 options.Converters.Add(new DateTimeConverter());
                 options.Converters.Add(new IPAddressConverter());
+                options.Converters.Add(new ExpressionConverter());
 
                 string json = JsonSerializer.Serialize(obj, options);
                 options = null;

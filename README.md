@@ -120,7 +120,7 @@ Important!
 
 ## Running in Docker
 
-A Docker image is available in [Docker Hub](https://hub.docker.com/repository/docker/jchristn/litegraph) under `jchristn/litegraph:v2.0.3`.  Use the Docker Compose start (`compose-up.sh` and `compose-up.bat`) and stop (`compose-down.sh` and `compose-down.bat`) scripts in the `Docker` directory if you wish to run within Docker Compose.  Ensure that you have a valid database file (e.g. `litegraph.db`) and configuration file (e.g. `litegraph.json`) exposed into your container.
+A Docker image is available in [Docker Hub](https://hub.docker.com/repository/docker/jchristn/litegraph) under `jchristn/litegraph:v2.0.7`.  Use the Docker Compose start (`compose-up.sh` and `compose-up.bat`) and stop (`compose-down.sh` and `compose-down.bat`) scripts in the `Docker` directory if you wish to run within Docker Compose.  Ensure that you have a valid database file (e.g. `litegraph.db`) and configuration file (e.g. `litegraph.json`) exposed into your container.
 
 ## Version History
 

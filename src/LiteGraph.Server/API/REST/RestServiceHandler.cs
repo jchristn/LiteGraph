@@ -87,7 +87,7 @@
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}", GraphReadRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}", GraphExistsRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs", GraphReadManyRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/search", GraphSearchRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/search", GraphSearchRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}", GraphUpdateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}", GraphDeleteRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/export/gexf", GraphGexfExportRoute, ExceptionRoute);
@@ -232,7 +232,6 @@
             try
             {
                 SearchRequest req = _Serializer.DeserializeJson<SearchRequest>(ctx.Request.DataAsString);
-                req.GraphGUID = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
 
                 SearchResult resp = new SearchResult();
                 resp.Graphs = _LiteGraph.ReadGraphs(req.Expr, req.Ordering).ToList();
