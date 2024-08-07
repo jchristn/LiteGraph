@@ -143,6 +143,42 @@
 					"response": []
 				},
 				{
+					"name": "Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Expr\": {\r\n    \"Left\": \"Hello\",\r\n    \"Operator\": \"Equals\",\r\n    \"Right\": \"World\"\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/search",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Delete",
 					"request": {
 						"method": "DELETE",
@@ -356,6 +392,44 @@
 					"response": []
 				},
 				{
+					"name": "Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"GraphGUID\": \"a1bb0532-56ad-4e35-80a4-ba269f4039fd\",\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Expr\": {\r\n    \"Left\": \"Mbps\",\r\n    \"Operator\": \"GreaterThan\",\r\n    \"Right\": 250\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/nodes/search",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
+								"nodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Delete",
 					"request": {
 						"method": "DELETE",
@@ -536,6 +610,44 @@
 								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
 								"edges",
 								"ffffffff-ffff-ffff-ffff-ffffffffffff"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"GraphGUID\": \"a1bb0532-56ad-4e35-80a4-ba269f4039fd\",\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Expr\": {\r\n    \"Left\": \"Mbps\",\r\n    \"Operator\": \"GreaterThan\",\r\n    \"Right\": 250\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/edges/search",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
+								"edges",
+								"search"
 							]
 						}
 					},
