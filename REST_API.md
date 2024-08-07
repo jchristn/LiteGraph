@@ -62,6 +62,7 @@
 | Delete             | DELETE | /v1.0/graphs/[guid]                      |
 | Delete w/ cascade  | DELETE | /v1.0/graphs/[guid]                      |
 | Exists             | HEAD   | /v1.0/graphs/[guid]                      |
+| Search             | POST   | /v1.0/graphs/search                      |
 | Render as GEXF     | GET    | /v1.0/graphs/[guid]/export/gexf?incldata |
 
 ## Node APIs
@@ -74,6 +75,7 @@
 | Update     | PUT    | /v1.0/graphs/[guid]/nodes/[guid] |
 | Delete     | DELETE | /v1.0/graphs/[guid]/nodes/[guid] |
 | Exists     | HEAD   | /v1.0/graphs/[guid]/nodes/[guid] |
+| Search     | POST   | /v1.0/graphs/[guid]/nodes/search |
 
 ## Edge APIs
 
@@ -85,6 +87,7 @@
 | Update     | PUT    | /v1.0/graphs/[guid]/edges/[guid] |
 | Delete     | DELETE | /v1.0/graphs/[guid]/edges/[guid] |
 | Exists     | HEAD   | /v1.0/graphs/[guid]/edges/[guid] |
+| Search     | POST   | /v1.0/graphs/[guid]/edges/search |
 
 ## Traversal and Networking
 
