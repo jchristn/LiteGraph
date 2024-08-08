@@ -148,10 +148,11 @@
             <param name="token">Cancellation token.</param>
             <returns>True if exists.</returns>
         </member>
-        <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateGraph(System.String,System.Object,System.Threading.CancellationToken)">
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateGraph(System.Guid,System.String,System.Object,System.Threading.CancellationToken)">
             <summary>
             Create a graph.
             </summary>
+            <param name="guid">GUID.</param>
             <param name="name">Name.</param>
             <param name="data">Data.</param>
             <param name="token">Cancellation token.</param>

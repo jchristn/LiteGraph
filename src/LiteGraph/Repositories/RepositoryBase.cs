@@ -72,10 +72,11 @@
         /// <summary>
         /// Create a graph using a unique name.
         /// </summary>
+        /// <param name="guid">GUID.</param>
         /// <param name="name">Unique name.</param>
         /// <param name="data">Data.</param>
         /// <returns>Graph.</returns>
-        public abstract Graph CreateGraph(string name, object data = null);
+        public abstract Graph CreateGraph(Guid guid, string name, object data = null);
 
         /// <summary>
         /// Read graphs.

@@ -241,7 +241,7 @@
 
         private static void GraphCreate()
         {
-            EnumerateResult(_Sdk.CreateGraph(GetName(), GetData()).Result);
+            EnumerateResult(_Sdk.CreateGraph(GetGuid("Graph GUID:"), GetName(), GetData()).Result);
         }
 
         private static void GraphAll()

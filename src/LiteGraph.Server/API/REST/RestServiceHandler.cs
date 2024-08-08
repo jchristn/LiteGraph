@@ -209,7 +209,7 @@
             }
 
             Graph graph = _Serializer.DeserializeJson<Graph>(ctx.Request.DataAsString);
-            graph = _LiteGraph.CreateGraph(graph.Name, graph.Data);
+            graph = _LiteGraph.CreateGraph(graph.GUID, graph.Name, graph.Data);
 
             ctx.Response.StatusCode = 201;
             await ctx.Response.Send(_Serializer.SerializeJson(graph, true));

@@ -126,7 +126,7 @@
         {
             #region Graph
 
-            Graph graph = _Client.CreateGraph("Sample Graph 1", new GraphMetadata { Description = "This is my sample graph #2" });
+            Graph graph = _Client.CreateGraph(Guid.NewGuid(), "Sample Graph 1", new GraphMetadata { Description = "This is my sample graph #2" });
 
             #endregion
 
@@ -165,7 +165,7 @@
         {
             #region Graph
 
-            Graph graph = _Client.CreateGraph("Sample Graph 2", new GraphMetadata { Description = "This is my sample graph #2" });
+            Graph graph = _Client.CreateGraph(Guid.NewGuid(), "Sample Graph 2", new GraphMetadata { Description = "This is my sample graph #2" });
 
             #endregion
 
@@ -273,7 +273,7 @@
 
             if (str.Equals("graph"))
             {
-                obj = _Client.CreateGraph(Inputty.GetString("Name:", null, false));
+                obj = _Client.CreateGraph(Guid.NewGuid(), Inputty.GetString("Name:", null, false));
             }
             else if (str.Equals("node"))
             {

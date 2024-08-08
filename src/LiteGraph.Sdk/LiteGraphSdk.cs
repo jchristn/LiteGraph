@@ -53,15 +53,16 @@
         /// <summary>
         /// Create a graph.
         /// </summary>
+        /// <param name="guid">GUID.</param>
         /// <param name="name">Name.</param>
         /// <param name="data">Data.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Graph.</returns>
-        public async Task<Graph> CreateGraph(string name, object data = null, CancellationToken token = default)
+        public async Task<Graph> CreateGraph(Guid guid, string name, object data = null, CancellationToken token = default)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             string url = Endpoint + "v1.0/graphs";
-            return await PutCreate<Graph>(url, new Graph { Name = name, Data = data }, token).ConfigureAwait(false);
+            return await PutCreate<Graph>(url, new Graph { GUID = guid, Name = name, Data = data }, token).ConfigureAwait(false);
         }
 
         /// <summary>

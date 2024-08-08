@@ -32,7 +32,7 @@ LiteGraphClient graph = new LiteGraphClient(
   ); // use a specific file
 
 // Create a graph
-Graph graph = graph.CreateGraph("mygraph");
+Graph graph = graph.CreateGraph(Guid.NewGuid(), "This is my graph!");
 
 // Create nodes
 Node node1 = graph.CreateNode(graph.GUID, new Node { Name = "node1" });

@@ -142,17 +142,18 @@
         /// <summary>
         /// Create a graph using a unique name.
         /// </summary>
+        /// <param name="guid">GUID.</param>
         /// <param name="name">Unique name.</param>
         /// <param name="data">Data.</param>
         /// <returns>Graph.</returns>
-        public Graph CreateGraph(string name, object data = null)
+        public Graph CreateGraph(Guid guid, string name, object data = null)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             _Semaphore.Wait();
             try
             {
-                Graph graph = _Repository.CreateGraph(name, data);
+                Graph graph = _Repository.CreateGraph(guid, name, data);
                 Logging.Log(SeverityEnum.Info, "created graph name " + name + " GUID " + graph.GUID);
                 return graph;
             }

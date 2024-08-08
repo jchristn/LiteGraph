@@ -138,7 +138,7 @@
         #region Graphs
 
         /// <inheritdoc />
-        public override Graph CreateGraph(string name, object data = null)
+        public override Graph CreateGraph(Guid guid, string name, object data = null)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
@@ -146,6 +146,7 @@
                     Query(
                         InsertGraphQuery(new Graph
                         {
+                            GUID = guid,
                             Name = name,
                             Data = data,
                             CreatedUtc = DateTime.UtcNow
