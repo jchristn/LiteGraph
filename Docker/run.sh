@@ -1,5 +1,5 @@
 if [ -z "${IMG_TAG}" ]; then
-  IMG_TAG='v2.0.8'
+  IMG_TAG='v2.0.9'
 fi
 
 echo Using image tag $IMG_TAG

@@ -120,6 +120,9 @@
                     case "edges to":
                         EdgesTo();
                         break;
+                    case "edges between":
+                        EdgesBetween();
+                        break;
 
                     case "route":
                         Route();
@@ -150,7 +153,7 @@
             Console.WriteLine("Edge commands:");
             Console.WriteLine("  edge create    edge update    edge all       edge read");
             Console.WriteLine("  edge update    edge delete    edges from     edges to");
-            Console.WriteLine("  edge search");
+            Console.WriteLine("  edge search    edges between");
             Console.WriteLine("");
             Console.WriteLine("Routing commands:");
             Console.WriteLine("  route");
@@ -424,25 +427,39 @@
         {
             SearchRequest req = BuildSearchRequest();
             if (req == null) return;
-            EnumerateResult(_Sdk.SearchEdges(req).Result);
+            EnumerateResult(
+                _Sdk.SearchEdges(req).Result);
         }
 
         private static void EdgesFrom()
         {
-            _Sdk.GetEdgesFromNode(
-                GetGuid("Graph GUID:"),
-                GetGuid("Node GUID:")
+            EnumerateResult(
+                _Sdk.GetEdgesFromNode(
+                    GetGuid("Graph GUID:"),
+                    GetGuid("Node GUID:")
                 )
-                .Wait();
+                .Result);
         }
 
         private static void EdgesTo()
         {
-            _Sdk.GetEdgesToNode(
-                GetGuid("Graph GUID:"),
-                GetGuid("Edge GUID:")
+            EnumerateResult(
+                _Sdk.GetEdgesToNode(
+                    GetGuid("Graph GUID:"),
+                    GetGuid("Edge GUID:")
                 )
-                .Wait();
+                .Result);
+        }
+
+        private static void EdgesBetween()
+        {
+            EnumerateResult(
+                _Sdk.GetEdgesBetween(
+                    GetGuid("Graph GUID:"),
+                    GetGuid("From GUID :"),
+                    GetGuid("To GUID   :")
+                )
+                .Result);
         }
 
         #endregion

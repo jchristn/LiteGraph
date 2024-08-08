@@ -68,7 +68,7 @@
   },
   "Debug": {
     "Authentication": false,
-    "Exceptions": false,
+    "Exceptions": true,
     "Requests": false
   }
 }

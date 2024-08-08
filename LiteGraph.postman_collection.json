@@ -84,7 +84,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Name\": \"My test graph\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
+							"raw": "{\r\n    \"GUID\": \"01010101-0101-0101-0101-010101010101\",\r\n    \"Name\": \"Custom GUID\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -254,7 +254,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/ce9d3867-360c-4b1d-bd2c-389cb0e4021b/nodes",
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/nodes",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -263,7 +263,7 @@
 							"path": [
 								"v1.0",
 								"graphs",
-								"ce9d3867-360c-4b1d-bd2c-389cb0e4021b",
+								"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
 								"nodes"
 							]
 						}
@@ -778,6 +778,39 @@
 								"22222222-2222-2222-2222-222222222222",
 								"edges",
 								"to"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get edges between nodes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/edges/between?from=7ca8aaca-6380-4a1c-8f0a-5322b025ff71&to=3db4fa43-984c-425c-ae12-786a40c7b4f0",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
+								"edges",
+								"between"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "7ca8aaca-6380-4a1c-8f0a-5322b025ff71"
+								},
+								{
+									"key": "to",
+									"value": "3db4fa43-984c-425c-ae12-786a40c7b4f0"
+								}
 							]
 						}
 					},

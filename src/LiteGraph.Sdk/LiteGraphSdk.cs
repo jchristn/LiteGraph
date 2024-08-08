@@ -3,6 +3,7 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Net.Http;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -387,6 +388,24 @@
         public async Task<IEnumerable<Edge>> GetEdgesToNode(Guid graphGuid, Guid nodeGuid, CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/" + nodeGuid + "/edges/to";
+            return await GetMany<Edge>(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get edges from a given node to a given node.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="fromNodeGuid">From node GUID.</param>
+        /// <param name="toNodeGuid">To node GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Edges.</returns>
+        public async Task<IEnumerable<Edge>> GetEdgesBetween(
+            Guid graphGuid,
+            Guid fromNodeGuid,
+            Guid toNodeGuid,
+            CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges/between?from=" + fromNodeGuid + "&to=" + toNodeGuid;
             return await GetMany<Edge>(url, token).ConfigureAwait(false);
         }
 

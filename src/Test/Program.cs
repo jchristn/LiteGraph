@@ -56,6 +56,7 @@
                             {
                                 if (parts[1].Equals("edgesto")) NodeEdgesTo();
                                 else if (parts[1].Equals("edgesfrom")) NodeEdgesFrom();
+                                else if (parts[1].Equals("edgesbetween")) NodeEdgesBetween();
                                 else if (parts[1].Equals("parents")) NodeParents();
                                 else if (parts[1].Equals("children")) NodeChildren();
                                 else if (parts[1].Equals("neighbors")) NodeNeighbors();
@@ -85,7 +86,8 @@
             Console.WriteLine("    [cmd]  : create all read exists update delete search");
             Console.WriteLine("");
             Console.WriteLine("  For node operations, additional commands are available");
-            Console.WriteLine("    edgesto edgesfrom parents children neighbors");
+            Console.WriteLine("    edgesto    edgesfrom   edgesbetween");
+            Console.WriteLine("    parents    children    neighbors");
             Console.WriteLine("");
         }
 
@@ -462,6 +464,17 @@
             Guid graphGuid = Inputty.GetGuid("Graph GUID:", _GraphGuid);
             Guid guid = Inputty.GetGuid("Node GUID :", default(Guid));
             object obj = _Client.GetEdgesFrom(graphGuid, guid);
+
+            if (obj != null)
+                Console.WriteLine(Serializer.SerializeJson(obj, true));
+        }
+
+        static void NodeEdgesBetween()
+        {
+            Guid graphGuid = Inputty.GetGuid("Graph GUID:", _GraphGuid);
+            Guid fromGuid = Inputty.GetGuid ("From GUID :", default(Guid));
+            Guid toGuid = Inputty.GetGuid   ("To GUID   :", default(Guid));
+            object obj = _Client.GetEdgesBetween(graphGuid, fromGuid, toGuid);
 
             if (obj != null)
                 Console.WriteLine(Serializer.SerializeJson(obj, true));

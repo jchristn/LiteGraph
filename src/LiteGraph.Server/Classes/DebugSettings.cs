@@ -15,7 +15,7 @@
         /// <summary>
         /// Debug exceptions.
         /// </summary>
-        public bool Exceptions { get; set; } = false;
+        public bool Exceptions { get; set; } = true;
 
         /// <summary>
         /// Debug requests.

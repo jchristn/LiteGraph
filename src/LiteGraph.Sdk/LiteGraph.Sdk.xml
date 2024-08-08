@@ -342,6 +342,16 @@
             <param name="token">Cancellation token.</param>
             <returns>Edges.</returns>
         </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.GetEdgesBetween(System.Guid,System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Get edges from a given node to a given node.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="fromNodeGuid">From node GUID.</param>
+            <param name="toNodeGuid">To node GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Edges.</returns>
+        </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.GetAllNodeEdges(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Get all edges to or from a node.

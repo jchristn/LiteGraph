@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -84,27 +85,28 @@
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/favicon.ico", FaviconRoute, ExceptionRoute);
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs", GraphCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/search", GraphSearchRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}", GraphReadRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}", GraphExistsRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs", GraphReadManyRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/search", GraphSearchRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}", GraphUpdateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}", GraphDeleteRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/export/gexf", GraphGexfExportRoute, ExceptionRoute);
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/nodes", NodeCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/nodes/search", NodeSearchRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeReadRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeExistsRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes", NodeReadManyRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/nodes/search", NodeSearchRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeUpdateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeDeleteRoute, ExceptionRoute);
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/edges", EdgeCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges/between", EdgesBetweenRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/edges/search", EdgeSearchRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeReadRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeExistsRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges", EdgeReadManyRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/edges/search", EdgeSearchRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeUpdateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeDeleteRoute, ExceptionRoute);
 
@@ -494,6 +496,37 @@
             await ctx.Response.Send(_Serializer.SerializeJson(edges, true));
         }
 
+        private async Task EdgesBetweenRoute(HttpContextBase ctx)
+        {
+            string from = GetQueryValue(ctx.Request.Query.Elements, "from");
+            string to = GetQueryValue(ctx.Request.Query.Elements, "to");
+
+            Guid fromGuid;
+            Guid toGuid;
+
+            if (String.IsNullOrEmpty(from) || String.IsNullOrEmpty(to))
+            {
+                _Logging.Warn(_Header + "either to or from is missing from query");
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "Both 'to' and 'from' must be supplied in the query.")));
+                return;
+            }
+
+            if (!Guid.TryParse(from, out fromGuid)
+                || !Guid.TryParse(to, out toGuid))
+            {
+                _Logging.Warn(_Header + "supplied GUIDs are not parseable");
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "Supplied GUIDs in query are not parseable.")));
+                return;
+            }
+
+            List<Edge> edges = _LiteGraph.GetEdgesBetween(
+                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
+                fromGuid,
+                toGuid).ToList();
+
+            await ctx.Response.Send(_Serializer.SerializeJson(edges, true));
+        }
+
         private async Task EdgeSearchRoute(HttpContextBase ctx)
         {
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
@@ -702,6 +735,12 @@
         #endregion
 
         #region Private-Methods
+
+        private string GetQueryValue(NameValueCollection nvc, string key)
+        {
+            if (nvc != null && nvc.AllKeys.Contains(key)) return nvc[key];
+            return null;
+        }
 
         #endregion
 
