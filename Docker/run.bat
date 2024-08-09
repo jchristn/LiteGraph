@@ -28,6 +28,6 @@ GOTO :Done
 
 :Usage
 ECHO Provide one argument indicating the tag. 
-ECHO Example: dockerrun.bat v2.0.9
+ECHO Example: dockerrun.bat v2.0.10
 :Done
 @echo on

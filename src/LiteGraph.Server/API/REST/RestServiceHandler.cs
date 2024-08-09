@@ -81,6 +81,7 @@
 
         internal void InitializeRoutes()
         {
+            _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.HEAD, "/", LoopbackRoute, ExceptionRoute);
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/", RootRoute, ExceptionRoute);
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/favicon.ico", FaviconRoute, ExceptionRoute);
 
@@ -178,6 +179,12 @@
                 ctx.Response.StatusCode = 500;
                 await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.InternalError, null, e.Message), true));
             }
+        }
+
+        private async Task LoopbackRoute(HttpContextBase ctx)
+        {
+            ctx.Response.StatusCode = 200;
+            await ctx.Response.Send();
         }
 
         private async Task RootRoute(HttpContextBase ctx)

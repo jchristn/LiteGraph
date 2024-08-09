@@ -106,26 +106,34 @@
         {
             string url = _Endpoint;
 
-            using (RestRequest req = new RestRequest(url, HttpMethod.Head))
+            try
             {
-                using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
+                using (RestRequest req = new RestRequest(url, HttpMethod.Head))
                 {
-                    if (resp != null && resp.StatusCode == 200)
+                    using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                     {
-                        Log(SeverityEnum.Debug, "success reported from " + url);
-                        return true;
-                    }
-                    else if (resp != null)
-                    {
-                        Log(SeverityEnum.Warn, "non-success reported from " + url + ": " + resp.StatusCode);
-                        return false;
-                    }
-                    else
-                    {
-                        Log(SeverityEnum.Warn, "no response from " + url);
-                        return false;
+                        if (resp != null && resp.StatusCode == 200)
+                        {
+                            Log(SeverityEnum.Debug, "success reported from " + url);
+                            return true;
+                        }
+                        else if (resp != null)
+                        {
+                            Log(SeverityEnum.Warn, "non-success reported from " + url + ": " + resp.StatusCode);
+                            return false;
+                        }
+                        else
+                        {
+                            Log(SeverityEnum.Warn, "no response from " + url);
+                            return false;
+                        }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Log(SeverityEnum.Warn, "exception while validating connectivity to " + url + Environment.NewLine + e.ToString());
+                return false;
             }
         }
 

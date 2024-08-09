@@ -38,6 +38,10 @@
                         Console.Clear();
                         break;
 
+                    case "conn":
+                        ValidateConnectivity();
+                        break;
+
                     case "graph exists":
                         GraphExists();
                         break;
@@ -140,6 +144,7 @@
             Console.WriteLine("  ?               help, this menu");
             Console.WriteLine("  q               quit");
             Console.WriteLine("  cls             clear the screen");
+            Console.WriteLine("  conn            validate connectivity");
             Console.WriteLine("");
             Console.WriteLine("Graph commands:");
             Console.WriteLine("  graph create   graph update   graph all      graph read");
@@ -233,6 +238,11 @@
             if (obj == null) Console.WriteLine("(null)");
             else Console.WriteLine(Environment.NewLine + Serializer.SerializeJson(obj, true));
             Console.WriteLine("");
+        }
+
+        private static void ValidateConnectivity()
+        {
+            Console.WriteLine("Connected: " + _Sdk.ValidateConnectivity().Result);
         }
 
         #region Graph

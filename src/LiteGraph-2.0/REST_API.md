@@ -51,12 +51,6 @@
 }
 ```
 
-## General APIs
-
-| API                   | Method | URL                                      |
-|-----------------------|--------|------------------------------------------|
-| Validate connectivity | HEAD   | /                                        |
-
 ## Graph APIs
 
 | API                | Method | URL                                      |
