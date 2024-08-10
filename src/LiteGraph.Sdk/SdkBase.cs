@@ -150,11 +150,15 @@
             if (obj == null) throw new ArgumentNullException(nameof(obj));
             if (String.IsNullOrEmpty(url)) throw new ArgumentNullException(nameof(url));
 
+            string json = null;
+            if (!Serializer.TrySerializeJson(obj, true, out json))
+                throw new ArgumentException("Supplied object is not serializable to JSON.");
+            
             using (RestRequest req = new RestRequest(url, HttpMethod.Put))
             {
                 req.ContentType = "application/json";
 
-                using (RestResponse resp = await req.SendAsync(Serializer.SerializeJson(obj, true), token).ConfigureAwait(false))
+                using (RestResponse resp = await req.SendAsync(json, token).ConfigureAwait(false))
                 {
                     if (resp != null)
                     {
@@ -358,11 +362,15 @@
             if (String.IsNullOrEmpty(url)) throw new ArgumentNullException(nameof(url));
             if (obj == null) throw new ArgumentNullException(nameof(obj));
 
+            string json = null;
+            if (!Serializer.TrySerializeJson(obj, true, out json))
+                throw new ArgumentException("Supplied object is not serializable to JSON.");
+
             using (RestRequest req = new RestRequest(url, HttpMethod.Put))
             {
                 req.ContentType = "application/json";
 
-                using (RestResponse resp = await req.SendAsync(Serializer.SerializeJson(obj, true), token).ConfigureAwait(false))
+                using (RestResponse resp = await req.SendAsync(json, token).ConfigureAwait(false))
                 {
                     if (resp != null)
                     {

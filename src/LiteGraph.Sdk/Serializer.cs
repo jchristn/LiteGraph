@@ -138,6 +138,30 @@
         }
 
         /// <summary>
+        /// Attempt to JSON serialize an object.  Null inputs will return true.
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <param name="pretty">Pretty.</param>
+        /// <param name="json">JSON string.</param>
+        /// <returns>True if serialized.</returns>
+        public static bool TrySerializeJson(object obj, bool pretty, out string json)
+        {
+            json = null;
+
+            if (obj == null) return true;
+
+            try
+            {
+                json = SerializeJson(obj, pretty);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Copy an object.
         /// </summary>
         /// <typeparam name="T">Type.</typeparam>

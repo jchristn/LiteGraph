@@ -719,6 +719,15 @@
             <param name="pretty">Pretty print.</param>
             <returns>JSON.</returns>
         </member>
+        <member name="M:LiteGraph.Sdk.Serializer.TrySerializeJson(System.Object,System.Boolean,System.String@)">
+            <summary>
+            Attempt to JSON serialize an object.  Null inputs will return true.
+            </summary>
+            <param name="obj">Object.</param>
+            <param name="pretty">Pretty.</param>
+            <param name="json">JSON string.</param>
+            <returns>True if serialized.</returns>
+        </member>
         <member name="M:LiteGraph.Sdk.Serializer.CopyObject``1(System.Object)">
             <summary>
             Copy an object.
