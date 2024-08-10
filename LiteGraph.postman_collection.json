@@ -215,6 +215,48 @@
 					"response": []
 				},
 				{
+					"name": "Delete forcefully",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/01010101-0101-0101-0101-010101010101?force",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"01010101-0101-0101-0101-010101010101"
+							],
+							"query": [
+								{
+									"key": "force",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Export as GEXF",
 					"request": {
 						"method": "GET",
