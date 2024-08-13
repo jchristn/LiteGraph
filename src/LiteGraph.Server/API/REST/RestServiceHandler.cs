@@ -162,12 +162,22 @@
 
         private async Task ExceptionRoute(HttpContextBase ctx, Exception e)
         {
-            if (_Settings.Debug.Exceptions) _Logging.Exception(e);
+            if (_Settings.Debug.Exceptions) _Logging.Warn(_Header + "exception of type " + e.GetType() + ": " + e.ToString());
 
             if (e is JsonException)
             {
                 ctx.Response.StatusCode = 400;
                 await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.DeserializationError), true));
+            }
+            else if (e is FormatException)
+            {
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
+            }
+            else if (e is InvalidOperationException)
+            {
+                ctx.Response.StatusCode = 409;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.Conflict, null, e.Message), true));
             }
             else if (e is ArgumentException)
             {
