@@ -47,6 +47,17 @@
         }
 
         /// <summary>
+        /// Available operations.
+        /// </summary>
+        public int AvailableOperations
+        {
+            get
+            {
+                return _Semaphore.CurrentCount;
+            }
+        }
+
+        /// <summary>
         /// Serialization helper.
         /// </summary>
         public SerializationHelper Serializer
@@ -233,13 +244,13 @@
         /// <param name="force">True to force deletion of nodes and edges.</param>
         public void DeleteGraph(Guid graphGuid, bool force = false)
         {
-            _Semaphore.Wait();
-
             Graph graph = ReadGraph(graphGuid);
             if (graph == null) return;
 
             try
             {
+                _Semaphore.Wait();
+
                 Logging.Log(SeverityEnum.Info, "deleting graph with name " + graph.Name + " GUID " + graph.GUID);
 
                 if (force)
@@ -258,7 +269,10 @@
 
                 _Repository.DeleteGraph(graph.GUID, force);
             }
-            finally { _Semaphore.Release(); }
+            finally 
+            { 
+                _Semaphore.Release();
+            }
         }
 
         /// <summary>

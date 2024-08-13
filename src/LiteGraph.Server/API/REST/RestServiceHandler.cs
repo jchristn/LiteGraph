@@ -319,16 +319,34 @@
 
             try
             {
-                _LiteGraph.DeleteGraph(
-                    Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                    force);
+                Guid guid = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
+                _Logging.Info(_Header + "deleting graph " + guid + " force: " + force);
+
+                _LiteGraph.DeleteGraph(guid, force);
                 ctx.Response.StatusCode = 204;
                 await ctx.Response.Send();
+            }
+            catch (InvalidOperationException ioe)
+            {
+                ctx.Response.StatusCode = 409;
+                await ctx.Response.Send(
+                    _Serializer.SerializeJson(
+                        new ApiErrorResponse(
+                            ApiErrorEnum.Conflict, 
+                            null, 
+                            ioe.Message), true));
+                return;
             }
             catch (ArgumentException e)
             {
                 ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
+                await ctx.Response.Send(
+                    _Serializer.SerializeJson(
+                        new ApiErrorResponse(
+                            ApiErrorEnum.BadRequest, 
+                            null, 
+                            e.Message), true));
+                return;
             }
         }
 

@@ -491,6 +491,11 @@
             This value dictates the maximum number of operations that may be operating in parallel at any one given time.
             </summary>
         </member>
+        <member name="P:LiteGraph.LiteGraphClient.AvailableOperations">
+            <summary>
+            Available operations.
+            </summary>
+        </member>
         <member name="P:LiteGraph.LiteGraphClient.Serializer">
             <summary>
             Serialization helper.
