@@ -104,6 +104,7 @@
         private readonly object _QueryLock = new object();
 
         private LRUCache<Guid, Graph> _GraphCache = new LRUCache<Guid, Graph>(32, 8);
+        private readonly object _InsertLock = new object();
 
         #endregion
 
@@ -142,19 +143,23 @@
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            Graph created = GraphFromDataRow(
-                    Query(
-                        InsertGraphQuery(new Graph
-                        {
-                            GUID = guid,
-                            Name = name,
-                            Data = data,
-                            CreatedUtc = DateTime.UtcNow
-                        }),
-                        true
-                    )
-                    .Rows[0]);
+            string query = InsertGraphQuery(new Graph
+            {
+                GUID = guid,
+                Name = name,
+                Data = data,
+                CreatedUtc = DateTime.UtcNow
+            });
 
+            DataTable result = null;
+            Graph created = null;
+
+            lock (_InsertLock)
+            {
+                result = Query(query, true);
+            }
+            
+            created = GraphFromDataRow(result.Rows[0]);
             _GraphCache.AddReplace(created.GUID, created);
 
             return created;
@@ -232,7 +237,18 @@
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             ValidateGraphExists(node.GraphGUID);
-            return NodeFromDataRow(Query(InsertNodeQuery(node), true).Rows[0]);
+
+            string query = InsertNodeQuery(node);
+            DataTable result = null;
+            Node created = null;
+
+            lock (_InsertLock)
+            {
+                result = Query(query, true);
+            }
+
+            created = NodeFromDataRow(result.Rows[0]);
+            return created;
         }
 
         /// <inheritdoc />
@@ -563,7 +579,17 @@
         {
             if (edge == null) throw new ArgumentNullException(nameof(edge));
             ValidateGraphExists(edge.GraphGUID);
-            Edge created = EdgeFromDataRow(Query(InsertEdgeQuery(edge), true).Rows[0]);
+
+            string query = InsertEdgeQuery(edge);
+            DataTable result = null;
+            Edge created = null;
+
+            lock (_InsertLock)
+            {
+                result = Query(query, true);
+            }
+
+            created = EdgeFromDataRow(result.Rows[0]);
             return created;
         }
 

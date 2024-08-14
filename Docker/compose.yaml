@@ -8,10 +8,8 @@ services:
 
   litegraph:
     container_name: 'litegraph'
-    image: 'jchristn/litegraph:v2.0.12'
+    image: 'jchristn/litegraph:v2.0.13'
     network_mode: 'host'
-    ports:
-      - 8701:8701
     stdin_open: true
     tty: true
     volumes:
