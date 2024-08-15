@@ -403,27 +403,41 @@
                     Edge edge = EdgeFromDataRow(allEdges.Rows[i]);
                     if (edge.From.Equals(nodeGuid))
                     {
-                        if (visited.Contains(edge.To)) continue;
-                        Node neighbor = ReadNode(graphGuid, edge.To);
-                        if (neighbor != null)
+                        if (visited.Contains(edge.To))
                         {
-                            visited.Add(edge.To);
-                            yield return neighbor;
+                            skip++;
+                            continue;
                         }
-                        else Logging.Log(SeverityEnum.Warn, "node " + edge.From + " referenced in graph " + graphGuid + " but does not exist");
-                        skip++;
+                        else
+                        {
+                            Node neighbor = ReadNode(graphGuid, edge.To);
+                            if (neighbor != null)
+                            {
+                                visited.Add(edge.To);
+                                yield return neighbor;
+                            }
+                            else Logging.Log(SeverityEnum.Warn, "node " + edge.From + " referenced in graph " + graphGuid + " but does not exist");
+                            skip++;
+                        }
                     }
                     if (edge.To.Equals(nodeGuid))
                     {
-                        if (visited.Contains(edge.From)) continue;
-                        Node neighbor = ReadNode(graphGuid, edge.From);
-                        if (neighbor != null)
+                        if (visited.Contains(edge.From))
                         {
-                            visited.Add(edge.From);
-                            yield return neighbor;
+                            skip++;
+                            continue;
                         }
-                        else Logging.Log(SeverityEnum.Warn, "node " + edge.From + " referenced in graph " + graphGuid + " but does not exist");
-                        skip++;
+                        else
+                        {
+                            Node neighbor = ReadNode(graphGuid, edge.From);
+                            if (neighbor != null)
+                            {
+                                visited.Add(edge.From);
+                                yield return neighbor;
+                            }
+                            else Logging.Log(SeverityEnum.Warn, "node " + edge.From + " referenced in graph " + graphGuid + " but does not exist");
+                            skip++;
+                        }
                     }
                 }
             }
