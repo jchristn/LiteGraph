@@ -143,23 +143,27 @@
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            string query = InsertGraphQuery(new Graph
+            string createQuery = InsertGraphQuery(new Graph
             {
                 GUID = guid,
                 Name = name,
                 Data = data,
                 CreatedUtc = DateTime.UtcNow
-            });
-
-            DataTable result = null;
+            }); 
+            
+            DataTable createResult = null;
             Graph created = null;
+            Graph existing = null;
 
             lock (_InsertLock)
             {
-                result = Query(query, true);
+                existing = ReadGraph(guid);
+                if (existing != null) return existing;
+
+                createResult = Query(createQuery, true);
             }
             
-            created = GraphFromDataRow(result.Rows[0]);
+            created = GraphFromDataRow(createResult.Rows[0]);
             _GraphCache.AddReplace(created.GUID, created);
 
             return created;
@@ -238,16 +242,20 @@
             if (node == null) throw new ArgumentNullException(nameof(node));
             ValidateGraphExists(node.GraphGUID);
 
-            string query = InsertNodeQuery(node);
-            DataTable result = null;
+            string createQuery = InsertNodeQuery(node);
+            DataTable createResult = null;
             Node created = null;
+            Node existing = null;
 
             lock (_InsertLock)
             {
-                result = Query(query, true);
+                existing = ReadNode(node.GraphGUID, node.GUID);
+                if (existing != null) return existing;
+
+                createResult = Query(createQuery, true);
             }
 
-            created = NodeFromDataRow(result.Rows[0]);
+            created = NodeFromDataRow(createResult.Rows[0]);
             return created;
         }
 
@@ -383,6 +391,8 @@
             ValidateGraphExists(graphGuid);
             int skip = 0;
 
+            List<Guid> visited = new List<Guid>();
+
             while (true)
             {
                 DataTable allEdges = Query(SelectConnectedEdgesQuery(graphGuid, nodeGuid, edgeFilter, skip, order));
@@ -393,15 +403,25 @@
                     Edge edge = EdgeFromDataRow(allEdges.Rows[i]);
                     if (edge.From.Equals(nodeGuid))
                     {
-                        Node neighbor = ReadNode(graphGuid, edge.From);
-                        if (neighbor != null) yield return neighbor;
+                        if (visited.Contains(edge.To)) continue;
+                        Node neighbor = ReadNode(graphGuid, edge.To);
+                        if (neighbor != null)
+                        {
+                            visited.Add(edge.To);
+                            yield return neighbor;
+                        }
                         else Logging.Log(SeverityEnum.Warn, "node " + edge.From + " referenced in graph " + graphGuid + " but does not exist");
                         skip++;
                     }
                     if (edge.To.Equals(nodeGuid))
                     {
+                        if (visited.Contains(edge.From)) continue;
                         Node neighbor = ReadNode(graphGuid, edge.From);
-                        if (neighbor != null) yield return neighbor;
+                        if (neighbor != null)
+                        {
+                            visited.Add(edge.From);
+                            yield return neighbor;
+                        }
                         else Logging.Log(SeverityEnum.Warn, "node " + edge.From + " referenced in graph " + graphGuid + " but does not exist");
                         skip++;
                     }
@@ -580,16 +600,20 @@
             if (edge == null) throw new ArgumentNullException(nameof(edge));
             ValidateGraphExists(edge.GraphGUID);
 
-            string query = InsertEdgeQuery(edge);
-            DataTable result = null;
+            string insertQuery = InsertEdgeQuery(edge);
+            DataTable createResult = null;
             Edge created = null;
+            Edge existing = null;
 
             lock (_InsertLock)
             {
-                result = Query(query, true);
+                existing = ReadEdge(edge.GraphGUID, edge.GUID);
+                if (existing != null) return existing;
+
+                createResult = Query(insertQuery, true);
             }
 
-            created = EdgeFromDataRow(result.Rows[0]);
+            created = EdgeFromDataRow(createResult.Rows[0]);
             return created;
         }
 

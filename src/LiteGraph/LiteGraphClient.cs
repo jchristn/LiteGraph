@@ -164,6 +164,9 @@
             _Semaphore.Wait();
             try
             {
+                Graph existing = _Repository.ReadGraph(guid);
+                if (existing != null) return existing;
+
                 Graph graph = _Repository.CreateGraph(guid, name, data);
                 Logging.Log(SeverityEnum.Info, "created graph name " + name + " GUID " + graph.GUID);
                 return graph;
@@ -332,6 +335,9 @@
                 if (!_Repository.ExistsGraph(node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
                 if (_Repository.ExistsNode(node.GraphGUID, node.GUID)) throw new ArgumentException("A node with GUID '" + node.GUID + "' already exists in graph '" + node.GraphGUID + "'.");
 
+                Node existing = _Repository.ReadNode(node.GraphGUID, node.GUID);
+                if (existing != null) return existing;
+
                 Node created = _Repository.CreateNode(node);
 
                 Logging.Log(SeverityEnum.Debug, "created node " + created.GUID + " in graph " + created.GraphGUID);
@@ -475,6 +481,9 @@
 
                 if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
                 if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
+
+                Edge existing = _Repository.ReadEdge(edge.GraphGUID, edge.GUID);
+                if (existing != null) return existing;
 
                 Edge created = _Repository.CreateEdge(edge);
 
