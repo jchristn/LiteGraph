@@ -528,6 +528,11 @@
             Endpoint URL.
             </summary>
         </member>
+        <member name="P:LiteGraph.Sdk.SdkBase.TimeoutMs">
+            <summary>
+            Timeout in milliseconds.
+            </summary>
+        </member>
         <member name="M:LiteGraph.Sdk.SdkBase.#ctor(System.String)">
             <summary>
             Instantiate.

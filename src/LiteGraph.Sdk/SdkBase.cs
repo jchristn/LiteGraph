@@ -60,12 +60,29 @@
             }
         }
 
+        /// <summary>
+        /// Timeout in milliseconds.
+        /// </summary>
+        public int TimeoutMs
+        {
+            get
+            {
+                return _TimeoutMs;
+            }
+            set
+            {
+                if (value < 1) throw new ArgumentOutOfRangeException(nameof(TimeoutMs));
+                _TimeoutMs = value;
+            }
+        }
+
         #endregion
 
         #region Private-Members
 
         private string _Header = "[LiteGraphSdk] ";
         private string _Endpoint = null;
+        private int _TimeoutMs = 300000;
 
         #endregion
 
@@ -110,6 +127,8 @@
             {
                 using (RestRequest req = new RestRequest(url, HttpMethod.Head))
                 {
+                    req.TimeoutMilliseconds = TimeoutMs;
+
                     using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                     {
                         if (resp != null && resp.StatusCode == 200)
@@ -156,6 +175,7 @@
             
             using (RestRequest req = new RestRequest(url, HttpMethod.Put))
             {
+                req.TimeoutMilliseconds = TimeoutMs;
                 req.ContentType = "application/json";
 
                 using (RestResponse resp = await req.SendAsync(json, token).ConfigureAwait(false))
@@ -201,6 +221,8 @@
 
             using (RestRequest req = new RestRequest(url, HttpMethod.Head))
             {
+                req.TimeoutMilliseconds = TimeoutMs;
+
                 using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                 {
                     if (resp != null)
@@ -238,6 +260,8 @@
 
             using (RestRequest req = new RestRequest(url))
             {
+                req.TimeoutMilliseconds = TimeoutMs;
+
                 using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                 {
                     if (resp != null)
@@ -281,6 +305,8 @@
 
             using (RestRequest req = new RestRequest(url))
             {
+                req.TimeoutMilliseconds = TimeoutMs;
+
                 using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                 {
                     if (resp != null)
@@ -318,6 +344,8 @@
 
             using (RestRequest req = new RestRequest(url))
             {
+                req.TimeoutMilliseconds = TimeoutMs;
+
                 using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                 {
                     if (resp != null)
@@ -368,6 +396,7 @@
 
             using (RestRequest req = new RestRequest(url, HttpMethod.Put))
             {
+                req.TimeoutMilliseconds = TimeoutMs;
                 req.ContentType = "application/json";
 
                 using (RestResponse resp = await req.SendAsync(json, token).ConfigureAwait(false))
@@ -413,6 +442,8 @@
 
             using (RestRequest req = new RestRequest(url, HttpMethod.Delete))
             {
+                req.TimeoutMilliseconds = TimeoutMs;
+
                 using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                 {
                     if (resp != null)
@@ -444,13 +475,18 @@
         /// <param name="contentType">Content-type.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Bytes.</returns>
-        public async Task<byte[]> Post(string url, byte[] bytes, string contentType = "application/octet-stream", CancellationToken token = default)
+        public async Task<byte[]> Post(
+            string url, 
+            byte[] bytes, 
+            string contentType = "application/octet-stream", 
+            CancellationToken token = default)
         {
             if (String.IsNullOrEmpty(url)) throw new ArgumentNullException(nameof(url));
             if (bytes == null) bytes = Array.Empty<byte>();
 
             using (RestRequest req = new RestRequest(url, HttpMethod.Post))
             {
+                req.TimeoutMilliseconds = TimeoutMs;
                 req.ContentType = contentType;
 
                 using (RestResponse resp = await req.SendAsync(bytes, token).ConfigureAwait(false))
