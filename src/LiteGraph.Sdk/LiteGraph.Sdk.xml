@@ -539,6 +539,11 @@
             </summary>
             <param name="endpoint">Endpoint.</param>
         </member>
+        <member name="M:LiteGraph.Sdk.SdkBase.Dispose">
+            <summary>
+            Dispose.
+            </summary>
+        </member>
         <member name="M:LiteGraph.Sdk.SdkBase.Log(LiteGraph.Sdk.SeverityEnum,System.String)">
             <summary>
             Emit a log message.

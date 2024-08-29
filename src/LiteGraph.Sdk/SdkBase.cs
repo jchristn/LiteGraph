@@ -10,7 +10,7 @@
     /// <summary>
     /// View SDK base class.
     /// </summary>
-    public class SdkBase
+    public class SdkBase : IDisposable
     {
         #region Public-Members
 
@@ -102,6 +102,17 @@
         #endregion
 
         #region Public-Methods
+
+        /// <summary>
+        /// Dispose.
+        /// </summary>
+        public void Dispose()
+        {
+            Logger = null;
+
+            _Header = null;
+            _Endpoint = null;
+        }
 
         /// <summary>
         /// Emit a log message.
