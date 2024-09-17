@@ -483,36 +483,17 @@
             Logging settings.
             </summary>
         </member>
-        <member name="P:LiteGraph.LiteGraphClient.MaxConcurrentOperations">
-            <summary>
-            Maximum number of concurrent operations.
-            For higher concurrency, use a lower number (e.g. 1).
-            For lower concurrency, use a higher number (e.g. 10).
-            This value dictates the maximum number of operations that may be operating in parallel at any one given time.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.LiteGraphClient.AvailableOperations">
-            <summary>
-            Available operations.
-            </summary>
-        </member>
         <member name="P:LiteGraph.LiteGraphClient.Serializer">
             <summary>
             Serialization helper.
             </summary>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.#ctor(LiteGraph.Repositories.RepositoryBase,LiteGraph.LoggingSettings,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.#ctor(LiteGraph.Repositories.RepositoryBase,LiteGraph.LoggingSettings)">
             <summary>
             Instantiate LiteGraph client.
             </summary>
             <param name="repository">Repository driver.</param>
             <param name="logging">Logging.</param>
-            <param name="maxConcurrentOperations">
-            Maximum number of concurrent operations allowed.  
-            For higher concurrency, use a lower number (e.g. 1).
-            For lower concurrency, use a higher number (e.g. 10).
-            This value dictates the maximum number of operations that may be operating in parallel at any one given time.
-            </param>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.Dispose">
             <summary>
@@ -1512,22 +1493,6 @@
             Port.
             </summary>
         </member>
-        <member name="P:LiteGraph.SyslogServer.RandomizePorts">
-            <summary>
-            Boolean to indicate whether or not randomized port numbers should be used.
-            If false, the value in 'Port' will be used.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.SyslogServer.MinimumPort">
-            <summary>
-            Minimum port.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.SyslogServer.MaximumPort">
-            <summary>
-            Maximum port.
-            </summary>
-        </member>
         <member name="M:LiteGraph.SyslogServer.#ctor">
             <summary>
             Instantiate.
@@ -1539,15 +1504,6 @@
             </summary>
             <param name="hostname">Hostname.</param>
             <param name="port">Port.</param>
-        </member>
-        <member name="M:LiteGraph.SyslogServer.#ctor(System.String,System.Int32,System.Int32)">
-            <summary>
-            Instantiate.
-            </summary>
-            <param name="hostname">Hostname.</param>
-            <param name="minPort">Minimum port number.</param>
-            <param name="maxPort">Maximum port number.</param>
-            <exception cref="T:System.ArgumentNullException"></exception>
         </member>
     </members>
 </doc>

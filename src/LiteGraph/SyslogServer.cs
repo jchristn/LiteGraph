@@ -7,6 +7,8 @@
     /// </summary>
     public class SyslogServer
     {
+        #region Public-Members
+
         /// <summary>
         /// Hostname.
         /// </summary>
@@ -39,48 +41,16 @@
             }
         }
 
-        /// <summary>
-        /// Boolean to indicate whether or not randomized port numbers should be used.
-        /// If false, the value in 'Port' will be used.
-        /// </summary>
-        public bool RandomizePorts { get; set; } = true;
+        #endregion
 
-        /// <summary>
-        /// Minimum port.
-        /// </summary>
-        public int MinimumPort
-        {
-            get
-            {
-                return _MinimumPort;
-            }
-            set
-            {
-                if (value < 0 || value > 65535) throw new ArgumentOutOfRangeException(nameof(MinimumPort));
-                _MinimumPort = value;
-            }
-        }
-
-        /// <summary>
-        /// Maximum port.
-        /// </summary>
-        public int MaximumPort
-        {
-            get
-            {
-                return _MaximumPort;
-            }
-            set
-            {
-                if (value < 0 || value > 65535) throw new ArgumentOutOfRangeException(nameof(MaximumPort));
-                _MaximumPort = value;
-            }
-        }
+        #region Private-Members
 
         private string _Hostname = "127.0.0.1";
         private int _Port = 514;
-        private int _MinimumPort = 65000;
-        private int _MaximumPort = 65535;
+
+        #endregion
+
+        #region Constructors-and-Factories
 
         /// <summary>
         /// Instantiate.
@@ -101,25 +71,16 @@
 
             _Hostname = hostname;
             _Port = port;
-
-            RandomizePorts = false;
         }
 
-        /// <summary>
-        /// Instantiate.
-        /// </summary>
-        /// <param name="hostname">Hostname.</param>
-        /// <param name="minPort">Minimum port number.</param>
-        /// <param name="maxPort">Maximum port number.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public SyslogServer(string hostname, int minPort, int maxPort)
-        {
-            if (string.IsNullOrEmpty(hostname)) throw new ArgumentNullException(nameof(hostname));
+        #endregion
 
-            MinimumPort = minPort;
-            MaximumPort = maxPort;
+        #region Public-Members
 
-            RandomizePorts = true;
-        }
+        #endregion
+
+        #region Private-Members
+
+        #endregion
     }
 }

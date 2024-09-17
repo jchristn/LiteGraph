@@ -33,31 +33,6 @@
         }
 
         /// <summary>
-        /// Maximum number of concurrent operations.
-        /// For higher concurrency, use a lower number (e.g. 1).
-        /// For lower concurrency, use a higher number (e.g. 10).
-        /// This value dictates the maximum number of operations that may be operating in parallel at any one given time.
-        /// </summary>
-        public int MaxConcurrentOperations
-        {
-            get
-            {
-                return _MaxConcurrentOperations;
-            }
-        }
-
-        /// <summary>
-        /// Available operations.
-        /// </summary>
-        public int AvailableOperations
-        {
-            get
-            {
-                return _Semaphore.CurrentCount;
-            }
-        }
-
-        /// <summary>
         /// Serialization helper.
         /// </summary>
         public SerializationHelper Serializer
@@ -79,8 +54,6 @@
 
         private bool _Disposed = false;
         private RepositoryBase _Repository = new SqliteRepository();
-        private int _MaxConcurrentOperations = 4;
-        private SemaphoreSlim _Semaphore = null;
         private SerializationHelper _Serializer = new SerializationHelper();
         private GexfWriter _Gexf = new GexfWriter();
 
@@ -93,26 +66,14 @@
         /// </summary>
         /// <param name="repository">Repository driver.</param>
         /// <param name="logging">Logging.</param>
-        /// <param name="maxConcurrentOperations">
-        /// Maximum number of concurrent operations allowed.  
-        /// For higher concurrency, use a lower number (e.g. 1).
-        /// For lower concurrency, use a higher number (e.g. 10).
-        /// This value dictates the maximum number of operations that may be operating in parallel at any one given time.
-        /// </param>
         public LiteGraphClient(
             RepositoryBase repository = null,
-            LoggingSettings logging = null,
-            int maxConcurrentOperations = 4)
+            LoggingSettings logging = null)
         {
             if (repository != null) _Repository = repository;
-            
+
             if (logging != null) Logging = logging;
             else Logging = new LoggingSettings();
-
-            if (maxConcurrentOperations < 1) throw new ArgumentOutOfRangeException(nameof(maxConcurrentOperations));
-
-            _MaxConcurrentOperations = maxConcurrentOperations;
-            _Semaphore = new SemaphoreSlim(_MaxConcurrentOperations);
         }
 
         #endregion
@@ -161,17 +122,12 @@
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            _Semaphore.Wait();
-            try
-            {
-                Graph existing = _Repository.ReadGraph(guid);
-                if (existing != null) return existing;
+            Graph existing = _Repository.ReadGraph(guid);
+            if (existing != null) return existing;
 
-                Graph graph = _Repository.CreateGraph(guid, name, data);
-                Logging.Log(SeverityEnum.Info, "created graph name " + name + " GUID " + graph.GUID);
-                return graph;
-            }
-            finally { _Semaphore.Release(); }
+            Graph graph = _Repository.CreateGraph(guid, name, data);
+            Logging.Log(SeverityEnum.Info, "created graph name " + name + " GUID " + graph.GUID);
+            return graph;
         }
 
         /// <summary>
@@ -191,17 +147,12 @@
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            _Semaphore.Wait();
-            try
-            {
-                Logging.Log(SeverityEnum.Debug, "retrieving graphs");
+            Logging.Log(SeverityEnum.Debug, "retrieving graphs");
 
-                foreach (Graph graph in _Repository.ReadGraphs(expr, order))
-                {
-                    yield return graph;
-                }
+            foreach (Graph graph in _Repository.ReadGraphs(expr, order))
+            {
+                yield return graph;
             }
-            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
@@ -211,14 +162,9 @@
         /// <returns>Graph.</returns>
         public Graph ReadGraph(Guid graphGuid)
         {
-            _Semaphore.Wait();
-            try
-            {
-                Logging.Log(SeverityEnum.Debug, "retrieving graph with GUID " + graphGuid);
+            Logging.Log(SeverityEnum.Debug, "retrieving graph with GUID " + graphGuid);
 
-                return _Repository.ReadGraph(graphGuid);
-            }
-            finally { _Semaphore.Release(); }
+            return _Repository.ReadGraph(graphGuid);
         }
 
         /// <summary>
@@ -230,14 +176,9 @@
         {
             if (graph == null) throw new ArgumentNullException(nameof(graph));
 
-            _Semaphore.Wait();
-            try
-            {
-                Logging.Log(SeverityEnum.Debug, "updating graph with name " + graph.Name + " GUID " + graph.GUID);
+            Logging.Log(SeverityEnum.Debug, "updating graph with name " + graph.Name + " GUID " + graph.GUID);
 
-                return _Repository.UpdateGraph(graph);
-            }
-            finally { _Semaphore.Release(); }
+            return _Repository.UpdateGraph(graph);
         }
 
         /// <summary>
@@ -250,32 +191,23 @@
             Graph graph = ReadGraph(graphGuid);
             if (graph == null) return;
 
-            try
+            Logging.Log(SeverityEnum.Info, "deleting graph with name " + graph.Name + " GUID " + graph.GUID);
+
+            if (force)
             {
-                _Semaphore.Wait();
+                Logging.Log(SeverityEnum.Info, "deleting graph edges and nodes for graph GUID " + graph.GUID);
 
-                Logging.Log(SeverityEnum.Info, "deleting graph with name " + graph.Name + " GUID " + graph.GUID);
-
-                if (force)
-                {
-                    Logging.Log(SeverityEnum.Info, "deleting graph edges and nodes for graph GUID " + graph.GUID);
-
-                    _Repository.DeleteEdges(graph.GUID);
-                    _Repository.DeleteNodes(graph.GUID);
-                }
-
-                if (_Repository.ReadNodes(graph.GUID).Count() > 0)
-                    throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
-
-                if (_Repository.ReadEdges(graph.GUID).Count() > 0)
-                    throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
-
-                _Repository.DeleteGraph(graph.GUID, force);
+                _Repository.DeleteEdges(graph.GUID);
+                _Repository.DeleteNodes(graph.GUID);
             }
-            finally 
-            { 
-                _Semaphore.Release();
-            }
+
+            if (_Repository.ReadNodes(graph.GUID).Count() > 0)
+                throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
+
+            if (_Repository.ReadEdges(graph.GUID).Count() > 0)
+                throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
+
+            _Repository.DeleteGraph(graph.GUID, force);
         }
 
         /// <summary>
@@ -285,12 +217,7 @@
         /// <returns>True if exists.</returns>
         public bool ExistsGraph(Guid guid)
         {
-            _Semaphore.Wait();
-            try
-            {
-                return _Repository.ExistsGraph(guid);
-            }
-            finally { _Semaphore.Release(); }
+            return _Repository.ExistsGraph(guid);
         }
 
         /// <summary>
@@ -329,22 +256,17 @@
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
 
-            _Semaphore.Wait();
-            try
-            {
-                if (!_Repository.ExistsGraph(node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
-                if (_Repository.ExistsNode(node.GraphGUID, node.GUID)) throw new ArgumentException("A node with GUID '" + node.GUID + "' already exists in graph '" + node.GraphGUID + "'.");
+            if (!_Repository.ExistsGraph(node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
+            if (_Repository.ExistsNode(node.GraphGUID, node.GUID)) throw new ArgumentException("A node with GUID '" + node.GUID + "' already exists in graph '" + node.GraphGUID + "'.");
 
-                Node existing = _Repository.ReadNode(node.GraphGUID, node.GUID);
-                if (existing != null) return existing;
+            Node existing = _Repository.ReadNode(node.GraphGUID, node.GUID);
+            if (existing != null) return existing;
 
-                Node created = _Repository.CreateNode(node);
+            Node created = _Repository.CreateNode(node);
 
-                Logging.Log(SeverityEnum.Debug, "created node " + created.GUID + " in graph " + created.GraphGUID);
+            Logging.Log(SeverityEnum.Debug, "created node " + created.GUID + " in graph " + created.GraphGUID);
 
-                return created;
-            }
-            finally { _Semaphore.Release(); }
+            return created;
         }
 
         /// <summary>
@@ -366,15 +288,10 @@
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            _Semaphore.Wait();
-            try
+            foreach (Node node in _Repository.ReadNodes(graphGuid, expr, order))
             {
-                foreach (Node node in _Repository.ReadNodes(graphGuid, expr, order))
-                {
-                    yield return node;
-                }
+                yield return node;
             }
-            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
@@ -385,12 +302,7 @@
         /// <returns>Node.</returns>
         public Node ReadNode(Guid graphGuid, Guid nodeGuid)
         {
-            _Semaphore.Wait();
-            try
-            {
-                return _Repository.ReadNode(graphGuid, nodeGuid);
-            }
-            finally { _Semaphore.Release(); }
+            return _Repository.ReadNode(graphGuid, nodeGuid);
         }
 
         /// <summary>
@@ -402,19 +314,14 @@
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
 
-            _Semaphore.Wait();
-            try
-            {
-                if (!_Repository.ExistsGraph(node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
-                if (!_Repository.ExistsNode(node.GraphGUID, node.GUID)) throw new ArgumentException("No node with GUID '" + node.GUID + "' exists in graph '" + node.GraphGUID + "'.");
-                
-                Node updated = _Repository.UpdateNode(node);
+            if (!_Repository.ExistsGraph(node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
+            if (!_Repository.ExistsNode(node.GraphGUID, node.GUID)) throw new ArgumentException("No node with GUID '" + node.GUID + "' exists in graph '" + node.GraphGUID + "'.");
 
-                Logging.Log(SeverityEnum.Debug, "updated node " + updated.GUID + " in graph " + updated.GraphGUID);
+            Node updated = _Repository.UpdateNode(node);
 
-                return updated;
-            }
-            finally { _Semaphore.Release(); }
+            Logging.Log(SeverityEnum.Debug, "updated node " + updated.GUID + " in graph " + updated.GraphGUID);
+
+            return updated;
         }
 
         /// <summary>
@@ -422,26 +329,20 @@
         /// </summary>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
-        public void DeleteNode(Guid graphGuid,Guid nodeGuid)
+        public void DeleteNode(Guid graphGuid, Guid nodeGuid)
         {
-            _Semaphore.Wait();
-
-            try
+            Node node = _Repository.ReadNode(graphGuid, nodeGuid);
+            if (node != null)
             {
-                Node node = _Repository.ReadNode(graphGuid, nodeGuid);
-                if (node != null)
-                {
-                    Logging.Log(SeverityEnum.Info, "deleting edges connected to node " + nodeGuid + " in graph " + graphGuid);
+                Logging.Log(SeverityEnum.Info, "deleting edges connected to node " + nodeGuid + " in graph " + graphGuid);
 
-                    foreach (Edge edge in _Repository.GetConnectedEdges(graphGuid, nodeGuid))
-                        _Repository.DeleteEdge(graphGuid, edge.GUID);
+                foreach (Edge edge in _Repository.GetConnectedEdges(graphGuid, nodeGuid))
+                    _Repository.DeleteEdge(graphGuid, edge.GUID);
 
-                    Logging.Log(SeverityEnum.Info, "deleting node " + nodeGuid + " in graph " + graphGuid);
+                Logging.Log(SeverityEnum.Info, "deleting node " + nodeGuid + " in graph " + graphGuid);
 
-                    _Repository.DeleteNode(graphGuid, nodeGuid);
-                }
+                _Repository.DeleteNode(graphGuid, nodeGuid);
             }
-            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
@@ -452,12 +353,7 @@
         /// <returns>True if exists.</returns>
         public bool ExistsNode(Guid graphGuid, Guid nodeGuid)
         {
-            _Semaphore.Wait();
-            try
-            {
-                return _Repository.ExistsNode(graphGuid,nodeGuid);
-            }
-            finally { _Semaphore.Release(); }
+            return _Repository.ExistsNode(graphGuid, nodeGuid);
         }
 
         #endregion
@@ -473,25 +369,20 @@
         {
             if (edge == null) throw new ArgumentNullException(nameof(edge));
 
-            _Semaphore.Wait();
-            try
-            {
-                if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
-                if (_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("An edge with GUID '" + edge.GUID + "' already exists in graph '" + edge.GraphGUID + "'.");
+            if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
+            if (_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("An edge with GUID '" + edge.GUID + "' already exists in graph '" + edge.GraphGUID + "'.");
 
-                if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
-                if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
 
-                Edge existing = _Repository.ReadEdge(edge.GraphGUID, edge.GUID);
-                if (existing != null) return existing;
+            Edge existing = _Repository.ReadEdge(edge.GraphGUID, edge.GUID);
+            if (existing != null) return existing;
 
-                Edge created = _Repository.CreateEdge(edge);
+            Edge created = _Repository.CreateEdge(edge);
 
-                Logging.Log(SeverityEnum.Debug, "created edge " + created.GUID + " in graph " + created.GraphGUID);
+            Logging.Log(SeverityEnum.Debug, "created edge " + created.GUID + " in graph " + created.GraphGUID);
 
-                return created;
-            }
-            finally { _Semaphore.Release(); }
+            return created;
         }
 
         /// <summary>
@@ -505,11 +396,11 @@
         /// <param name="data">Data.</param>
         /// <returns>Edge.</returns>
         public Edge CreateEdge(
-            Guid graphGuid, 
-            Node fromNode, 
-            Node toNode, 
-            string name, 
-            int cost = 0, 
+            Guid graphGuid,
+            Node fromNode,
+            Node toNode,
+            string name,
+            int cost = 0,
             object data = null)
         {
             if (fromNode == null) throw new ArgumentNullException(nameof(fromNode));
@@ -526,22 +417,17 @@
                 Data = data
             };
 
-            _Semaphore.Wait();
-            try
-            {
-                if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
-                if (_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("An edge with GUID '" + edge.GUID + "' already exists in graph '" + edge.GraphGUID + "'.");
+            if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
+            if (_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("An edge with GUID '" + edge.GUID + "' already exists in graph '" + edge.GraphGUID + "'.");
 
-                if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
-                if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
 
-                Edge created = _Repository.CreateEdge(edge);
+            Edge created = _Repository.CreateEdge(edge);
 
-                Logging.Log(SeverityEnum.Debug, "created edge " + created.GUID + " in graph " + created.GraphGUID);
+            Logging.Log(SeverityEnum.Debug, "created edge " + created.GUID + " in graph " + created.GraphGUID);
 
-                return created;
-            }
-            finally { _Semaphore.Release(); }
+            return created;
         }
 
         /// <summary>
@@ -559,15 +445,10 @@
             Expr expr = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            _Semaphore.Wait();
-            try
+            foreach (Edge edge in _Repository.ReadEdges(graphGuid, expr, order))
             {
-                foreach (Edge edge in _Repository.ReadEdges(graphGuid, expr, order))
-                {
-                    yield return edge;
-                }
+                yield return edge;
             }
-            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
@@ -578,12 +459,7 @@
         /// <returns>Edge.</returns>
         public Edge ReadEdge(Guid graphGuid, Guid edgeGuid)
         {
-            _Semaphore.Wait();
-            try
-            {
-                return _Repository.ReadEdge(graphGuid, edgeGuid);
-            }
-            finally { _Semaphore.Release(); }
+            return _Repository.ReadEdge(graphGuid, edgeGuid);
         }
 
         /// <summary>
@@ -595,22 +471,17 @@
         {
             if (edge == null) throw new ArgumentNullException(nameof(edge));
 
-            _Semaphore.Wait();
-            try
-            {
-                if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
-                if (!_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("No edge with GUID '" + edge.GUID + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
+            if (!_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("No edge with GUID '" + edge.GUID + "' exists in graph '" + edge.GraphGUID + "'");
 
-                if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
-                if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
 
-                Edge updated = _Repository.UpdateEdge(edge);
+            Edge updated = _Repository.UpdateEdge(edge);
 
-                Logging.Log(SeverityEnum.Debug, "updated edge " + updated.GUID + " in graph " + updated.GraphGUID);
+            Logging.Log(SeverityEnum.Debug, "updated edge " + updated.GUID + " in graph " + updated.GraphGUID);
 
-                return updated;
-            }
-            finally { _Semaphore.Release(); }
+            return updated;
         }
 
         /// <summary>
@@ -620,17 +491,12 @@
         /// <param name="edgeGuid">Edge GUID.</param>
         public void DeleteEdge(Guid graphGuid, Guid edgeGuid)
         {
-            _Semaphore.Wait();
-            try
+            Edge edge = _Repository.ReadEdge(graphGuid, edgeGuid);
+            if (edge != null)
             {
-                Edge edge = _Repository.ReadEdge(graphGuid, edgeGuid);
-                if (edge != null)
-                {
-                    _Repository.DeleteEdge(graphGuid, edgeGuid);
-                    Logging.Log(SeverityEnum.Debug, "deleted edge " + edgeGuid + " in graph " + graphGuid);
-                }
+                _Repository.DeleteEdge(graphGuid, edgeGuid);
+                Logging.Log(SeverityEnum.Debug, "deleted edge " + edgeGuid + " in graph " + graphGuid);
             }
-            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
@@ -641,12 +507,7 @@
         /// <returns>True if exists.</returns>
         public bool ExistsEdge(Guid graphGuid, Guid edgeGuid)
         {
-            _Semaphore.Wait();
-            try
-            {
-                return _Repository.ExistsEdge(graphGuid, edgeGuid);
-            }
-            finally { _Semaphore.Release(); }
+            return _Repository.ExistsEdge(graphGuid, edgeGuid);
         }
 
         #endregion
@@ -674,15 +535,10 @@
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            _Semaphore.Wait();
-            try
+            foreach (Node node in _Repository.GetParents(graphGuid, nodeGuid, edgeFilter, order))
             {
-                foreach (Node node in _Repository.GetParents(graphGuid, nodeGuid, edgeFilter, order))
-                {
-                    yield return node;
-                }
+                yield return node;
             }
-            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
@@ -706,15 +562,10 @@
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            _Semaphore.Wait();
-            try
+            foreach (Node node in _Repository.GetChildren(graphGuid, nodeGuid, edgeFilter, order))
             {
-                foreach (Node node in _Repository.GetChildren(graphGuid, nodeGuid, edgeFilter, order))
-                {
-                    yield return node;
-                }
+                yield return node;
             }
-            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
@@ -743,15 +594,10 @@
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            _Semaphore.Wait();
-            try
+            foreach (Node node in _Repository.GetNeighbors(graphGuid, nodeGuid, edgeFilter, nodeFilter, order))
             {
-                foreach (Node node in _Repository.GetNeighbors(graphGuid, nodeGuid, edgeFilter, nodeFilter, order))
-                {
-                    yield return node;
-                }
+                yield return node;
             }
-            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
@@ -778,21 +624,16 @@
             Expr edgeFilter = null,
             Expr nodeFilter = null)
         {
-            _Semaphore.Wait();
-            try
+            foreach (RouteDetail route in _Repository.GetRoutes(
+                searchType,
+                graphGuid,
+                fromNodeGuid,
+                toNodeGuid,
+                edgeFilter,
+                nodeFilter))
             {
-                foreach (RouteDetail route in _Repository.GetRoutes(
-                    searchType,
-                    graphGuid,
-                    fromNodeGuid,
-                    toNodeGuid,
-                    edgeFilter,
-                    nodeFilter))
-                {
-                    yield return route;
-                }
+                yield return route;
             }
-            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
@@ -812,15 +653,10 @@
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            _Semaphore.Wait();
-            try
+            foreach (Edge edge in _Repository.GetEdgesFrom(graphGuid, fromNodeGuid, edgeFilter, order))
             {
-                foreach (Edge edge in _Repository.GetEdgesFrom(graphGuid, fromNodeGuid, edgeFilter, order))
-                {
-                    yield return edge;
-                }
+                yield return edge;
             }
-            finally { _Semaphore.Release(); }
         }
 
         /// <summary>
@@ -840,12 +676,7 @@
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            _Semaphore.Wait();
-            try
-            {
-                return _Repository.GetEdgesTo(graphGuid, toNodeGuid, edgeFilter, order);
-            }
-            finally { _Semaphore.Release(); }
+            return _Repository.GetEdgesTo(graphGuid, toNodeGuid, edgeFilter, order);
         }
 
         /// <summary>
@@ -867,15 +698,10 @@
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            _Semaphore.Wait();
-            try
+            foreach (Edge edge in _Repository.GetEdgesBetween(graphGuid, fromNodeGuid, toNodeGuid, edgeFilter, order))
             {
-                foreach (Edge edge in _Repository.GetEdgesBetween(graphGuid, fromNodeGuid, toNodeGuid, edgeFilter, order))
-                {
-                    yield return edge;
-                }
+                yield return edge;
             }
-            finally { _Semaphore.Release(); }
         }
 
         #endregion

@@ -102,9 +102,7 @@
         private int _SelectBatchSize = 100;
         private string _TimestampFormat = "yyyy-MM-dd HH:mm:ss.ffffff";
         private readonly object _QueryLock = new object();
-
-        private LRUCache<Guid, Graph> _GraphCache = new LRUCache<Guid, Graph>(32, 8);
-        private readonly object _InsertLock = new object();
+        private readonly object _CreateLock = new object();
 
         #endregion
 
@@ -155,17 +153,14 @@
             Graph created = null;
             Graph existing = null;
 
-            lock (_InsertLock)
+            lock (_CreateLock)
             {
                 existing = ReadGraph(guid);
                 if (existing != null) return existing;
-
                 createResult = Query(createQuery, true);
             }
             
             created = GraphFromDataRow(createResult.Rows[0]);
-            _GraphCache.AddReplace(created.GUID, created);
-
             return created;
         }
 
@@ -192,7 +187,6 @@
         /// <inheritdoc />
         public override Graph ReadGraph(Guid guid)
         {
-            if (_GraphCache.Contains(guid)) return _GraphCache.Get(guid);
             DataTable result = Query(SelectGraphQuery(guid));
             if (result != null && result.Rows.Count == 1) return GraphFromDataRow(result.Rows[0]);
             return null;
@@ -204,7 +198,6 @@
             if (graph == null) throw new ArgumentNullException(nameof(graph));
             ValidateGraphExists(graph.GUID);
             Graph updated = GraphFromDataRow(Query(UpdateGraphQuery(graph), true).Rows[0]);
-            _GraphCache.AddReplace(updated.GUID, updated);
             return updated;
         }
 
@@ -220,7 +213,6 @@
                     Query(DeleteGraphNodesQuery(graph.GUID), true);
                 }
 
-                _GraphCache.Remove(graph.GUID);
                 Query(DeleteGraphQuery(graphGuid), true);
             }
         }
@@ -247,11 +239,10 @@
             Node created = null;
             Node existing = null;
 
-            lock (_InsertLock)
+            lock (_CreateLock)
             {
                 existing = ReadNode(node.GraphGUID, node.GUID);
                 if (existing != null) return existing;
-
                 createResult = Query(createQuery, true);
             }
 
@@ -619,11 +610,10 @@
             Edge created = null;
             Edge existing = null;
 
-            lock (_InsertLock)
+            lock (_CreateLock)
             {
                 existing = ReadEdge(edge.GraphGUID, edge.GUID);
                 if (existing != null) return existing;
-
                 createResult = Query(insertQuery, true);
             }
 
@@ -846,7 +836,9 @@
             queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_id' ON 'graphs' (id ASC);");
             queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_name' ON 'graphs' (name ASC);");
             queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_createdutc' ON 'graphs' ('createdutc' ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_data' ON 'graphs' ('data' ASC);");
+
+            if (IndexData)
+                queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_data' ON 'graphs' ('data' ASC);");
 
             #endregion
 

@@ -135,16 +135,13 @@
             #region Logging
 
             Console.WriteLine("Initializing logging");
-            _Logging = new LoggingModule();
-            _Logging.Settings.EnableConsole = _Settings.Logging.ConsoleLogging;
-            _Logging.Settings.EnableColors = _Settings.Logging.EnableColors;
 
-            _Logging.Servers = new List<SyslogServer>();
+            List<SyslogServer> syslogServers = new List<SyslogServer>();
             if (_Settings.Logging.Servers != null && _Settings.Logging.Servers.Count > 0)
             {
                 foreach (LiteGraph.SyslogServer server in _Settings.Logging.Servers)
                 {
-                    _Logging.Servers.Add(
+                    syslogServers.Add(
                         new SyslogServer
                         {
                             Hostname = server.Hostname,
@@ -155,6 +152,10 @@
                     Console.WriteLine("| syslog://" + server.Hostname + ":" + server.Port);
                 }
             }
+
+            _Logging = new LoggingModule(syslogServers);
+            _Logging.Settings.EnableConsole = _Settings.Logging.ConsoleLogging;
+            _Logging.Settings.EnableColors = _Settings.Logging.EnableColors;
 
             if (!String.IsNullOrEmpty(_Settings.Logging.LogDirectory))
             {
@@ -176,10 +177,7 @@
 
             #region LiteGraph-Client
 
-            _LiteGraph = new LiteGraphClient(
-                new SqliteRepository(_Settings.LiteGraph.Filename), 
-                _Settings.Logging, 
-                _Settings.LiteGraph.MaxConcurrentOperations);
+            _LiteGraph = new LiteGraphClient(new SqliteRepository(_Settings.LiteGraph.Filename), _Settings.Logging);
 
             _LiteGraph.Logging.Enable = true;
             _LiteGraph.Logging.Logger = LiteGraphLogger;
