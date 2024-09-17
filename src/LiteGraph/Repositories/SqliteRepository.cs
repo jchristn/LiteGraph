@@ -780,6 +780,8 @@
                 query = "BEGIN TRANSACTION; " + query + " END TRANSACTION;";
             }
 
+            if (Logging.LogQueries) Logging.Log(SeverityEnum.Debug, "query: " + query);
+
             lock (_QueryLock)
             {
                 using (SqliteConnection conn = new SqliteConnection(_ConnectionString))
@@ -788,8 +790,6 @@
                     {
                         conn.Open();
                         
-                        if (Logging.LogQueries) Logging.Log(SeverityEnum.Debug, "query: " + query);
-
                         using (SqliteCommand cmd = new SqliteCommand(query, conn))
                         {
                             using (SqliteDataReader rdr = cmd.ExecuteReader())
@@ -813,10 +813,10 @@
                         throw;
                     }
                 }
-
-                if (Logging.LogResults) Logging.Log(SeverityEnum.Debug, "result: " + query + ": " + (result != null ? result.Rows.Count + " rows" : "(null)"));
-                return result;
             }
+
+            if (Logging.LogResults) Logging.Log(SeverityEnum.Debug, "result: " + query + ": " + (result != null ? result.Rows.Count + " rows" : "(null)"));
+            return result;
         }
 
         private void CreateTablesAndIndices()
