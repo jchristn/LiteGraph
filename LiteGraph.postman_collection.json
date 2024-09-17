@@ -7,6 +7,30 @@
 	},
 	"item": [
 		{
+			"name": "General",
+			"item": [
+				{
+					"name": "Display active requests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/requests",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"requests"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Graphs",
 			"item": [
 				{

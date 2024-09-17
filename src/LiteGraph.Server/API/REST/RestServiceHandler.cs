@@ -40,6 +40,9 @@
             "::1"
         };
 
+        private Dictionary<Guid, ActiveRequest> _Requests = new Dictionary<Guid, ActiveRequest>();
+        private readonly object _RequestsLock = new object();
+
         #endregion
 
         #region Constructors-and-Factories
@@ -84,6 +87,7 @@
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.HEAD, "/", LoopbackRoute, ExceptionRoute);
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/", RootRoute, ExceptionRoute);
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/favicon.ico", FaviconRoute, ExceptionRoute);
+            _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/requests", RequestsRoute, ExceptionRoute);
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs", GraphCreateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/search", GraphSearchRoute, ExceptionRoute);
@@ -122,6 +126,18 @@
 
         internal async Task PreRoutingHandler(HttpContextBase ctx)
         {
+            ActiveRequest req = new ActiveRequest
+            {
+                SourceIp = ctx.Request.Source.IpAddress,
+                SourcePort = ctx.Request.Source.Port,
+                Method = ctx.Request.Method,
+                Url = ctx.Request.Url.RawWithQuery,
+                RequestBytes = ctx.Request.ContentLength
+            };
+
+            lock (_RequestsLock) _Requests.Add(req.GUID, req);
+
+            ctx.Metadata = req;
             ctx.Response.Headers.Add(Constants.HostnameHeader, _Hostname);
             ctx.Response.ContentType = Constants.JsonContentType;
 
@@ -143,6 +159,11 @@
 
         internal async Task PostRoutingHandler(HttpContextBase ctx)
         {
+            Guid guid = ((ActiveRequest)ctx.Metadata).GUID;
+
+            lock (_RequestsLock)
+                _Requests.Remove(guid);
+
             string msg =
                 _Header
                 + ctx.Request.Method.ToString() + " " + ctx.Request.Url.RawWithQuery + " "
@@ -209,6 +230,17 @@
             ctx.Response.StatusCode = 200;
             ctx.Response.ContentType = Constants.FaviconContentType;
             await ctx.Response.Send(File.ReadAllBytes(Constants.FaviconFile));
+        }
+
+        private async Task RequestsRoute(HttpContextBase ctx)
+        {
+            Dictionary<Guid, ActiveRequest> dict = null;
+
+            lock (_RequestsLock) dict = new Dictionary<Guid, ActiveRequest>(_Requests);
+
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = Constants.JsonContentType;
+            await ctx.Response.Send(_Serializer.SerializeJson(dict, true));
         }
 
         private async Task NoRequestBody(HttpContextBase ctx)
