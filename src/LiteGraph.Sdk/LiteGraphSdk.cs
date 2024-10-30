@@ -41,7 +41,7 @@
 
         #endregion
 
-        #region Graph-Routes
+        #region Graph-APIs
 
         /// <summary>
         /// Check if a graph exists by GUID.
@@ -159,7 +159,7 @@
 
         #endregion
 
-        #region Node-Routes
+        #region Node-APIs
 
         /// <summary>
         /// Check if a node exists by GUID.
@@ -263,7 +263,7 @@
 
         #endregion
 
-        #region Edge-Routes
+        #region Edge-APIs
 
         /// <summary>
         /// Check if an edge exists by GUID.
