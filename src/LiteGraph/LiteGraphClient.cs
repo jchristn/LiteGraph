@@ -270,6 +270,24 @@
         }
 
         /// <summary>
+        /// Create nodes.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edges">Nodes.</param>
+        /// <returns>Nodes.</returns>
+        public List<Node> CreateNodes(Guid graphGuid, List<Node> edges)
+        {
+            if (edges == null) throw new ArgumentNullException(nameof(edges));
+
+            if (!_Repository.ExistsGraph(graphGuid)) throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
+
+            List<Node> created = _Repository.CreateMultipleNodes(graphGuid, edges);
+            Logging.Log(SeverityEnum.Debug, "created " + created.Count + " node(s) in graph " + graphGuid);
+
+            return created;
+        }
+
+        /// <summary>
         /// Read nodes.
         /// </summary>
         /// <param name="graphGuid">Graph GUID.</param>
@@ -346,6 +364,25 @@
         }
 
         /// <summary>
+        /// Delete all nodes associated with a graph.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        public void DeleteNodes(Guid graphGuid)
+        {
+            _Repository.DeleteNodes(graphGuid);
+        }
+
+        /// <summary>
+        /// Delete specific nodes associated with a graph.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuids">Node GUIDs.</param>
+        public void DeleteNodes(Guid graphGuid, List<Guid> nodeGuids)
+        {
+            _Repository.DeleteNodes(graphGuid, nodeGuids);
+        }
+
+        /// <summary>
         /// Check existence of a node.
         /// </summary>
         /// <param name="graphGuid">Graph GUID.</param>
@@ -381,6 +418,24 @@
             Edge created = _Repository.CreateEdge(edge);
 
             Logging.Log(SeverityEnum.Debug, "created edge " + created.GUID + " in graph " + created.GraphGUID);
+
+            return created;
+        }
+
+        /// <summary>
+        /// Create edges.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edges">Edges.</param>
+        /// <returns>Edges.</returns>
+        public List<Edge> CreateEdges(Guid graphGuid, List<Edge> edges)
+        {
+            if (edges == null) throw new ArgumentNullException(nameof(edges));
+
+            if (!_Repository.ExistsGraph(graphGuid)) throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
+
+            List<Edge> created = _Repository.CreateMultipleEdges(graphGuid, edges);
+            Logging.Log(SeverityEnum.Debug, "created " + created.Count + " edges(s) in graph " + graphGuid);
 
             return created;
         }
@@ -500,6 +555,25 @@
         }
 
         /// <summary>
+        /// Delete all edges associated with a graph.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        public void DeleteEdges(Guid graphGuid)
+        {
+            _Repository.DeleteEdges(graphGuid);
+        }
+
+        /// <summary>
+        /// Delete specific edges associated with a graph.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuids">Edge GUIDs.</param>
+        public void DeleteEdges(Guid graphGuid, List<Guid> edgeGuids)
+        {
+            _Repository.DeleteEdges(graphGuid, edgeGuids);
+        }
+
+        /// <summary>
         /// Check if an edge exists by GUID.
         /// </summary>
         /// <param name="graphGuid">Graph GUID.</param>
@@ -508,6 +582,23 @@
         public bool ExistsEdge(Guid graphGuid, Guid edgeGuid)
         {
             return _Repository.ExistsEdge(graphGuid, edgeGuid);
+        }
+
+        #endregion
+
+        #region Batch
+
+        /// <summary>
+        /// Batch existence check.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="req">Existence request.</param>
+        /// <returns>Existence result.</returns>
+        public ExistenceResult BatchExistence(Guid graphGuid, ExistenceRequest req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.ContainsExistenceRequest()) throw new ArgumentException("Supplied existence request contains no valid existence filters.");
+            return _Repository.BatchExistence(graphGuid, req);
         }
 
         #endregion

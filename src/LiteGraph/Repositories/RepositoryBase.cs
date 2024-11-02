@@ -131,6 +131,14 @@
         public abstract Node CreateNode(Node node);
 
         /// <summary>
+        /// Create multiple nodes.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodes">Nodes.</param>
+        /// <returns>Nodes.</returns>
+        public abstract List<Node> CreateMultipleNodes(Guid graphGuid, List<Node> nodes);
+
+        /// <summary>
         /// Read nodes.
         /// </summary>
         /// <param name="graphGuid">Graph GUID.</param>
@@ -174,6 +182,13 @@
         public abstract void DeleteNodes(Guid graphGuid);
 
         /// <summary>
+        /// Delete multiple nodes from a graph.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuids">Node GUIDs.</param>
+        public abstract void DeleteNodes(Guid graphGuid, List<Guid> nodeGuids);
+
+        /// <summary>
         /// Check existence of a node.
         /// </summary>
         /// <param name="graphGuid">Graph GUID.</param>
@@ -191,6 +206,14 @@
         /// <param name="edge">Edge.</param>
         /// <returns>Edge.</returns>
         public abstract Edge CreateEdge(Edge edge);
+
+        /// <summary>
+        /// Create multiple edges.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edges">Edges.</param>
+        /// <returns>Edges.</returns>
+        public abstract List<Edge> CreateMultipleEdges(Guid graphGuid, List<Edge> edges);
 
         /// <summary>
         /// Read edges.
@@ -236,12 +259,45 @@
         public abstract void DeleteEdges(Guid graphGuid);
 
         /// <summary>
+        /// Delete all edges associated with a given node.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        public abstract void DeleteNodeEdges(Guid graphGuid, Guid nodeGuid);
+
+        /// <summary>
+        /// Delete all edges associated with a set of given nodes.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuids">Node GUIDs.</param>
+        public abstract void DeleteNodeEdges(Guid graphGuid, List<Guid> nodeGuids);
+
+        /// <summary>
+        /// Delete multiple edges from a graph.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuids">Edge GUIDs.</param>
+        public abstract void DeleteEdges(Guid graphGuid, List<Guid> edgeGuids);
+
+        /// <summary>
         /// Check if an edge exists by GUID.
         /// </summary>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="edgeGuid">Edge GUID.</param>
         /// <returns>True if exists.</returns>
         public abstract bool ExistsEdge(Guid graphGuid, Guid edgeGuid);
+
+        #endregion
+
+        #region Batch
+
+        /// <summary>
+        /// Batch existence request.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="req">Existence request.</param>
+        /// <returns>Existence result.</returns>
+        public abstract ExistenceResult BatchExistence(Guid graphGuid, ExistenceRequest req);
 
         #endregion
 

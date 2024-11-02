@@ -251,6 +251,38 @@
         }
 
         /// <inheritdoc />
+        public override List<Node> CreateMultipleNodes(Guid graphGuid, List<Node> nodes)
+        {
+            if (nodes == null || nodes.Count < 1) return null;
+            ValidateGraphExists(graphGuid);
+
+            foreach (Node node in nodes)
+                node.GraphGUID = graphGuid;
+
+            ExistenceRequest req = new ExistenceRequest
+            {
+                Nodes = nodes.Select(n => n.GUID).ToList()
+            };
+
+            ExistenceResult result = BatchExistence(graphGuid, req);
+            if (result.ExistingNodes != null && result.ExistingNodes.Count > 0)
+                throw new InvalidOperationException("The requested node GUIDs already exist: " + string.Join(",", result.ExistingNodes));
+
+            string createQuery = InsertMultipleNodesQuery(nodes);
+            string retrieveQuery = SelectMultipleNodesQuery(nodes.Select(n => n.GUID).ToList());
+            DataTable createResult = null;
+            DataTable retrieveResult = null;
+
+            lock (_CreateLock)
+            {
+                createResult = Query(createQuery, true);
+                retrieveResult = Query(retrieveQuery, true);
+            }
+                        
+            return NodesFromDataTable(retrieveResult);
+        }
+
+        /// <inheritdoc />
         public override IEnumerable<Node> ReadNodes(
             Guid graphGuid,
             Expr nodeFilter = null,
@@ -301,6 +333,34 @@
         {
             ValidateGraphExists(graphGuid);
             Query(DeleteNodesQuery(graphGuid), true);
+            DeleteEdges(graphGuid);
+        }
+
+        /// <inheritdoc />
+        public override void DeleteNodes(Guid graphGuid, List<Guid> nodeGuids)
+        {
+            if (nodeGuids == null || nodeGuids.Count < 1) return;
+            ValidateGraphExists(graphGuid);
+            Query(DeleteNodesQuery(graphGuid, nodeGuids), true);
+            DeleteNodeEdges(graphGuid, nodeGuids);
+        }
+
+        /// <inheritdoc />
+        public override void DeleteNodeEdges(Guid graphGuid, Guid nodeGuid)
+        {
+            ValidateGraphExists(graphGuid);
+            DeleteNodeEdges(graphGuid, new List<Guid> { nodeGuid });
+        }
+
+        /// <inheritdoc />
+        public override void DeleteNodeEdges(Guid graphGuid, List<Guid> nodeGuids)
+        {
+            if (nodeGuids == null || nodeGuids.Count < 1) return;
+            ValidateGraphExists(graphGuid);
+            string query = DeleteNodeEdgesQuery(graphGuid, nodeGuids);
+
+            lock (_CreateLock)
+                Query(query);
         }
 
         /// <inheritdoc />
@@ -484,6 +544,113 @@
 
         #endregion
 
+        #region Batch
+
+        /// <inheritdoc />
+        public override ExistenceResult BatchExistence(Guid graphGuid, ExistenceRequest req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.ContainsExistenceRequest()) throw new ArgumentException("Supplied existence request contains no valid existence filters.");
+
+            Graph graph = ReadGraph(graphGuid);
+            if (graph == null) throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
+
+            ExistenceResult resp = new ExistenceResult();
+
+            #region Nodes
+
+            if (req.Nodes != null)
+            {
+                resp.ExistingNodes = new List<Guid>();
+                resp.MissingNodes = new List<Guid>();
+
+                string nodesQuery = BatchExistsNodesQuery(graphGuid, req.Nodes);
+                DataTable nodesResult = Query(nodesQuery);
+                if (nodesResult != null && nodesResult.Rows != null && nodesResult.Rows.Count > 0)
+                {
+                    foreach (DataRow row in nodesResult.Rows)
+                    {
+                        if (row["exists"] != null && row["exists"] != DBNull.Value)
+                        {
+                            int exists = Convert.ToInt32(row["exists"]);
+                            if (exists == 1)
+                                resp.ExistingNodes.Add(Guid.Parse(row["id"].ToString()));
+                            else
+                                resp.MissingNodes.Add(Guid.Parse(row["id"].ToString()));
+                        }
+                    }
+                }
+            }
+
+            #endregion
+
+            #region Edges
+
+            if (req.Edges != null)
+            {
+                resp.ExistingEdges = new List<Guid>();
+                resp.MissingEdges = new List<Guid>();
+
+                string edgesQuery = BatchExistsEdgesQuery(graphGuid, req.Edges);
+                DataTable edgesResult = Query(edgesQuery);
+                if (edgesResult != null && edgesResult.Rows != null && edgesResult.Rows.Count > 0)
+                {
+                    foreach (DataRow row in edgesResult.Rows)
+                    {
+                        if (row["exists"] != null && row["exists"] != DBNull.Value)
+                        {
+                            int exists = Convert.ToInt32(row["exists"]);
+                            if (exists == 1)
+                                resp.ExistingEdges.Add(Guid.Parse(row["id"].ToString()));
+                            else
+                                resp.MissingEdges.Add(Guid.Parse(row["id"].ToString()));
+                        }
+                    }
+                }
+            }
+
+            #endregion
+
+            #region Edges-Between
+
+            if (req.EdgesBetween != null)
+            {
+                resp.ExistingEdgesBetween = new List<EdgeBetween>();
+                resp.MissingEdgesBetween = new List<EdgeBetween>();
+
+                string betweenQuery = BatchExistsEdgesBetweenQuery(graphGuid, req.EdgesBetween);
+                DataTable betweenResult = Query(betweenQuery);
+                if (betweenResult != null && betweenResult.Rows != null && betweenResult.Rows.Count > 0)
+                {
+                    foreach (DataRow row in betweenResult.Rows)
+                    {
+                        if (row["exists"] != null && row["exists"] != DBNull.Value)
+                        {
+                            int exists = Convert.ToInt32(row["exists"]);
+                            if (exists == 1)
+                                resp.ExistingEdgesBetween.Add(new EdgeBetween
+                                {
+                                    From = Guid.Parse(row["fromguid"].ToString()),
+                                    To = Guid.Parse(row["toguid"].ToString())
+                                });
+                            else
+                                resp.MissingEdgesBetween.Add(new EdgeBetween
+                                {
+                                    From = Guid.Parse(row["fromguid"].ToString()),
+                                    To = Guid.Parse(row["toguid"].ToString())
+                                });
+                        }
+                    }
+                }
+            }
+
+            #endregion
+
+            return resp;
+        }
+
+        #endregion
+
         #region Edges
 
         /// <inheritdoc />
@@ -622,6 +789,40 @@
         }
 
         /// <inheritdoc />
+        public override List<Edge> CreateMultipleEdges(Guid graphGuid, List<Edge> edges)
+        {
+            if (edges == null || edges.Count < 1) return null;
+            ValidateGraphExists(graphGuid);
+
+            foreach (Edge edge in edges)
+                edge.GraphGUID = graphGuid;
+
+            ExistenceRequest req = new ExistenceRequest();
+            req.Edges = edges.Select(n => n.GUID).ToList();
+            req.Nodes = edges.Select(n => n.From).Concat(edges.Select(n => n.To)).Distinct().ToList();
+
+            ExistenceResult result = BatchExistence(graphGuid, req);
+            if (result.ExistingEdges != null && result.ExistingEdges.Count > 0)
+                throw new InvalidOperationException("The requested edge GUIDs already exist: " + string.Join(",", result.ExistingEdges));
+
+            if (result.MissingNodes != null && result.MissingNodes.Count > 0)
+                throw new KeyNotFoundException("The specified node GUIDs do not exist: " + string.Join(",", result.MissingNodes));
+
+            string createQuery = InsertMultipleEdgesQuery(edges);
+            string retrieveQuery = SelectMultipleEdgesQuery(edges.Select(n => n.GUID).ToList());
+            DataTable createResult = null;
+            DataTable retrieveResult = null;
+
+            lock (_CreateLock)
+            {
+                createResult = Query(createQuery, true);
+                retrieveResult = Query(retrieveQuery, true);
+            }
+
+            return EdgesFromDataTable(retrieveResult);
+        }
+
+        /// <inheritdoc />
         public override IEnumerable<Edge> ReadEdges(
             Guid graphGuid,
             Expr edgeFilter = null,
@@ -672,6 +873,14 @@
         {
             ValidateGraphExists(graphGuid);
             Query(DeleteEdgesQuery(graphGuid), true);
+        }
+
+        /// <inheritdoc />
+        public override void DeleteEdges(Guid graphGuid, List<Guid> edgeGuids)
+        {
+            if (edgeGuids == null || edgeGuids.Count < 1) return;
+            ValidateGraphExists(graphGuid);
+            Query(DeleteEdgesQuery(graphGuid, edgeGuids), true);
         }
 
         /// <inheritdoc />
@@ -1526,6 +1735,44 @@
             return ret;
         }
 
+        private string InsertMultipleNodesQuery(List<Node> nodes)
+        {
+            string ret =
+                "INSERT INTO 'nodes' "
+                + "VALUES ";
+
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (i > 0) ret += ",";
+                ret += "(";
+                ret += "'" + nodes[i].GUID.ToString() + "',"
+                    + "'" + nodes[i].GraphGUID.ToString() + "',"
+                    + "'" + Sanitize(nodes[i].Name) + "',";
+
+                if (nodes[i].Data == null) ret += "null,";
+                else ret += "'" + Sanitize(Serializer.SerializeJson(nodes[i].Data, false)) + "',";
+                ret += "'" + Sanitize(nodes[i].CreatedUtc.ToString(TimestampFormat)) + "'";
+                ret += ")";
+            }
+
+            ret += ";";
+            return ret;
+        }
+
+        private string SelectMultipleNodesQuery(List<Guid> guids)
+        {
+            string ret = "SELECT * FROM 'nodes' WHERE id IN (";
+
+            for (int i = 0; i < guids.Count; i++)
+            {
+                if (i > 0) ret += ",";
+                ret += "'" + Sanitize(guids[i].ToString()) + "'";
+            }
+
+            ret += ");";
+            return ret;
+        }
+
         private string SelectNodeQuery(Guid graphGuid, Guid nodeGuid)
         {
             return "SELECT * FROM 'nodes' WHERE "
@@ -1582,6 +1829,38 @@
                 "DELETE FROM 'nodes' WHERE graphid = '" + graphGuid.ToString() + "';";
         }
 
+        private string DeleteNodesQuery(Guid graphGuid, List<Guid> nodeGuids)
+        {
+            string ret =
+                "DELETE FROM 'nodes' WHERE graphid = '" + graphGuid.ToString() + "' "
+                + "AND id IN (";
+
+            for (int i = 0; i < nodeGuids.Count; i++)
+            {
+                if (i > 0) ret += ",";
+                ret += "'" + Sanitize(nodeGuids[i].ToString()) + "'";
+            }
+
+            ret += ");";
+            return ret;
+        }
+
+        private string DeleteNodeEdgesQuery(Guid graphGuid, List<Guid> nodeGuids)
+        {
+            string ret =
+                "DELETE FROM 'edges' WHERE graphid = '" + graphGuid.ToString() + "' "
+                + "AND (";
+
+            for (int i = 0; i < nodeGuids.Count; i++)
+            {
+                if (i > 0) ret += "OR ";
+                ret += "(fromguid = '" + Sanitize(nodeGuids[i].ToString()) + "' OR toguid = '" + Sanitize(nodeGuids[i].ToString()) + "')";
+            }
+
+            ret += ")";
+            return ret;
+        }
+
         private Node NodeFromDataRow(DataRow row)
         {
             if (row == null) return null;
@@ -1594,6 +1873,74 @@
                 Data = GetDataRowJsonValue(row, "data"),
                 CreatedUtc = DateTime.Parse(row["createdutc"].ToString())
             };
+        }
+
+        private List<Node> NodesFromDataTable(DataTable table)
+        {
+            if (table == null || table.Rows == null || table.Rows.Count < 1) return null;
+
+            List<Node> ret = new List<Node>();
+
+            foreach (DataRow row in table.Rows)
+                ret.Add(NodeFromDataRow(row));
+
+            return ret;
+        }
+
+        private string BatchExistsNodesQuery(Guid graphGuid, List<Guid> nodeGuids)
+        {
+            string query = "WITH temp(id) AS (VALUES ";
+
+            for (int i = 0; i < nodeGuids.Count; i++)
+            {
+                if (i > 0) query += ",";
+                query += "('" + nodeGuids[i].ToString() + "')";
+            }
+
+            query +=
+                ") "
+                + "SELECT temp.id, CASE WHEN nodes.id IS NOT NULL THEN 1 ELSE 0 END as \"exists\" "
+                + "FROM temp "
+                + "LEFT JOIN nodes ON temp.id = nodes.id AND nodes.graphid = '" + graphGuid.ToString() + "';";
+            return query;
+        }
+
+        private string BatchExistsEdgesQuery(Guid graphGuid, List<Guid> edgeGuids)
+        {
+            string query = "WITH temp(id) AS (VALUES ";
+
+            for (int i = 0; i < edgeGuids.Count; i++)
+            {
+                if (i > 0) query += ",";
+                query += "('" + edgeGuids[i].ToString() + "')";
+            }
+
+            query +=
+                ") "
+                + "SELECT temp.id, CASE WHEN edges.id IS NOT NULL THEN 1 ELSE 0 END as \"exists\" "
+                + "FROM temp "
+                + "LEFT JOIN edges ON temp.id = edges.id AND edges.graphid = '" + graphGuid.ToString() + "';";
+            return query;
+        }
+
+        private string BatchExistsEdgesBetweenQuery(Guid graphGuid, List<EdgeBetween> edgesBetween)
+        {
+            string query = "WITH temp(fromguid, toguid) AS (VALUES ";
+
+            for (int i = 0; i < edgesBetween.Count; i++)
+            {
+                EdgeBetween curr = edgesBetween[i];
+                if (i > 0) query += ",";
+                query += "('" + curr.From.ToString() + "','" + curr.To.ToString() + "')";
+            }
+
+            query +=
+                ") "
+                + "SELECT temp.fromguid, temp.toguid, CASE WHEN edges.fromguid IS NOT NULL THEN 1 ELSE 0 END AS \"exists\" "
+                + "FROM temp "
+                + "LEFT JOIN edges ON temp.fromguid = edges.fromguid AND temp.toguid = edges.toguid AND edges.graphid = '" + graphGuid.ToString() + "';";
+
+            return query;
         }
 
         #endregion
@@ -1620,6 +1967,48 @@
                 + ") "
                 + "RETURNING *;";
 
+            return ret;
+        }
+
+        private string InsertMultipleEdgesQuery(List<Edge> edges)
+        {
+            string ret =
+                "INSERT INTO 'edges' "
+                + "VALUES ";
+
+            for (int i = 0; i < edges.Count; i++)
+            {
+                if (i > 0) ret += ",";
+                ret += "("
+                    + "'" + edges[i].GUID.ToString() + "',"
+                    + "'" + edges[i].GraphGUID.ToString() + "',"
+                    + "'" + Sanitize(edges[i].Name) + "',"
+                    + "'" + edges[i].From.ToString() + "',"
+                    + "'" + edges[i].To.ToString() + "',"
+                    + "'" + edges[i].Cost.ToString() + "',";
+
+                if (edges[i].Data == null) ret += "null,";
+                else ret += "'" + Sanitize(Serializer.SerializeJson(edges[i].Data, false)) + "',";
+
+                ret += "'" + Sanitize(edges[i].CreatedUtc.ToString(TimestampFormat)) + "'";
+                ret += ")";
+            }
+
+            ret += ";";
+            return ret;
+        }
+
+        private string SelectMultipleEdgesQuery(List<Guid> guids)
+        {
+            string ret = "SELECT * FROM 'edges' WHERE id IN (";
+
+            for (int i = 0; i < guids.Count; i++)
+            {
+                if (i > 0) ret += ",";
+                ret += "'" + Sanitize(guids[i].ToString()) + "'";
+            }
+
+            ret += ");";
             return ret;
         }
 
@@ -1769,12 +2158,40 @@
                 "DELETE FROM 'edges' WHERE graphid = '" + graphGuid.ToString() + "';";
         }
 
+        private string DeleteEdgesQuery(Guid graphGuid, List<Guid> edgeGuids)
+        {
+            string ret =
+                "DELETE FROM 'edges' WHERE graphid = '" + graphGuid.ToString() + "' "
+                + "AND id IN (";
+
+            for (int i = 0; i < edgeGuids.Count; i++)
+            {
+                if (i > 0) ret += ",";
+                ret += "'" + Sanitize(edgeGuids[i].ToString()) + "'";
+            }
+
+            ret += ");";
+            return ret;
+        }
+
+        private List<Edge> EdgesFromDataTable(DataTable table)
+        {
+            if (table == null || table.Rows == null || table.Rows.Count < 1) return null;
+
+            List<Edge> ret = new List<Edge>();
+
+            foreach (DataRow row in table.Rows)
+                ret.Add(EdgeFromDataRow(row));
+
+            return ret;
+        }
+
         private Edge EdgeFromDataRow(DataRow row)
         {
             if (row == null) return null;
 
             return new Edge
-            { 
+            {
                 GUID = Guid.Parse(row["id"].ToString()),
                 GraphGUID = Guid.Parse(row["graphid"].ToString()),
                 Name = GetDataRowStringValue(row, "name"),

@@ -6,14 +6,10 @@
 
 LiteGraph is a lightweight graph database built using Sqlite with support for exporting to GEXF.
 
-## New in v2.0.x
+## New in v2.1.x
 
-- Major overhaul, refactor, and breaking changes
-- Integrated webserver and RESTful API
-- Extensibility through base repository class
-- Hierarchical expression support while filtering over graph, node, and edge data objects
-- Removal of property constraints on nodes and edges
-- Search APIs in the SDK for graphs, nodes, and edges
+- Added batch APIs for existence, deletion, and creation
+- Minor internal refactor 
 
 ## Bugs, Feedback, or Enhancement Requests
 

@@ -96,23 +96,30 @@
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs", GraphReadManyRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}", GraphUpdateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}", GraphDeleteRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/existence", GraphExistenceRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/export/gexf", GraphGexfExportRoute, ExceptionRoute);
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/nodes", NodeCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/nodes/multiple", NodeCreateMultipleRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/nodes/search", NodeSearchRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeReadRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeExistsRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes", NodeReadManyRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/nodes/all", NodeDeleteAllRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/nodes/multiple", NodeDeleteMultipleRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeDeleteRoute, ExceptionRoute);
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/edges", EdgeCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/edges/multiple", EdgeCreateMultipleRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges/between", EdgesBetweenRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/edges/search", EdgeSearchRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeReadRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeExistsRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges", EdgeReadManyRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/edges/all", EdgeDeleteAllRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/edges/multiple", EdgeDeleteMultipleRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeDeleteRoute, ExceptionRoute);
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}/edges/from", EdgesFromNodeRoute, ExceptionRoute);
@@ -209,6 +216,7 @@
             {
                 ctx.Response.StatusCode = 500;
                 await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.InternalError, null, e.Message), true));
+                _Logging.Warn(_Header + "exception encountered for " + ctx.Request.Method.ToString() + " " + ctx.Request.Url.RawWithQuery + Environment.NewLine + e.ToString());
             }
         }
 
@@ -270,6 +278,34 @@
         {
             List<Graph> graphs = _LiteGraph.ReadGraphs().ToList();
             await ctx.Response.Send(_Serializer.SerializeJson(graphs, true));
+        }
+
+        private async Task GraphExistenceRoute(HttpContextBase ctx)
+        {
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            try
+            {
+                Guid graphGuid = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
+                ExistenceRequest req = _Serializer.DeserializeJson<ExistenceRequest>(ctx.Request.DataAsString);
+                if (!req.ContainsExistenceRequest())
+                {
+                    ctx.Response.StatusCode = 400;
+                    await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "No valid existence filters are present in the request."), true));
+                }
+
+                ExistenceResult resp = _LiteGraph.BatchExistence(graphGuid, req);
+                await ctx.Response.Send(_Serializer.SerializeJson(resp, true));
+            }
+            catch (ArgumentException e)
+            {
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
+            }
         }
 
         private async Task GraphSearchRoute(HttpContextBase ctx)
@@ -434,6 +470,34 @@
             }
         }
 
+        private async Task NodeCreateMultipleRoute(HttpContextBase ctx)
+        {
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            try
+            {
+                List<Node> nodes = _Serializer.DeserializeJson<List<Node>>(ctx.Request.DataAsString);
+                Guid graphGuid  = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
+                List<Node> created = _LiteGraph.CreateNodes(graphGuid, nodes);
+                ctx.Response.StatusCode = 201;
+                await ctx.Response.Send(_Serializer.SerializeJson(created, true));
+            }
+            catch (InvalidOperationException ioe)
+            {
+                ctx.Response.StatusCode = 409;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.Conflict, null, ioe.Message), true));
+            }
+            catch (ArgumentException e)
+            {
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
+            }
+        }
+
         private async Task NodeReadManyRoute(HttpContextBase ctx)
         {
             List<Node> nodes = _LiteGraph.ReadNodes(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"])).ToList();
@@ -530,6 +594,28 @@
             await ctx.Response.Send();
         }
 
+        private async Task NodeDeleteAllRoute(HttpContextBase ctx)
+        {
+            _LiteGraph.DeleteNodes(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]));
+            ctx.Response.StatusCode = 204;
+            await ctx.Response.Send();
+        }
+
+        private async Task NodeDeleteMultipleRoute(HttpContextBase ctx)
+        {
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            List<Guid> guids = _Serializer.DeserializeJson<List<Guid>>(ctx.Request.DataAsString);
+            Guid graphGuid = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
+            _LiteGraph.DeleteNodes(graphGuid, guids);
+            ctx.Response.StatusCode = 204;
+            await ctx.Response.Send();
+        }
+
         #endregion
 
         #region Edge-Routes
@@ -549,6 +635,39 @@
                 edge = _LiteGraph.CreateEdge(edge);
                 ctx.Response.StatusCode = 201;
                 await ctx.Response.Send(_Serializer.SerializeJson(edge, true));
+            }
+            catch (ArgumentException e)
+            {
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
+            }
+        }
+
+        private async Task EdgeCreateMultipleRoute(HttpContextBase ctx)
+        {
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            try
+            {
+                List<Edge> edges = _Serializer.DeserializeJson<List<Edge>>(ctx.Request.DataAsString);
+                Guid graphGuid = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
+                List<Edge> created = _LiteGraph.CreateEdges(graphGuid, edges);
+                ctx.Response.StatusCode = 201;
+                await ctx.Response.Send(_Serializer.SerializeJson(created, true));
+            }
+            catch (KeyNotFoundException knfe)
+            {
+                ctx.Response.StatusCode = 404;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound, null, knfe.Message), true));
+            }
+            catch (InvalidOperationException ioe)
+            {
+                ctx.Response.StatusCode = 409;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.Conflict, null, ioe.Message), true));
             }
             catch (ArgumentException e)
             {
@@ -680,6 +799,28 @@
                 Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
                 Guid.Parse(ctx.Request.Url.Parameters["edgeGuid"]));
 
+            ctx.Response.StatusCode = 204;
+            await ctx.Response.Send();
+        }
+
+        private async Task EdgeDeleteAllRoute(HttpContextBase ctx)
+        {
+            _LiteGraph.DeleteEdges(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]));
+            ctx.Response.StatusCode = 204;
+            await ctx.Response.Send();
+        }
+
+        private async Task EdgeDeleteMultipleRoute(HttpContextBase ctx)
+        {
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            List<Guid> guids = _Serializer.DeserializeJson<List<Guid>>(ctx.Request.DataAsString);
+            Guid graphGuid = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
+            _LiteGraph.DeleteEdges(graphGuid, guids);
             ctx.Response.StatusCode = 204;
             await ctx.Response.Send();
         }

@@ -51,6 +51,69 @@
 }
 ```
 
+### Existence Request
+```
+{
+    "Nodes": [
+        "[guid1]",
+        "[guid2]",
+        ...
+    ],
+    "Edges": [
+        "[guid1]",
+        "[guid2]",
+        ...
+    ],
+    "EdgesBetween": [
+        {
+            "From": "[fromguid]",
+            "To": "[toguid]"
+        },
+        ...
+    ]
+}
+```
+
+### Existence Result
+```
+{
+    "ExistingNodes": [
+        "[guid1]",
+        "[guid2]",
+        ...
+    ],
+    "MissingNodes": [
+        "[guid1]",
+        "[guid2]",
+        ...
+    ],
+    "ExistingEdges": [
+        "[guid1]",
+        "[guid2]",
+        ...
+    ],
+    "MissingEdges": [
+        "[guid1]",
+        "[guid2]",
+        ...
+    ],
+    "ExistingEdgesBetween": [
+        {
+            "From": "[fromguid]",
+            "To": "[toguid]"
+        },
+        ...
+    ],
+    "MissingEdgesBetween": [
+        {
+            "From": "[fromguid]",
+            "To": "[toguid]"
+        },
+        ...
+    ]
+}
+```
+
 ## General APIs
 
 | API                   | Method | URL                                      |
@@ -70,30 +133,35 @@
 | Exists             | HEAD   | /v1.0/graphs/[guid]                      |
 | Search             | POST   | /v1.0/graphs/search                      |
 | Render as GEXF     | GET    | /v1.0/graphs/[guid]/export/gexf?incldata |
+| Batch existence    | POST   | /v1.0/graphs/[guid]/existence            |
 
 ## Node APIs
 
-| API        | Method | URL                              |
-|------------|--------|----------------------------------|
-| Create     | PUT    | /v1.0/graphs/[guid]/nodes        |
-| Read       | GET    | /v1.0/graphs/[guid]/nodes/[guid] |
-| Read many  | GET    | /v1.0/graphs/[guid]/nodes        |
-| Update     | PUT    | /v1.0/graphs/[guid]/nodes/[guid] |
-| Delete     | DELETE | /v1.0/graphs/[guid]/nodes/[guid] |
-| Exists     | HEAD   | /v1.0/graphs/[guid]/nodes/[guid] |
-| Search     | POST   | /v1.0/graphs/[guid]/nodes/search |
+| API             | Method | URL                                |
+|-----------------|--------|------------------------------------|
+| Create          | PUT    | /v1.0/graphs/[guid]/nodes          |
+| Read            | GET    | /v1.0/graphs/[guid]/nodes/[guid]   |
+| Read many       | GET    | /v1.0/graphs/[guid]/nodes          |
+| Update          | PUT    | /v1.0/graphs/[guid]/nodes/[guid]   |
+| Delete all      | DELETE | /v1.0/graphs/[guid]/nodes/all      |
+| Delete multiple | DELETE | /v1.0/graphs/[guid]/nodes/multiple |
+| Delete          | DELETE | /v1.0/graphs/[guid]/nodes/[guid]   |
+| Exists          | HEAD   | /v1.0/graphs/[guid]/nodes/[guid]   |
+| Search          | POST   | /v1.0/graphs/[guid]/nodes/search   |
 
 ## Edge APIs
 
-| API        | Method | URL                              |
-|------------|--------|----------------------------------|
-| Create     | PUT    | /v1.0/graphs/[guid]/edges        |
-| Read       | GET    | /v1.0/graphs/[guid]/edges/[guid] |
-| Read many  | GET    | /v1.0/graphs/[guid]/edges        |
-| Update     | PUT    | /v1.0/graphs/[guid]/edges/[guid] |
-| Delete     | DELETE | /v1.0/graphs/[guid]/edges/[guid] |
-| Exists     | HEAD   | /v1.0/graphs/[guid]/edges/[guid] |
-| Search     | POST   | /v1.0/graphs/[guid]/edges/search |
+| API             | Method | URL                                       |
+|-----------------|--------|-------------------------------------------|
+| Create          | PUT    | /v1.0/graphs/[guid]/edges                 |
+| Read            | GET    | /v1.0/graphs/[guid]/edges/[guid]          |
+| Read many       | GET    | /v1.0/graphs/[guid]/edges                 |
+| Update          | PUT    | /v1.0/graphs/[guid]/edges/[guid]          |
+| Delete all      | DELETE | /v1.0/graphs/[guid]/edges/[guid]/all      |
+| Delete multiple | DELETE | /v1.0/graphs/[guid]/edges/[guid]/multiple |
+| Delete          | DELETE | /v1.0/graphs/[guid]/edges/[guid]          |
+| Exists          | HEAD   | /v1.0/graphs/[guid]/edges/[guid]          |
+| Search          | POST   | /v1.0/graphs/[guid]/edges/search          |
 
 ## Traversal and Networking
 

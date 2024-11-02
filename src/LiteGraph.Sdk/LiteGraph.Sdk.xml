@@ -54,6 +54,26 @@
             Instantiate.
             </summary>
         </member>
+        <member name="T:LiteGraph.Sdk.EdgeBetween">
+            <summary>
+            Existence check for multiple identifiers request.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.EdgeBetween.From">
+            <summary>
+            From GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.EdgeBetween.To">
+            <summary>
+            To GUID.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Sdk.EdgeBetween.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
         <member name="T:LiteGraph.Sdk.EnumerationOrderEnum">
             <summary>
             Enumeration order.
@@ -97,6 +117,77 @@
         <member name="F:LiteGraph.Sdk.EnumerationOrderEnum.CostDescending">
             <summary>
             Cost descending.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Sdk.ExistenceRequest">
+            <summary>
+            Existence check for multiple identifiers request.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.ExistenceRequest.Nodes">
+            <summary>
+            List of node GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.ExistenceRequest.Edges">
+            <summary>
+            List of edge GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.ExistenceRequest.EdgesBetween">
+            <summary>
+            List of edges between two nodes.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Sdk.ExistenceRequest.#ctor">
+            <summary>
+            Route request.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Sdk.ExistenceRequest.ContainsExistenceRequest">
+            <summary>
+            Verify that the object contains at least one existence request.
+            </summary>
+            <returns>True if present.</returns>
+        </member>
+        <member name="T:LiteGraph.Sdk.ExistenceResult">
+            <summary>
+            Existence check for multiple identifiers result.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.ExistenceResult.ExistingNodes">
+            <summary>
+            List of existing node GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.ExistenceResult.MissingNodes">
+            <summary>
+            List of missing node GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.ExistenceResult.ExistingEdges">
+            <summary>
+            List of existing edge GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.ExistenceResult.MissingEdges">
+            <summary>
+            List of missing edge GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.ExistenceResult.ExistingEdgesBetween">
+            <summary>
+            List of existing edges between two nodes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.ExistenceResult.MissingEdgesBetween">
+            <summary>
+            List of missing edges between two nodes.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Sdk.ExistenceResult.#ctor">
+            <summary>
+            Route request.
             </summary>
         </member>
         <member name="T:LiteGraph.Sdk.Graph">
@@ -206,6 +297,15 @@
             <param name="token">Cancellation token.</param>
             <returns>String containing GEXF XML data.</returns>
         </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.BatchExistence(System.Guid,LiteGraph.Sdk.ExistenceRequest,System.Threading.CancellationToken)">
+            <summary>
+            Execute a batch existence request.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="req">Existence request.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Existence result.</returns>
+        </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.NodeExists(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Check if a node exists by GUID.
@@ -265,6 +365,23 @@
             <param name="token">Cancellation token.</param>
             <returns>Task.</returns>
         </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.DeleteNodes(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete all nodes within a graph.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.DeleteNodes(System.Guid,System.Collections.Generic.List{System.Guid},System.Threading.CancellationToken)">
+            <summary>
+            Delete multiple nodes.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuids">List of node GUIDs.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Task.</returns>
+        </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.EdgeExists(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Check if an edge exists by GUID.
@@ -321,6 +438,23 @@
             </summary>
             <param name="graphGuid">Graph GUID.</param>
             <param name="edgeGuid"></param>
+            <param name="token">Cancellation token.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.DeleteEdges(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete all edges.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.DeleteEdges(System.Guid,System.Collections.Generic.List{System.Guid},System.Threading.CancellationToken)">
+            <summary>
+            Delete multiple edges.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edgeGuids">List of edge GUIDs.</param>
             <param name="token">Cancellation token.</param>
             <returns>Task.</returns>
         </member>
@@ -488,22 +622,22 @@
             Route request.
             </summary>
         </member>
-        <member name="T:LiteGraph.Sdk.RouteResponse">
+        <member name="T:LiteGraph.Sdk.RouteResult">
             <summary>
-            Route response.
+            Route result.
             </summary>
         </member>
-        <member name="P:LiteGraph.Sdk.RouteResponse.Timestamp">
+        <member name="P:LiteGraph.Sdk.RouteResult.Timestamp">
             <summary>
             Timestamp.
             </summary>
         </member>
-        <member name="P:LiteGraph.Sdk.RouteResponse.Routes">
+        <member name="P:LiteGraph.Sdk.RouteResult.Routes">
             <summary>
             Routes.
             </summary>
         </member>
-        <member name="M:LiteGraph.Sdk.RouteResponse.#ctor">
+        <member name="M:LiteGraph.Sdk.RouteResult.#ctor">
             <summary>
             Route request.
             </summary>
@@ -620,7 +754,28 @@
             <param name="token">Cancellation token.</param>
             <returns>Task.</returns>
         </member>
-        <member name="M:LiteGraph.Sdk.SdkBase.Post(System.String,System.Byte[],System.String,System.Threading.CancellationToken)">
+        <member name="M:LiteGraph.Sdk.SdkBase.Delete``1(System.String,``0,System.Threading.CancellationToken)">
+            <summary>
+            Delete an object.
+            </summary>
+            <typeparam name="T">Type.</typeparam>
+            <param name="url">URL.</param>
+            <param name="obj">Object.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.SdkBase.Post``2(System.String,``0,System.Threading.CancellationToken)">
+            <summary>
+            Submit a POST request.
+            </summary>
+            <typeparam name="T1">Input object type.</typeparam>
+            <typeparam name="T2">Return object type.</typeparam>
+            <param name="url">URL.</param>
+            <param name="obj">Object.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Instance of T2.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.SdkBase.PostRaw(System.String,System.Byte[],System.String,System.Threading.CancellationToken)">
             <summary>
             Submit a POST request.
             </summary>

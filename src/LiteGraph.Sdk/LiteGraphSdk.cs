@@ -93,7 +93,7 @@
 
             string url = Endpoint + "v1.0/graphs/search";
             string json = Serializer.SerializeJson(searchReq, true);
-            byte[] bytes = await Post(url, Encoding.UTF8.GetBytes(json), "application/json", token).ConfigureAwait(false);
+            byte[] bytes = await PostRaw(url, Encoding.UTF8.GetBytes(json), "application/json", token).ConfigureAwait(false);
 
             if (bytes != null && bytes.Length > 0)
             {
@@ -157,6 +157,20 @@
             return null;
         }
 
+        /// <summary>
+        /// Execute a batch existence request.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="req">Existence request.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Existence result.</returns>
+        public async Task<ExistenceResult> BatchExistence(Guid graphGuid, ExistenceRequest req, CancellationToken token = default)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/existence";
+            return await Post<ExistenceRequest, ExistenceResult>(url, req, token).ConfigureAwait(false);
+        }
+
         #endregion
 
         #region Node-APIs
@@ -211,7 +225,7 @@
 
             string url = Endpoint + "v1.0/graphs/" + searchReq.GraphGUID + "/nodes/search";
 
-            byte[] bytes = await Post(url, Encoding.UTF8.GetBytes(Serializer.SerializeJson(searchReq, true)), "application/json", token).ConfigureAwait(false);
+            byte[] bytes = await PostRaw(url, Encoding.UTF8.GetBytes(Serializer.SerializeJson(searchReq, true)), "application/json", token).ConfigureAwait(false);
 
             if (bytes != null && bytes.Length > 0)
             {
@@ -259,6 +273,31 @@
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/" + nodeGuid;
             await Delete(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Delete all nodes within a graph.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task DeleteNodes(Guid graphGuid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/all";
+            await Delete(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Delete multiple nodes.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuids">List of node GUIDs.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task DeleteNodes(Guid graphGuid, List<Guid> nodeGuids, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/multiple";
+            await Delete<List<Guid>>(url, nodeGuids, token).ConfigureAwait(false);
         }
 
         #endregion
@@ -315,7 +354,7 @@
 
             string url = Endpoint + "v1.0/graphs/" + searchReq.GraphGUID + "/edges/search";
 
-            byte[] bytes = await Post(url, Encoding.UTF8.GetBytes(Serializer.SerializeJson(searchReq, true)), "application/json", token).ConfigureAwait(false);
+            byte[] bytes = await PostRaw(url, Encoding.UTF8.GetBytes(Serializer.SerializeJson(searchReq, true)), "application/json", token).ConfigureAwait(false);
 
             if (bytes != null && bytes.Length > 0)
             {
@@ -363,6 +402,31 @@
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges/" + edgeGuid;
             await Delete(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Delete all edges.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task DeleteEdges(Guid graphGuid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges/all";
+            await Delete(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Delete multiple edges.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuids">List of edge GUIDs.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task DeleteEdges(Guid graphGuid, List<Guid> edgeGuids, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges/multiple";
+            await Delete<List<Guid>>(url, edgeGuids, token).ConfigureAwait(false);
         }
 
         #endregion
@@ -473,7 +537,7 @@
         /// <param name="toNodeGuid">To node GUID.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Routes.</returns>
-        public async Task<RouteResponse> GetRoutes(Guid graphGuid, Guid fromNodeGuid, Guid toNodeGuid, CancellationToken token = default)
+        public async Task<RouteResult> GetRoutes(Guid graphGuid, Guid fromNodeGuid, Guid toNodeGuid, CancellationToken token = default)
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/routes";
             
@@ -484,11 +548,11 @@
                 To = toNodeGuid
             };
 
-            byte[] bytes = await Post(url, Encoding.UTF8.GetBytes(Serializer.SerializeJson(req, true)), "application/json", token).ConfigureAwait(false);
+            byte[] bytes = await PostRaw(url, Encoding.UTF8.GetBytes(Serializer.SerializeJson(req, true)), "application/json", token).ConfigureAwait(false);
 
             if (bytes != null && bytes.Length > 0)
             {
-                RouteResponse resp = Serializer.DeserializeJson<RouteResponse>(Encoding.UTF8.GetString(bytes));
+                RouteResult resp = Serializer.DeserializeJson<RouteResult>(Encoding.UTF8.GetString(bytes));
                 return resp;
             }
 

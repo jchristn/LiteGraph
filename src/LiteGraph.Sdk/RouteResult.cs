@@ -5,9 +5,9 @@
     using Timestamps;
 
     /// <summary>
-    /// Route response.
+    /// Route result.
     /// </summary>
-    public class RouteResponse
+    public class RouteResult
     {
         #region Public-Members
 
@@ -57,7 +57,7 @@
         /// <summary>
         /// Route request.
         /// </summary>
-        public RouteResponse()
+        public RouteResult()
         {
 
         }

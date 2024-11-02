@@ -79,6 +79,26 @@
             Instantiate.
             </summary>
         </member>
+        <member name="T:LiteGraph.EdgeBetween">
+            <summary>
+            Existence check for multiple identifiers request.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.EdgeBetween.From">
+            <summary>
+            From GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.EdgeBetween.To">
+            <summary>
+            To GUID.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.EdgeBetween.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
         <member name="T:LiteGraph.EnumerationOrderEnum">
             <summary>
             Enumeration order.
@@ -122,6 +142,77 @@
         <member name="F:LiteGraph.EnumerationOrderEnum.CostDescending">
             <summary>
             Cost descending.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.ExistenceRequest">
+            <summary>
+            Existence check for multiple identifiers request.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.ExistenceRequest.Nodes">
+            <summary>
+            List of node GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.ExistenceRequest.Edges">
+            <summary>
+            List of edge GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.ExistenceRequest.EdgesBetween">
+            <summary>
+            List of edges between two nodes.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.ExistenceRequest.#ctor">
+            <summary>
+            Route request.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.ExistenceRequest.ContainsExistenceRequest">
+            <summary>
+            Verify that the object contains at least one existence request.
+            </summary>
+            <returns>True if present.</returns>
+        </member>
+        <member name="T:LiteGraph.ExistenceResult">
+            <summary>
+            Existence check for multiple identifiers result.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.ExistenceResult.ExistingNodes">
+            <summary>
+            List of existing node GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.ExistenceResult.MissingNodes">
+            <summary>
+            List of missing node GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.ExistenceResult.ExistingEdges">
+            <summary>
+            List of existing edge GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.ExistenceResult.MissingEdges">
+            <summary>
+            List of missing edge GUIDs.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.ExistenceResult.ExistingEdgesBetween">
+            <summary>
+            List of existing edges between two nodes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.ExistenceResult.MissingEdgesBetween">
+            <summary>
+            List of missing edges between two nodes.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.ExistenceResult.#ctor">
+            <summary>
+            Route request.
             </summary>
         </member>
         <member name="T:LiteGraph.Gexf.Metadata">
@@ -584,6 +675,14 @@
             <param name="node">Node.</param>
             <returns>Node.</returns>
         </member>
+        <member name="M:LiteGraph.LiteGraphClient.CreateNodes(System.Guid,System.Collections.Generic.List{LiteGraph.Node})">
+            <summary>
+            Create nodes.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edges">Nodes.</param>
+            <returns>Nodes.</returns>
+        </member>
         <member name="M:LiteGraph.LiteGraphClient.ReadNodes(System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
             Read nodes.
@@ -618,6 +717,19 @@
             <param name="graphGuid">Graph GUID.</param>
             <param name="nodeGuid">Node GUID.</param>
         </member>
+        <member name="M:LiteGraph.LiteGraphClient.DeleteNodes(System.Guid)">
+            <summary>
+            Delete all nodes associated with a graph.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.DeleteNodes(System.Guid,System.Collections.Generic.List{System.Guid})">
+            <summary>
+            Delete specific nodes associated with a graph.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuids">Node GUIDs.</param>
+        </member>
         <member name="M:LiteGraph.LiteGraphClient.ExistsNode(System.Guid,System.Guid)">
             <summary>
             Check existence of a node.
@@ -632,6 +744,14 @@
             </summary>
             <param name="edge">Edge.</param>
             <returns>Edge.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.CreateEdges(System.Guid,System.Collections.Generic.List{LiteGraph.Edge})">
+            <summary>
+            Create edges.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edges">Edges.</param>
+            <returns>Edges.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.CreateEdge(System.Guid,LiteGraph.Node,LiteGraph.Node,System.String,System.Int32,System.Object)">
             <summary>
@@ -679,6 +799,19 @@
             <param name="graphGuid">Graph GUID.</param>
             <param name="edgeGuid">Edge GUID.</param>
         </member>
+        <member name="M:LiteGraph.LiteGraphClient.DeleteEdges(System.Guid)">
+            <summary>
+            Delete all edges associated with a graph.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.DeleteEdges(System.Guid,System.Collections.Generic.List{System.Guid})">
+            <summary>
+            Delete specific edges associated with a graph.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edgeGuids">Edge GUIDs.</param>
+        </member>
         <member name="M:LiteGraph.LiteGraphClient.ExistsEdge(System.Guid,System.Guid)">
             <summary>
             Check if an edge exists by GUID.
@@ -686,6 +819,14 @@
             <param name="graphGuid">Graph GUID.</param>
             <param name="edgeGuid">Edge GUID.</param>
             <returns>True if exists.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.BatchExistence(System.Guid,LiteGraph.ExistenceRequest)">
+            <summary>
+            Batch existence check.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="req">Existence request.</param>
+            <returns>Existence result.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.GetParents(System.Guid,System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
@@ -974,6 +1115,14 @@
             <param name="node">Node.</param>
             <returns>Node.</returns>
         </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.CreateMultipleNodes(System.Guid,System.Collections.Generic.List{LiteGraph.Node})">
+            <summary>
+            Create multiple nodes.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodes">Nodes.</param>
+            <returns>Nodes.</returns>
+        </member>
         <member name="M:LiteGraph.Repositories.RepositoryBase.ReadNodes(System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
             Read nodes.
@@ -1014,6 +1163,13 @@
             </summary>
             <param name="graphGuid">Graph GUID.</param>
         </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.DeleteNodes(System.Guid,System.Collections.Generic.List{System.Guid})">
+            <summary>
+            Delete multiple nodes from a graph.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuids">Node GUIDs.</param>
+        </member>
         <member name="M:LiteGraph.Repositories.RepositoryBase.ExistsNode(System.Guid,System.Guid)">
             <summary>
             Check existence of a node.
@@ -1028,6 +1184,14 @@
             </summary>
             <param name="edge">Edge.</param>
             <returns>Edge.</returns>
+        </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.CreateMultipleEdges(System.Guid,System.Collections.Generic.List{LiteGraph.Edge})">
+            <summary>
+            Create multiple edges.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edges">Edges.</param>
+            <returns>Edges.</returns>
         </member>
         <member name="M:LiteGraph.Repositories.RepositoryBase.ReadEdges(System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
@@ -1069,6 +1233,27 @@
             </summary>
             <param name="graphGuid">Graph GUID.</param>
         </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.DeleteNodeEdges(System.Guid,System.Guid)">
+            <summary>
+            Delete all edges associated with a given node.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+        </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.DeleteNodeEdges(System.Guid,System.Collections.Generic.List{System.Guid})">
+            <summary>
+            Delete all edges associated with a set of given nodes.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuids">Node GUIDs.</param>
+        </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.DeleteEdges(System.Guid,System.Collections.Generic.List{System.Guid})">
+            <summary>
+            Delete multiple edges from a graph.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edgeGuids">Edge GUIDs.</param>
+        </member>
         <member name="M:LiteGraph.Repositories.RepositoryBase.ExistsEdge(System.Guid,System.Guid)">
             <summary>
             Check if an edge exists by GUID.
@@ -1076,6 +1261,14 @@
             <param name="graphGuid">Graph GUID.</param>
             <param name="edgeGuid">Edge GUID.</param>
             <returns>True if exists.</returns>
+        </member>
+        <member name="M:LiteGraph.Repositories.RepositoryBase.BatchExistence(System.Guid,LiteGraph.ExistenceRequest)">
+            <summary>
+            Batch existence request.
+            </summary>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="req">Existence request.</param>
+            <returns>Existence result.</returns>
         </member>
         <member name="M:LiteGraph.Repositories.RepositoryBase.GetParents(System.Guid,System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
@@ -1252,6 +1445,9 @@
         <member name="M:LiteGraph.Repositories.SqliteRepository.CreateNode(LiteGraph.Node)">
             <inheritdoc />
         </member>
+        <member name="M:LiteGraph.Repositories.SqliteRepository.CreateMultipleNodes(System.Guid,System.Collections.Generic.List{LiteGraph.Node})">
+            <inheritdoc />
+        </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.ReadNodes(System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <inheritdoc />
         </member>
@@ -1265,6 +1461,15 @@
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.DeleteNodes(System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:LiteGraph.Repositories.SqliteRepository.DeleteNodes(System.Guid,System.Collections.Generic.List{System.Guid})">
+            <inheritdoc />
+        </member>
+        <member name="M:LiteGraph.Repositories.SqliteRepository.DeleteNodeEdges(System.Guid,System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:LiteGraph.Repositories.SqliteRepository.DeleteNodeEdges(System.Guid,System.Collections.Generic.List{System.Guid})">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.ExistsNode(System.Guid,System.Guid)">
@@ -1282,6 +1487,9 @@
         <member name="M:LiteGraph.Repositories.SqliteRepository.GetRoutes(LiteGraph.SearchTypeEnum,System.Guid,System.Guid,System.Guid,ExpressionTree.Expr,ExpressionTree.Expr)">
             <inheritdoc />
         </member>
+        <member name="M:LiteGraph.Repositories.SqliteRepository.BatchExistence(System.Guid,LiteGraph.ExistenceRequest)">
+            <inheritdoc />
+        </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.GetConnectedEdges(System.Guid,System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <inheritdoc />
         </member>
@@ -1297,6 +1505,9 @@
         <member name="M:LiteGraph.Repositories.SqliteRepository.CreateEdge(LiteGraph.Edge)">
             <inheritdoc />
         </member>
+        <member name="M:LiteGraph.Repositories.SqliteRepository.CreateMultipleEdges(System.Guid,System.Collections.Generic.List{LiteGraph.Edge})">
+            <inheritdoc />
+        </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.ReadEdges(System.Guid,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <inheritdoc />
         </member>
@@ -1310,6 +1521,9 @@
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.DeleteEdges(System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:LiteGraph.Repositories.SqliteRepository.DeleteEdges(System.Guid,System.Collections.Generic.List{System.Guid})">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.Repositories.SqliteRepository.ExistsEdge(System.Guid,System.Guid)">
