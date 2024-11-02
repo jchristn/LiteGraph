@@ -312,6 +312,48 @@
 			]
 		},
 		{
+			"name": "Batch",
+			"item": [
+				{
+					"name": "Existence",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Nodes\": [\r\n        \"ddbab487-ea6a-4ee4-8884-3ef55220e230\",\r\n        \"0c8c4f91-ae17-4f13-be5c-4d24a11ff703\",\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"Edges\": [\r\n        \"16edcc3a-7924-4334-bdeb-da1a31bc55ad\",\r\n        \"4057704f-37a3-4bea-8568-0384eeebcc71\",\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"EdgesBetween\": [\r\n        { \"From\": \"ddbab487-ea6a-4ee4-8884-3ef55220e230\", \"To\": \"1933a861-a86c-493b-809b-e1a15c577954\" },\r\n        { \"From\": \"d176c9f7-7584-408c-8b02-ea0db9e13d60\", \"To\": \"1933a861-a86c-493b-809b-e1a15c577954\" },\r\n        { \"From\": \"00000000-0000-0000-0000-000000000000\", \"To\": \"00000000-0000-0000-0000-000000000000\" }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/existence",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
+								"existence"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Nodes",
 			"item": [
 				{
@@ -395,7 +437,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"GraphGUID\": \"efc59548-cb8c-44c4-b5e1-18db50294eca\",\r\n    \"Name\": \"My test node 1\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
+							"raw": "{\r\n    \"Name\": \"My test node 1\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -403,7 +445,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes",
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/nodes",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -412,8 +454,46 @@
 							"path": [
 								"v1.0",
 								"graphs",
-								"443f2e21-d93f-4348-9b18-a018b02fa050",
+								"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
 								"nodes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create multiple",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\r\n        \"Name\": \"Active Directory\",\r\n        \"Data\": {\r\n            \"Name\": \"Active Directory\"\r\n        }\r\n    },\r\n    {\r\n        \"Name\": \"Website\",\r\n        \"Data\": {\r\n            \"Name\": \"Website\"\r\n        }\r\n    }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/nodes/multiple",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
+								"nodes",
+								"multiple"
 							]
 						}
 					},
@@ -532,6 +612,82 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Delete all",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/nodes/all",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+								"nodes",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete multiple",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    \"99191a81-32fd-499d-9bdf-6812377ade8d\",\r\n    \"92f87cb8-3eb7-4e3a-beb4-1199976588c4\"\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/nodes/multiple",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
+								"nodes",
+								"multiple"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -619,7 +775,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"2b1520be-d285-4f22-8c74-f296047162b9\",\r\n    \"To\": \"784cfa37-fb06-4f81-b10d-f1167dfe2b22\",\r\n    \"Cost\": 10,\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    },\r\n    \"CreatedUtc\": \"2024-07-01 15:43:06.991834\"\r\n}",
+							"raw": "{\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"2b1520be-d285-4f22-8c74-f296047162b9\",\r\n    \"To\": \"784cfa37-fb06-4f81-b10d-f1167dfe2b22\",\r\n    \"Cost\": 10,\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -638,6 +794,44 @@
 								"graphs",
 								"b4a19d9b-1951-4bea-acbd-fba11bc020db",
 								"edges"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create multiple",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\r\n        \"Name\": \"DigitalOcean to Control Plane\",\r\n        \"From\": \"b8c4d0b0-45fe-4f75-9dec-51b37b8d5b07\",\r\n        \"To\": \"a45676e7-3b04-4bcc-9f7f-8f829b5f9831\",\r\n        \"Cost\": 0\r\n    },\r\n    {\r\n        \"Name\": \"Azure to Active Directory\",\r\n        \"From\": \"4ac6b82b-3621-457c-938e-7902e11a8bd1\",\r\n        \"To\": \"309028fa-77a4-4309-99a6-ca16dc4ee041\",\r\n        \"Cost\": 0\r\n    }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/edges/multiple",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
+								"edges",
+								"multiple"
 							]
 						}
 					},
@@ -752,6 +946,82 @@
 								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
 								"edges",
 								"11111111-1111-1111-1111-111111111111"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete all",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/all",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+								"edges",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete multiple",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/all",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"v1.0",
+								"graphs",
+								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+								"edges",
+								"all"
 							]
 						}
 					},
