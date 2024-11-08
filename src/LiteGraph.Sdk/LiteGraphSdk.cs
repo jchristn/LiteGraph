@@ -189,6 +189,21 @@
         }
 
         /// <summary>
+        /// Create multiple nodes.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodes">Nodes.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Nodes.</returns>
+        public async Task<List<Node>> CreateNodes(Guid graphGuid, List<Node> nodes, CancellationToken token = default)
+        {
+            if (nodes == null) throw new ArgumentNullException(nameof(nodes));
+            if (nodes.Count < 1) return new List<Node>();
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/multiple";
+            return await PutCreate<List<Node>>(url, nodes, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Create a node.
         /// </summary>
         /// <param name="node">Node.</param>
@@ -296,6 +311,8 @@
         /// <returns>Task.</returns>
         public async Task DeleteNodes(Guid graphGuid, List<Guid> nodeGuids, CancellationToken token = default)
         {
+            if (nodeGuids == null) throw new ArgumentNullException(nameof(nodeGuids));
+            if (nodeGuids.Count < 1) return;
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/nodes/multiple";
             await Delete<List<Guid>>(url, nodeGuids, token).ConfigureAwait(false);
         }
@@ -315,6 +332,21 @@
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges/" + guid;
             return await Head(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Create multiple edges.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edges">Edges.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Edges.</returns>
+        public async Task<List<Edge>> CreateEdges(Guid graphGuid, List<Edge> edges, CancellationToken token = default)
+        {
+            if (edges == null) throw new ArgumentNullException(nameof(edges));
+            if (edges.Count < 1) return new List<Edge>();
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges/multiple";
+            return await PutCreate<List<Edge>>(url, edges, token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -405,6 +437,21 @@
         }
 
         /// <summary>
+        /// Delete multiple edges within a graph.
+        /// </summary>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuids">Edge GUIDs.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task DeleteEdges(Guid graphGuid, List<Guid> edgeGuids, CancellationToken token = default)
+        {
+            if (edgeGuids == null) throw new ArgumentNullException(nameof(edgeGuids));
+            if (edgeGuids.Count < 1) return;
+            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges/multiple";
+            await Delete<List<Guid>>(url, edgeGuids, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Delete all edges.
         /// </summary>
         /// <param name="graphGuid">Graph GUID.</param>
@@ -414,19 +461,6 @@
         {
             string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges/all";
             await Delete(url, token).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Delete multiple edges.
-        /// </summary>
-        /// <param name="graphGuid">Graph GUID.</param>
-        /// <param name="edgeGuids">List of edge GUIDs.</param>
-        /// <param name="token">Cancellation token.</param>
-        /// <returns>Task.</returns>
-        public async Task DeleteEdges(Guid graphGuid, List<Guid> edgeGuids, CancellationToken token = default)
-        {
-            string url = Endpoint + "v1.0/graphs/" + graphGuid + "/edges/multiple";
-            await Delete<List<Guid>>(url, edgeGuids, token).ConfigureAwait(false);
         }
 
         #endregion
