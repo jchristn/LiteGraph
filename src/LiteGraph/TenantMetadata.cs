@@ -1,48 +1,44 @@
-﻿namespace LiteGraph.Server.Classes
+﻿namespace LiteGraph
 {
-    using ExpressionTree;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Security.Cryptography;
     using System.Text;
+    using System.Text.Json.Serialization;
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Route request.
+    /// Tenant metadata.
     /// </summary>
-    public class RouteRequest
+    public class TenantMetadata
     {
         #region Public-Members
 
         /// <summary>
-        /// Tenant GUID.
+        /// GUID.
         /// </summary>
-        public Guid TenantGUID { get; set; } = default(Guid);
+        public Guid GUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// Graph GUID.
+        /// Name.
         /// </summary>
-        public Guid GraphGUID { get; set; } = default(Guid);
+        public string Name { get; set; } = null;
 
         /// <summary>
-        /// From node GUID.
+        /// Active.
         /// </summary>
-        public Guid From { get; set; } = default(Guid);
+        public bool Active { get; set; } = true;
 
         /// <summary>
-        /// To node GUID.
+        /// Created timestamp, in UTC timestamp.
         /// </summary>
-        public Guid To { get; set; } = default(Guid);
+        public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Edge filters.
+        /// Timestamp from last update, in UTC.
         /// </summary>
-        public Expr EdgeFilter { get; set; } = null;
-
-        /// <summary>
-        /// Node filters.
-        /// </summary>
-        public Expr NodeFilter { get; set; } = null;
+        public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
 
         #endregion
 
@@ -53,9 +49,9 @@
         #region Constructors-and-Factories
 
         /// <summary>
-        /// Route request.
+        /// Instantiate.
         /// </summary>
-        public RouteRequest()
+        public TenantMetadata()
         {
 
         }

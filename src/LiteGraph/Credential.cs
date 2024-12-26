@@ -2,13 +2,21 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Security.Cryptography;
+    using System.Text.Json.Serialization;
+    using PrettyId;
 
     /// <summary>
-    /// Graph.
+    /// Credentials.
     /// </summary>
-    public class Graph
+    public class Credential
     {
         #region Public-Members
+
+        /// <summary>
+        /// GUID.
+        /// </summary>
+        public Guid GUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Tenant GUID.
@@ -16,9 +24,9 @@
         public Guid TenantGUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// Globally-unique identifier.
+        /// User GUID.
         /// </summary>
-        public Guid GUID { get; set; } = Guid.NewGuid();
+        public Guid UserGUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Name.
@@ -26,24 +34,24 @@
         public string Name { get; set; } = null;
 
         /// <summary>
-        /// Timestamp from creation, in UTC.
+        /// Access key.
         /// </summary>
-        public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
+        public string BearerToken { get; set; } = IdGenerator.Generate(64);
+
+        /// <summary>
+        /// Active.
+        /// </summary>
+        public bool Active { get; set; } = true;
+
+        /// <summary>
+        /// Creation timestamp, in UTC.
+        /// </summary>
+        public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Timestamp from last update, in UTC.
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Tags.
-        /// </summary>
-        public object Tags { get; set; } = null;
-
-        /// <summary>
-        /// Object data.
-        /// </summary>
-        public object Data { get; set; } = null;
 
         #endregion
 
@@ -54,9 +62,9 @@
         #region Constructors-and-Factories
 
         /// <summary>
-        /// Instantiate the object.
+        /// Instantiate.
         /// </summary>
-        public Graph()
+        public Credential()
         {
 
         }

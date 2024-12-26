@@ -5,7 +5,7 @@
     /// <summary>
     /// Constants.
     /// </summary>
-    public static class Constants
+    internal static class Constants
     {
         /// <summary>
         /// Log file directory.

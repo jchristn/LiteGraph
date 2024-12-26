@@ -6,10 +6,13 @@
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Reflection.PortableExecutable;
     using System.Text.Json;
     using System.Threading.Tasks;
     using LiteGraph.Serialization;
+    using LiteGraph.Server.API.Agnostic;
     using LiteGraph.Server.Classes;
+    using LiteGraph.Server.Services;
     using SyslogLogging;
     using WatsonWebserver;
     using WatsonWebserver.Core;
@@ -30,6 +33,8 @@
         private LoggingModule _Logging = null;
         private LiteGraphClient _LiteGraph = null;
         private SerializationHelper _Serializer = null;
+        private AuthenticationService _Authentication = null;
+        private ServiceHandler _ServiceHandler = null;
 
         private Webserver _Webserver = null;
 
@@ -40,9 +45,6 @@
             "::1"
         };
 
-        private Dictionary<Guid, ActiveRequest> _Requests = new Dictionary<Guid, ActiveRequest>();
-        private readonly object _RequestsLock = new object();
-
         #endregion
 
         #region Constructors-and-Factories
@@ -51,17 +53,22 @@
             Settings settings,
             LoggingModule logging,
             LiteGraphClient litegraph,
-            SerializationHelper serializer)
+            SerializationHelper serializer,
+            AuthenticationService auth,
+            ServiceHandler service)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             _LiteGraph = litegraph ?? throw new ArgumentNullException(nameof(litegraph));
             _Serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+            _Authentication = auth ?? throw new ArgumentNullException(nameof(auth));
+            _ServiceHandler = service ?? throw new ArgumentNullException(nameof(service));
 
             _Webserver = new Webserver(_Settings.Rest, DefaultRequestHandler);
             _Webserver.Routes.PreRouting = PreRoutingHandler;
             _Webserver.Routes.AuthenticateRequest = AuthenticateRequest;
             _Webserver.Routes.PostRouting = PostRoutingHandler;
+            _Webserver.Routes.Preflight = OptionsHandler;
 
             InitializeRoutes();
 
@@ -70,11 +77,8 @@
 
             if (_Localhost.Contains(_Settings.Rest.Hostname))
             {
-                Console.WriteLine("");
-                Console.WriteLine("Important!");
-                Console.WriteLine("| Configured to listen on localhost; LiteGraph will not be externally accessible");
-                Console.WriteLine("| Modify " + Constants.SettingsFile + " to change the REST listener hostname");
-                Console.WriteLine("");
+                _Logging.Alert(_Header + "configured to listen on localhost, LiteGraph will not be externally accessible");
+                _Logging.Alert(_Header + "modify " + Constants.SettingsFile + " to change the REST listener hostname");
             }
         }
 
@@ -87,62 +91,171 @@
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.HEAD, "/", LoopbackRoute, ExceptionRoute);
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/", RootRoute, ExceptionRoute);
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/favicon.ico", FaviconRoute, ExceptionRoute);
-            _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/requests", RequestsRoute, ExceptionRoute);
 
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs", GraphCreateRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/search", GraphSearchRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}", GraphReadRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}", GraphExistsRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs", GraphReadManyRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}", GraphUpdateRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}", GraphDeleteRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/existence", GraphExistenceRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/export/gexf", GraphGexfExportRoute, ExceptionRoute);
+            #region Tenants
 
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/nodes", NodeCreateRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/nodes/multiple", NodeCreateMultipleRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/nodes/search", NodeSearchRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeReadRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeExistsRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes", NodeReadManyRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeUpdateRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/nodes/all", NodeDeleteAllRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/nodes/multiple", NodeDeleteMultipleRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}", NodeDeleteRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants", TenantCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants", TenantReadManyRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}", TenantReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/tenants/{tenantGuid}", TenantExistsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}", TenantUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}", TenantDeleteRoute, ExceptionRoute);
 
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/edges", EdgeCreateRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/edges/multiple", EdgeCreateMultipleRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges/between", EdgesBetweenRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/edges/search", EdgeSearchRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeReadRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeExistsRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/edges", EdgeReadManyRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeUpdateRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/edges/all", EdgeDeleteAllRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/edges/multiple", EdgeDeleteMultipleRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/graphs/{graphGuid}/edges/{edgeGuid}", EdgeDeleteRoute, ExceptionRoute);
+            #endregion
 
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}/edges/from", EdgesFromNodeRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}/edges/to", EdgesToNodeRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}/edges", AllEdgesToNodeRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}/neighbors", NodeNeighborsRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}/parents", NodeParentsRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}/children", NodeChildrenRoute, ExceptionRoute);
-            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/routes", GetRoutesRoute, ExceptionRoute);
+            #region Users
+
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/users", UserCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/users", UserReadManyRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/users/{userGuid}", UserReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/tenants/{tenantGuid}/users/{userGuid}", UserExistsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/users/{userGuid}", UserUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/users/{userGuid}", UserDeleteRoute, ExceptionRoute);
+
+            #endregion
+
+            #region Credentials
+
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/credentials", CredentialCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/credentials", CredentialReadManyRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/credentials/{credentialGuid}", CredentialReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/tenants/{tenantGuid}/credentials/{credentialGuid}", CredentialExistsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/credentials/{credentialGuid}", CredentialUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/credentials/{credentialGuid}", CredentialDeleteRoute, ExceptionRoute);
+
+            #endregion
+
+            #region Tags
+
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/tags", TagCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/tags", TagReadManyRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/tags/{tagGuid}", TagReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/tenants/{tenantGuid}/tags/{tagGuid}", TagExistsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/tags/{tagGuid}", TagUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/tags/{tagGuid}", TagDeleteRoute, ExceptionRoute);
+
+            #endregion
+
+            #region Graphs
+
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/graphs", GraphCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantGuid}/graphs/search", GraphSearchRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}", GraphReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}", GraphExistsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs", GraphReadManyRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}", GraphUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}", GraphDeleteRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/existence", GraphExistenceRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/export/gexf", GraphGexfExportRoute, ExceptionRoute);
+
+            #endregion
+
+            #region Nodes
+
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes", NodeCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/multiple", NodeCreateMultipleRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/search", NodeSearchRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/{nodeGuid}", NodeReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/{nodeGuid}", NodeExistsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes", NodeReadManyRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/{nodeGuid}", NodeUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/all", NodeDeleteAllRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/multiple", NodeDeleteMultipleRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/{nodeGuid}", NodeDeleteRoute, ExceptionRoute);
+
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/{nodeGuid}/edges/from", EdgesFromNodeRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/{nodeGuid}/edges/to", EdgesToNodeRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/{nodeGuid}/edges", AllEdgesToNodeRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/{nodeGuid}/neighbors", NodeNeighborsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/{nodeGuid}/parents", NodeParentsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/nodes/{nodeGuid}/children", NodeChildrenRoute, ExceptionRoute);
+
+            #endregion
+
+            #region Edges
+
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges", EdgeCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges/multiple", EdgeCreateMultipleRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges/between", EdgesBetweenRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges/search", EdgeSearchRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges/{edgeGuid}", EdgeReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges/{edgeGuid}", EdgeExistsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges", EdgeReadManyRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges/{edgeGuid}", EdgeUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges/all", EdgeDeleteAllRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges/multiple", EdgeDeleteMultipleRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/edges/{edgeGuid}", EdgeDeleteRoute, ExceptionRoute);
+
+            #endregion
+
+            #region Routes-and-Traversal
+
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}/routes", GetRoutesRoute, ExceptionRoute);
+
+            #endregion
+        }
+
+        internal async Task OptionsHandler(HttpContextBase ctx)
+        {
+            NameValueCollection responseHeaders = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
+
+            string[] requestedHeaders = null;
+            string headers = "";
+
+            if (ctx.Request.Headers != null)
+            {
+                for (int i = 0; i < ctx.Request.Headers.Count; i++)
+                {
+                    string key = ctx.Request.Headers.GetKey(i);
+                    string value = ctx.Request.Headers.Get(i);
+                    if (String.IsNullOrEmpty(key)) continue;
+                    if (String.IsNullOrEmpty(value)) continue;
+                    if (String.Compare(key.ToLower(), "access-control-request-headers") == 0)
+                    {
+                        requestedHeaders = value.Split(',');
+                        break;
+                    }
+                }
+            }
+
+            if (requestedHeaders != null)
+            {
+                foreach (string curr in requestedHeaders)
+                {
+                    headers += ", " + curr;
+                }
+            }
+
+            responseHeaders.Add("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, PUT, POST, DELETE");
+            responseHeaders.Add("Access-Control-Allow-Headers", "*, Content-Type, X-Requested-With, " + headers);
+            responseHeaders.Add("Access-Control-Expose-Headers", "Content-Type, X-Requested-With, " + headers);
+            responseHeaders.Add("Access-Control-Allow-Origin", "*");
+            responseHeaders.Add("Accept", "*/*");
+            responseHeaders.Add("Accept-Language", "en-US, en");
+            responseHeaders.Add("Accept-Charset", "ISO-8859-1, utf-8");
+            responseHeaders.Add("Connection", "keep-alive");
+
+            ctx.Response.StatusCode = 200;
+            ctx.Response.Headers = responseHeaders;
+            await ctx.Response.Send();
+            return;
         }
 
         internal async Task PreRoutingHandler(HttpContextBase ctx)
         {
-            ActiveRequest req = new ActiveRequest
-            {
-                SourceIp = ctx.Request.Source.IpAddress,
-                SourcePort = ctx.Request.Source.Port,
-                Method = ctx.Request.Method,
-                Url = ctx.Request.Url.RawWithQuery,
-                RequestBytes = ctx.Request.ContentLength
-            };
+            RequestContext req = null;
 
-            lock (_RequestsLock) _Requests.Add(req.GUID, req);
+            try
+            {
+                req = new RequestContext(ctx);
+            }
+            catch (Exception e)
+            {
+                _Logging.Warn(_Header + ctx.Request.Source.IpAddress + " exception building request context" + Environment.NewLine + e.ToString());
+                ctx.Response.StatusCode = 500;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "Unable to build request context.")));
+                return;
+            }
 
             ctx.Metadata = req;
             ctx.Response.Headers.Add(Constants.HostnameHeader, _Hostname);
@@ -154,7 +267,51 @@
 
         internal async Task AuthenticateRequest(HttpContextBase ctx)
         {
-            return;
+            RequestContext req = (RequestContext)ctx.Metadata;
+
+            _Authentication.AuthenticateAndAuthorize(req);
+
+            switch (req.Authentication.Result)
+            {
+                case AuthenticationResultEnum.Success:
+                    break;
+
+                case AuthenticationResultEnum.NotFound:
+                    ctx.Response.StatusCode = 401;
+                    await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.AuthenticationFailed), true));
+                    return;
+
+                case AuthenticationResultEnum.Inactive:
+                    ctx.Response.StatusCode = 401;
+                    await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.Inactive), true));
+                    return;
+
+                case AuthenticationResultEnum.Invalid:
+                    ctx.Response.StatusCode = 400;
+                    await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest), true));
+                    return;
+            }
+
+            switch (req.Authorization.Result)
+            {
+                case AuthorizationResultEnum.Conflict:
+                    ctx.Response.StatusCode = 409;
+                    await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.Conflict), true));
+                    return;
+
+                case AuthorizationResultEnum.Denied:
+                    ctx.Response.StatusCode = 401;
+                    await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.AuthorizationFailed), true));
+                    return;
+
+                case AuthorizationResultEnum.NotFound:
+                    ctx.Response.StatusCode = 404;
+                    await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound), true));
+                    return;
+
+                case AuthorizationResultEnum.Permitted:
+                    break;
+            }
         }
 
         internal async Task DefaultRequestHandler(HttpContextBase ctx)
@@ -166,11 +323,6 @@
 
         internal async Task PostRoutingHandler(HttpContextBase ctx)
         {
-            Guid guid = ((ActiveRequest)ctx.Metadata).GUID;
-
-            lock (_RequestsLock)
-                _Requests.Remove(guid);
-
             string msg =
                 _Header
                 + ctx.Request.Method.ToString() + " " + ctx.Request.Url.RawWithQuery + " "
@@ -187,6 +339,8 @@
         #endregion
 
         #region Private-Route-Implementations
+
+        #region General
 
         private async Task ExceptionRoute(HttpContextBase ctx, Exception e)
         {
@@ -240,207 +394,419 @@
             await ctx.Response.Send(File.ReadAllBytes(Constants.FaviconFile));
         }
 
-        private async Task RequestsRoute(HttpContextBase ctx)
-        {
-            Dictionary<Guid, ActiveRequest> dict = null;
-
-            lock (_RequestsLock) dict = new Dictionary<Guid, ActiveRequest>(_Requests);
-
-            ctx.Response.StatusCode = 200;
-            ctx.Response.ContentType = Constants.JsonContentType;
-            await ctx.Response.Send(_Serializer.SerializeJson(dict, true));
-        }
-
         private async Task NoRequestBody(HttpContextBase ctx)
         {
             ctx.Response.StatusCode = 400;
             await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest), true));
         }
 
+        private async Task NotAdmin(HttpContextBase ctx)
+        {
+            ctx.Response.StatusCode = 401;
+            await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.AuthorizationFailed), true));
+        }
+
+        #endregion
+
+        #region Tenant-Routes
+
+        private async Task TenantCreateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.Tenant = _Serializer.DeserializeJson<TenantMetadata>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TenantCreate);
+        }
+
+        private async Task TenantReadManyRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TenantReadMany);
+        }
+
+        private async Task TenantReadRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TenantRead);
+        }
+
+        private async Task TenantExistsRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TenantExists);
+        }
+
+        private async Task TenantUpdateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.Tenant = _Serializer.DeserializeJson<TenantMetadata>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TenantUpdate);
+        }
+
+        private async Task TenantDeleteRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TenantDelete);
+        }
+
+        #endregion
+
+        #region User-Routes
+
+        private async Task UserCreateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.User = _Serializer.DeserializeJson<UserMaster>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.UserCreate);
+        }
+
+        private async Task UserReadManyRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.UserReadMany);
+        }
+
+        private async Task UserReadRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.UserRead);
+        }
+
+        private async Task UserExistsRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.UserExists);
+        }
+
+        private async Task UserUpdateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.User = _Serializer.DeserializeJson<UserMaster>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.UserUpdate);
+        }
+
+        private async Task UserDeleteRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.UserDelete);
+        }
+
+        #endregion
+
+        #region Credential-Routes
+
+        private async Task CredentialCreateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.Credential = _Serializer.DeserializeJson<Credential>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.CredentialCreate);
+        }
+
+        private async Task CredentialReadManyRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.CredentialReadMany);
+        }
+
+        private async Task CredentialReadRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.CredentialRead);
+        }
+
+        private async Task CredentialExistsRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.CredentialExists);
+        }
+
+        private async Task CredentialUpdateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.Credential = _Serializer.DeserializeJson<Credential>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.CredentialUpdate);
+        }
+
+        private async Task CredentialDeleteRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (!req.Authentication.IsAdmin)
+            {
+                await NotAdmin(ctx);
+                return;
+            }
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.CredentialDelete);
+        }
+
+        #endregion
+
+        #region Tag-Routes
+
+        private async Task TagCreateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.Tag = _Serializer.DeserializeJson<TagMetadata>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TagCreate);
+        }
+
+        private async Task TagReadManyRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TagReadMany);
+        }
+
+        private async Task TagReadRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TagRead);
+        }
+
+        private async Task TagExistsRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TagExists);
+        }
+
+        private async Task TagUpdateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.Tag = _Serializer.DeserializeJson<TagMetadata>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TagUpdate);
+        }
+
+        private async Task TagDeleteRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.TagDelete);
+        }
+
+        #endregion
+
         #region Graph-Routes
 
         private async Task GraphCreateRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            Graph graph = _Serializer.DeserializeJson<Graph>(ctx.Request.DataAsString);
-            graph = _LiteGraph.CreateGraph(graph.GUID, graph.Name, graph.Data);
-
-            ctx.Response.StatusCode = 201;
-            await ctx.Response.Send(_Serializer.SerializeJson(graph, true));
+            req.Graph = _Serializer.DeserializeJson<Graph>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.GraphCreate);
         }
 
         private async Task GraphReadManyRoute(HttpContextBase ctx)
         {
-            List<Graph> graphs = _LiteGraph.ReadGraphs().ToList();
-            await ctx.Response.Send(_Serializer.SerializeJson(graphs, true));
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.GraphReadMany);
         }
 
         private async Task GraphExistenceRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            try
-            {
-                Guid graphGuid = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-                ExistenceRequest req = _Serializer.DeserializeJson<ExistenceRequest>(ctx.Request.DataAsString);
-                if (!req.ContainsExistenceRequest())
-                {
-                    ctx.Response.StatusCode = 400;
-                    await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "No valid existence filters are present in the request."), true));
-                }
-
-                ExistenceResult resp = _LiteGraph.BatchExistence(graphGuid, req);
-                await ctx.Response.Send(_Serializer.SerializeJson(resp, true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.ExistenceRequest = _Serializer.DeserializeJson<ExistenceRequest>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.GraphExistence);
         }
 
         private async Task GraphSearchRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await GraphReadManyRoute(ctx);
                 return;
             }
 
-            try
-            {
-                SearchRequest req = _Serializer.DeserializeJson<SearchRequest>(ctx.Request.DataAsString);
-
-                SearchResult resp = new SearchResult();
-                resp.Graphs = _LiteGraph.ReadGraphs(req.Expr, req.Ordering).ToList();
-                await ctx.Response.Send(_Serializer.SerializeJson(resp, true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.SearchRequest = _Serializer.DeserializeJson<SearchRequest>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.GraphSearch);
         }
 
         private async Task GraphReadRoute(HttpContextBase ctx)
         {
-            Graph graph = _LiteGraph.ReadGraph(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]));
-            if (graph == null)
-            {
-                ctx.Response.StatusCode = 404;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound), true));
-            }
-            else
-            {
-                await ctx.Response.Send(_Serializer.SerializeJson(graph, true));
-            }
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.GraphRead);
         }
 
         private async Task GraphExistsRoute(HttpContextBase ctx)
         {
-            Graph graph = _LiteGraph.ReadGraph(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]));
-            if (graph == null)
-            {
-                ctx.Response.StatusCode = 404;
-                await ctx.Response.Send();
-            }
-            else
-            {
-                await ctx.Response.Send();
-            }
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.GraphExists);
         }
 
         private async Task GraphUpdateRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            Graph graph = _Serializer.DeserializeJson<Graph>(ctx.Request.DataAsString);
-            graph = _LiteGraph.UpdateGraph(graph);
-
-            if (graph == null)
-            {
-                ctx.Response.StatusCode = 404;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound), true));
-            }
-            else
-            {
-                await ctx.Response.Send(_Serializer.SerializeJson(graph, true));
-            }
+            req.Graph = _Serializer.DeserializeJson<Graph>(ctx.Request.DataAsString);
+            req.Graph.TenantGUID = req.TenantGUID.Value;
+            req.Graph.GUID = req.GraphGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.GraphUpdate);
         }
 
         private async Task GraphDeleteRoute(HttpContextBase ctx)
         {
-            bool force = ctx.Request.QuerystringExists("force");
-
-            try
-            {
-                Guid guid = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-                _Logging.Info(_Header + "deleting graph " + guid + " force: " + force);
-
-                _LiteGraph.DeleteGraph(guid, force);
-                ctx.Response.StatusCode = 204;
-                await ctx.Response.Send();
-            }
-            catch (InvalidOperationException ioe)
-            {
-                ctx.Response.StatusCode = 409;
-                await ctx.Response.Send(
-                    _Serializer.SerializeJson(
-                        new ApiErrorResponse(
-                            ApiErrorEnum.Conflict, 
-                            null, 
-                            ioe.Message), true));
-                return;
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(
-                    _Serializer.SerializeJson(
-                        new ApiErrorResponse(
-                            ApiErrorEnum.BadRequest, 
-                            null, 
-                            e.Message), true));
-                return;
-            }
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.GraphDelete);
         }
 
         private async Task GraphGexfExportRoute(HttpContextBase ctx)
         {
-            bool inclData = ctx.Request.QuerystringExists("incldata");
-
-            try
-            {
-                string xml = _LiteGraph.RenderGraphAsGexf(
-                    Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                    inclData);
-
-                ctx.Response.ContentType = Constants.XmlContentType;
-                await ctx.Response.Send(xml);
-            }
-            catch (ArgumentException)
-            {
-                ctx.Response.StatusCode = 404;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound), true));
-            }
-            catch (Exception e)
-            {
-                ctx.Response.StatusCode = 500;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.InternalError, null, e.Message), true));
-            }
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.GraphGexfExport);
         }
 
         #endregion
@@ -449,171 +815,108 @@
 
         private async Task NodeCreateRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            try
-            {
-                Node node = _Serializer.DeserializeJson<Node>(ctx.Request.DataAsString);
-                node.GraphGUID = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-                node = _LiteGraph.CreateNode(node);
-                ctx.Response.StatusCode = 201;
-                await ctx.Response.Send(_Serializer.SerializeJson(node, true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.Node = _Serializer.DeserializeJson<Node>(ctx.Request.DataAsString);
+            req.Node.TenantGUID = req.TenantGUID.Value;
+            req.Node.GraphGUID = req.GraphGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeCreate);
         }
 
         private async Task NodeCreateMultipleRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            try
-            {
-                List<Node> nodes = _Serializer.DeserializeJson<List<Node>>(ctx.Request.DataAsString);
-                Guid graphGuid  = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-                List<Node> created = _LiteGraph.CreateNodes(graphGuid, nodes);
-                ctx.Response.StatusCode = 201;
-                await ctx.Response.Send(_Serializer.SerializeJson(created, true));
-            }
-            catch (InvalidOperationException ioe)
-            {
-                ctx.Response.StatusCode = 409;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.Conflict, null, ioe.Message), true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.Nodes = _Serializer.DeserializeJson<List<Node>>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeCreateMultiple);
         }
 
         private async Task NodeReadManyRoute(HttpContextBase ctx)
         {
-            List<Node> nodes = _LiteGraph.ReadNodes(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"])).ToList();
-            await ctx.Response.Send(_Serializer.SerializeJson(nodes, true));
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeReadMany);
         }
 
         private async Task NodeSearchRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NodeReadManyRoute(ctx);
                 return;
             }
 
-            try
-            {
-                SearchRequest req = _Serializer.DeserializeJson<SearchRequest>(ctx.Request.DataAsString);
-                req.GraphGUID = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-
-                SearchResult resp = new SearchResult();
-                resp.Nodes = _LiteGraph.ReadNodes(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]), req.Expr, req.Ordering).ToList();
-                await ctx.Response.Send(_Serializer.SerializeJson(resp, true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.SearchRequest = _Serializer.DeserializeJson<SearchRequest>(ctx.Request.DataAsString);
+            req.SearchRequest.TenantGUID = req.TenantGUID.Value;
+            req.SearchRequest.GraphGUID = req.GraphGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeSearch);
         }
 
         private async Task NodeReadRoute(HttpContextBase ctx)
         {
-            Node node = _LiteGraph.ReadNode(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]));
-
-            if (node == null)
-            {
-                ctx.Response.StatusCode = 404;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound), true));
-            }
-            else
-            {
-                await ctx.Response.Send(_Serializer.SerializeJson(node, true));
-            }
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeRead);
         }
 
         private async Task NodeExistsRoute(HttpContextBase ctx)
         {
-            Node node = _LiteGraph.ReadNode(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]));
-
-            if (node == null)
-            {
-                ctx.Response.StatusCode = 404;
-                await ctx.Response.Send();
-            }
-            else
-            {
-                await ctx.Response.Send();
-            }
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeExists);
         }
 
         private async Task NodeUpdateRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            try
-            {
-                Node node = _Serializer.DeserializeJson<Node>(ctx.Request.DataAsString);
-                node.GraphGUID = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-                node = _LiteGraph.UpdateNode(node);
-                await ctx.Response.Send(_Serializer.SerializeJson(node, true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.Node = _Serializer.DeserializeJson<Node>(ctx.Request.DataAsString);
+            req.Node.TenantGUID = req.TenantGUID.Value;
+            req.Node.GraphGUID = req.GraphGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeUpdate);
         }
 
         private async Task NodeDeleteRoute(HttpContextBase ctx)
         {
-            _LiteGraph.DeleteNode(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]));
-
-            ctx.Response.StatusCode = 204;
-            await ctx.Response.Send();
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeDelete);
         }
 
         private async Task NodeDeleteAllRoute(HttpContextBase ctx)
         {
-            _LiteGraph.DeleteNodes(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]));
-            ctx.Response.StatusCode = 204;
-            await ctx.Response.Send();
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeDeleteAll);
         }
 
         private async Task NodeDeleteMultipleRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            List<Guid> guids = _Serializer.DeserializeJson<List<Guid>>(ctx.Request.DataAsString);
-            Guid graphGuid = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-            _LiteGraph.DeleteNodes(graphGuid, guids);
-            ctx.Response.StatusCode = 204;
-            await ctx.Response.Send();
+            req.GUIDs = _Serializer.DeserializeJson<List<Guid>>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeDeleteMultiple);
         }
 
         #endregion
@@ -622,207 +925,115 @@
 
         private async Task EdgeCreateRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            try
-            {
-                Edge edge = _Serializer.DeserializeJson<Edge>(ctx.Request.DataAsString);
-                edge.GraphGUID = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-                edge = _LiteGraph.CreateEdge(edge);
-                ctx.Response.StatusCode = 201;
-                await ctx.Response.Send(_Serializer.SerializeJson(edge, true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.Edge = _Serializer.DeserializeJson<Edge>(ctx.Request.DataAsString);
+            req.Edge.TenantGUID = req.TenantGUID.Value;
+            req.Edge.GraphGUID = req.GraphGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgeCreate);
         }
 
         private async Task EdgeCreateMultipleRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            try
-            {
-                List<Edge> edges = _Serializer.DeserializeJson<List<Edge>>(ctx.Request.DataAsString);
-                Guid graphGuid = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-                List<Edge> created = _LiteGraph.CreateEdges(graphGuid, edges);
-                ctx.Response.StatusCode = 201;
-                await ctx.Response.Send(_Serializer.SerializeJson(created, true));
-            }
-            catch (KeyNotFoundException knfe)
-            {
-                ctx.Response.StatusCode = 404;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound, null, knfe.Message), true));
-            }
-            catch (InvalidOperationException ioe)
-            {
-                ctx.Response.StatusCode = 409;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.Conflict, null, ioe.Message), true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.Edges = _Serializer.DeserializeJson<List<Edge>>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgeCreateMultiple);
         }
 
         private async Task EdgeReadManyRoute(HttpContextBase ctx)
         {
-            List<Edge> edges = _LiteGraph.ReadEdges(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"])).ToList();
-            await ctx.Response.Send(_Serializer.SerializeJson(edges, true));
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgeReadMany);
         }
 
         private async Task EdgesBetweenRoute(HttpContextBase ctx)
         {
-            string from = GetQueryValue(ctx.Request.Query.Elements, "from");
-            string to = GetQueryValue(ctx.Request.Query.Elements, "to");
-
-            Guid fromGuid;
-            Guid toGuid;
-
-            if (String.IsNullOrEmpty(from) || String.IsNullOrEmpty(to))
-            {
-                _Logging.Warn(_Header + "either to or from is missing from query");
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "Both 'to' and 'from' must be supplied in the query.")));
-                return;
-            }
-
-            if (!Guid.TryParse(from, out fromGuid)
-                || !Guid.TryParse(to, out toGuid))
-            {
-                _Logging.Warn(_Header + "supplied GUIDs are not parseable");
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "Supplied GUIDs in query are not parseable.")));
-                return;
-            }
-
-            List<Edge> edges = _LiteGraph.GetEdgesBetween(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                fromGuid,
-                toGuid).ToList();
-
-            await ctx.Response.Send(_Serializer.SerializeJson(edges, true));
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgesBetween);
         }
 
         private async Task EdgeSearchRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await EdgeReadManyRoute(ctx);
                 return;
             }
 
-            try
-            {
-                SearchRequest req = _Serializer.DeserializeJson<SearchRequest>(ctx.Request.DataAsString);
-                req.GraphGUID = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-
-                SearchResult resp = new SearchResult();
-                resp.Edges = _LiteGraph.ReadEdges(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]), req.Expr, req.Ordering).ToList();
-                await ctx.Response.Send(_Serializer.SerializeJson(resp, true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.SearchRequest = _Serializer.DeserializeJson<SearchRequest>(ctx.Request.DataAsString);
+            req.SearchRequest.TenantGUID = req.TenantGUID.Value;
+            req.SearchRequest.GraphGUID = req.GraphGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgeSearch);
         }
 
         private async Task EdgeReadRoute(HttpContextBase ctx)
         {
-            Edge edge = _LiteGraph.ReadEdge(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["edgeGuid"]));
-
-            if (edge == null)
-            {
-                ctx.Response.StatusCode = 404;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound), true));
-            }
-            else
-            {
-                await ctx.Response.Send(_Serializer.SerializeJson(edge, true));
-            }
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgeRead);
         }
 
         private async Task EdgeExistsRoute(HttpContextBase ctx)
         {
-            Edge edge = _LiteGraph.ReadEdge(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["edgeGuid"]));
-
-            if (edge == null)
-            {
-                ctx.Response.StatusCode = 404;
-                await ctx.Response.Send();
-            }
-            else
-            {
-                await ctx.Response.Send();
-            }
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgeExists);
         }
 
         private async Task EdgeUpdateRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            try
-            {
-                Edge edge = _Serializer.DeserializeJson<Edge>(ctx.Request.DataAsString);
-                edge.GraphGUID = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-                edge = _LiteGraph.UpdateEdge(edge);
-                await ctx.Response.Send(_Serializer.SerializeJson(edge, true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.Edge = _Serializer.DeserializeJson<Edge>(ctx.Request.DataAsString);
+            req.Edge.TenantGUID = req.TenantGUID.Value;
+            req.Edge.GraphGUID = req.GraphGUID.Value;
+            req.Edge.GUID = req.EdgeGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgeUpdate);
         }
 
         private async Task EdgeDeleteRoute(HttpContextBase ctx)
         {
-            _LiteGraph.DeleteEdge(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["edgeGuid"]));
-
-            ctx.Response.StatusCode = 204;
-            await ctx.Response.Send();
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgeDelete);
         }
 
         private async Task EdgeDeleteAllRoute(HttpContextBase ctx)
         {
-            _LiteGraph.DeleteEdges(Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]));
-            ctx.Response.StatusCode = 204;
-            await ctx.Response.Send();
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgeDeleteAll);
         }
 
         private async Task EdgeDeleteMultipleRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            List<Guid> guids = _Serializer.DeserializeJson<List<Guid>>(ctx.Request.DataAsString);
-            Guid graphGuid = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-            _LiteGraph.DeleteEdges(graphGuid, guids);
-            ctx.Response.StatusCode = 204;
-            await ctx.Response.Send();
+            req.GUIDs = _Serializer.DeserializeJson<List<Guid>>(ctx.Request.DataAsString);
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgeDeleteMultiple);
         }
 
         #endregion
@@ -831,111 +1042,54 @@
 
         private async Task EdgesFromNodeRoute(HttpContextBase ctx)
         {
-            List<Edge> edges = _LiteGraph.GetEdgesFrom(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]),
-                null,
-                EnumerationOrderEnum.CreatedDescending).ToList();
-
-            await ctx.Response.Send(_Serializer.SerializeJson(edges, true));
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgesFromNode);
         }
 
         private async Task EdgesToNodeRoute(HttpContextBase ctx)
         {
-            List<Edge> edges = _LiteGraph.GetEdgesTo(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]),
-                null,
-                EnumerationOrderEnum.CreatedDescending).ToList();
-
-            await ctx.Response.Send(_Serializer.SerializeJson(edges, true));
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.EdgesToNode);
         }
 
         private async Task AllEdgesToNodeRoute(HttpContextBase ctx)
         {
-            List<Edge> edgesFrom = _LiteGraph.GetEdgesFrom(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]),
-                null,
-                EnumerationOrderEnum.CreatedDescending).ToList();
-
-            List<Edge> edgesTo = _LiteGraph.GetEdgesTo(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]),
-                null,
-                EnumerationOrderEnum.CreatedDescending).ToList();
-
-            List<Edge> edges = new List<Edge>();
-            edges.AddRange(edgesFrom);
-            edges.AddRange(edgesTo);
-            edges = edges.DistinctBy(e => e.GUID).ToList();
-
-            await ctx.Response.Send(_Serializer.SerializeJson(edges, true));
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.AllEdgesToNode);
         }
 
         private async Task NodeChildrenRoute(HttpContextBase ctx)
         {
-            List<Node> nodes = _LiteGraph.GetChildren(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]),
-                null,
-                EnumerationOrderEnum.CreatedDescending).ToList();
-            await ctx.Response.Send(_Serializer.SerializeJson(nodes, true));
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeChildren);
         }
 
         private async Task NodeParentsRoute(HttpContextBase ctx)
         {
-            List<Node> nodes = _LiteGraph.GetParents(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]),
-                null,
-                EnumerationOrderEnum.CreatedDescending).ToList();
-            await ctx.Response.Send(_Serializer.SerializeJson(nodes, true));
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeParents);
         }
 
         private async Task NodeNeighborsRoute(HttpContextBase ctx)
         {
-            List<Node> nodes = _LiteGraph.GetNeighbors(
-                Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]),
-                Guid.Parse(ctx.Request.Url.Parameters["nodeGuid"]),
-                null,
-                null,
-                EnumerationOrderEnum.CreatedDescending).ToList();
-            await ctx.Response.Send(_Serializer.SerializeJson(nodes, true));
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeNeighbors);
         }
 
         private async Task GetRoutesRoute(HttpContextBase ctx)
         {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
             if (String.IsNullOrEmpty(ctx.Request.DataAsString))
             {
                 await NoRequestBody(ctx);
                 return;
             }
 
-            try
-            {
-                RouteResponse resp = new RouteResponse();
-                RouteRequest req = _Serializer.DeserializeJson<RouteRequest>(ctx.Request.DataAsString);
-                req.Graph = Guid.Parse(ctx.Request.Url.Parameters["graphGuid"]);
-                List<RouteDetail> routes = _LiteGraph.GetRoutes(
-                    SearchTypeEnum.DepthFirstSearch,
-                    req.Graph,
-                    req.From,
-                    req.To,
-                    req.EdgeFilter,
-                    req.NodeFilter).ToList();
-
-                routes = routes.OrderBy(r => r.TotalCost).ToList();
-                resp.Routes = routes;
-                resp.Timestamp.End = DateTime.UtcNow;
-                ctx.Response.StatusCode = 200;
-                await ctx.Response.Send(_Serializer.SerializeJson(resp, true));
-            }
-            catch (ArgumentException e)
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
-            }
+            req.RouteRequest = _Serializer.DeserializeJson<RouteRequest>(ctx.Request.DataAsString);
+            req.RouteRequest.TenantGUID = req.TenantGUID.Value;
+            req.RouteRequest.GraphGUID = req.GraphGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.GetRoutes);
         }
 
         #endregion
@@ -948,6 +1102,53 @@
         {
             if (nvc != null && nvc.AllKeys.Contains(key)) return nvc[key];
             return null;
+        }
+
+        private async Task WrappedRequestHandler(HttpContextBase ctx, RequestContext req, Func<RequestContext, Task<ResponseContext>> func)
+        {
+            try
+            {
+                ResponseContext resp = await func(req);
+                if (resp == null)
+                {
+                    _Logging.Warn(_Header + "no response from agnostic handler");
+                    ctx.Response.StatusCode = 500;
+                    await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.InternalError), true));
+                    return;
+                }
+                else if (resp.Success)
+                {
+                    ctx.Response.StatusCode = resp.StatusCode;
+                    if (resp.Data != null) await ctx.Response.Send(_Serializer.SerializeJson(resp.Data, true));
+                    else await ctx.Response.Send();
+                    return;
+                }
+                else
+                {
+                    ctx.Response.StatusCode = resp.StatusCode;
+                    if (resp.Error != null && ctx.Request.Method != HttpMethod.HEAD) await ctx.Response.Send(_Serializer.SerializeJson(resp.Error, true));
+                    else await ctx.Response.Send();
+                    return;
+                }
+            }
+            catch (InvalidOperationException ioe)
+            {
+                ctx.Response.StatusCode = 409;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.Conflict, null, ioe.Message), true));
+                return;
+            }
+            catch (KeyNotFoundException knfe)
+            {
+                ctx.Response.StatusCode = 404;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound, null, knfe.Message), true));
+                return;
+            }
+            catch (ArgumentException e)
+            {
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
+                return;
+            }
         }
 
         #endregion

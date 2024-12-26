@@ -44,15 +44,16 @@
         /// Write a GEXF file.
         /// </summary>
         /// <param name="client">LiteGraphClient.</param>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="filename">Output filename.</param>
         /// <param name="includeData">True to include node and edge data.</param>
-        public void ExportToFile(LiteGraphClient client, Guid graphGuid, string filename, bool includeData = false)
+        public void ExportToFile(LiteGraphClient client, Guid tenantGuid, Guid graphGuid, string filename, bool includeData = false)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
             if (string.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
 
-            Document doc = GraphToGexfDocument(client, graphGuid, includeData);
+            Document doc = GraphToGexfDocument(client, tenantGuid, graphGuid, includeData);
 
             using (FileStream fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
@@ -66,13 +67,14 @@
         /// Render a graph as a GEXF string.
         /// </summary>
         /// <param name="client">LiteGraphClient.</param>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="includeData">True to include node and edge data.</param>
         /// <returns>GEXF document.</returns>
-        public string RenderAsGexf(LiteGraphClient client, Guid graphGuid, bool includeData = false)
+        public string RenderAsGexf(LiteGraphClient client, Guid tenantGuid, Guid graphGuid, bool includeData = false)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-            Document doc = GraphToGexfDocument(client, graphGuid, includeData);
+            Document doc = GraphToGexfDocument(client, tenantGuid, graphGuid, includeData);
             string xml = SerializeXml<Document>(doc, true);
             return xml;
         }
@@ -126,16 +128,16 @@
             }
         }
 
-        private Document GraphToGexfDocument(LiteGraphClient client, Guid graphGuid, bool includeData = false)
+        private Document GraphToGexfDocument(LiteGraphClient client, Guid tenantGuid, Guid graphGuid, bool includeData = false)
         {
-            LiteGraph.Graph graph = client.ReadGraph(graphGuid);
+            LiteGraph.Graph graph = client.ReadGraph(tenantGuid, graphGuid);
             if (graph == null) throw new ArgumentException("No graph with GUID '" + graphGuid + "' was found.");
 
             Document doc = new Document();
             doc.Graph.DefaultEdgeType = "directed";
             doc.Graph.Attributes.AttributeList.Add(new Attribute("0", "props"));
 
-            foreach (LiteGraph.Node node in client.ReadNodes(graphGuid))
+            foreach (LiteGraph.Node node in client.ReadNodes(tenantGuid, graphGuid))
             {
                 GexfNode gNode = new GexfNode(node.GUID, node.Name);
 
@@ -148,7 +150,7 @@
                 doc.Graph.NodeList.Nodes.Add(gNode);
             }
 
-            foreach (LiteGraph.Edge edge in client.ReadEdges(graphGuid))
+            foreach (LiteGraph.Edge edge in client.ReadEdges(tenantGuid, graphGuid))
             {
                 GexfEdge gEdge = new GexfEdge(edge.GUID, edge.From, edge.To);
 
