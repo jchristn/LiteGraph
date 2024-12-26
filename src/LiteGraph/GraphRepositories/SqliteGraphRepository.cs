@@ -3470,7 +3470,7 @@
                 "INSERT INTO 'edges' "
                 + "VALUES ("
                 + "'" + edge.GUID + "',"
-                + "'" + edge.TenantGUID + ","
+                + "'" + edge.TenantGUID + "',"
                 + "'" + edge.GraphGUID + "',"
                 + "'" + Sanitize(edge.Name) + "',"
                 + "'" + edge.From.ToString() + "',"
