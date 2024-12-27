@@ -7,1246 +7,3325 @@
 	},
 	"item": [
 		{
-			"name": "General",
+			"name": "v2.0",
 			"item": [
 				{
-					"name": "Display active requests",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/requests",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"requests"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Graphs",
-			"item": [
-				{
-					"name": "Read all",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Read",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/baadcb8b-4b20-4b62-85e7-60dfde7942fc",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"baadcb8b-4b20-4b62-85e7-60dfde7942fc"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Exists",
-					"request": {
-						"method": "HEAD",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"b4a19d9b-1951-4bea-acbd-fba11bc020db"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"GUID\": \"01010101-0101-0101-0101-010101010101\",\r\n    \"Name\": \"Custom GUID\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+					"name": "General",
+					"item": [
+						{
+							"name": "Display active requests",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/requests",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"requests"
+									]
 								}
-							}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Graphs",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs"
+									]
+								}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"GUID\": \"baadcb8b-4b20-4b62-85e7-60dfde7942fc\",\r\n    \"Name\": \"My updated test graph\",\r\n    \"CreatedUtc\": \"2024-07-14T17:12:45.748920Z\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/baadcb8b-4b20-4b62-85e7-60dfde7942fc",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"baadcb8b-4b20-4b62-85e7-60dfde7942fc"
+									]
 								}
-							}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/baadcb8b-4b20-4b62-85e7-60dfde7942fc",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"baadcb8b-4b20-4b62-85e7-60dfde7942fc"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Search",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Expr\": {\r\n    \"Left\": \"Hello\",\r\n    \"Operator\": \"Equals\",\r\n    \"Right\": \"World\"\r\n  }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"b4a19d9b-1951-4bea-acbd-fba11bc020db"
+									]
 								}
-							}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/search",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"search"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/baadcb8b-4b20-4b62-85e7-60dfde7942fc",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"baadcb8b-4b20-4b62-85e7-60dfde7942fc"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete forcefully",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/01010101-0101-0101-0101-010101010101?force",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"01010101-0101-0101-0101-010101010101"
-							],
-							"query": [
-								{
-									"key": "force",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Export as GEXF",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/54d82753-3d91-4d02-8eb1-c14ea8a87cea/export/gexf?incldata",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"54d82753-3d91-4d02-8eb1-c14ea8a87cea",
-								"export",
-								"gexf"
-							],
-							"query": [
-								{
-									"key": "incldata",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Batch",
-			"item": [
-				{
-					"name": "Existence",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"Nodes\": [\r\n        \"ddbab487-ea6a-4ee4-8884-3ef55220e230\",\r\n        \"0c8c4f91-ae17-4f13-be5c-4d24a11ff703\",\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"Edges\": [\r\n        \"16edcc3a-7924-4334-bdeb-da1a31bc55ad\",\r\n        \"4057704f-37a3-4bea-8568-0384eeebcc71\",\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"EdgesBetween\": [\r\n        { \"From\": \"ddbab487-ea6a-4ee4-8884-3ef55220e230\", \"To\": \"1933a861-a86c-493b-809b-e1a15c577954\" },\r\n        { \"From\": \"d176c9f7-7584-408c-8b02-ea0db9e13d60\", \"To\": \"1933a861-a86c-493b-809b-e1a15c577954\" },\r\n        { \"From\": \"00000000-0000-0000-0000-000000000000\", \"To\": \"00000000-0000-0000-0000-000000000000\" }\r\n    ]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/existence",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
-								"existence"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Nodes",
-			"item": [
-				{
-					"name": "Read all",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/nodes",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
-								"nodes"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Read",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/nodes/11111111-1111-1111-1111-111111111111",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
-								"nodes",
-								"11111111-1111-1111-1111-111111111111"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Exists",
-					"request": {
-						"method": "HEAD",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/nodes/784cfa37-fb06-4f81-b10d-f1167dfe2b22",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"b4a19d9b-1951-4bea-acbd-fba11bc020db",
-								"nodes",
-								"784cfa37-fb06-4f81-b10d-f1167dfe2b22"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"Name\": \"My test node 1\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/nodes",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
-								"nodes"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create multiple",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "[\r\n    {\r\n        \"Name\": \"Active Directory\",\r\n        \"Data\": {\r\n            \"Name\": \"Active Directory\"\r\n        }\r\n    },\r\n    {\r\n        \"Name\": \"Website\",\r\n        \"Data\": {\r\n            \"Name\": \"Website\"\r\n        }\r\n    }\r\n]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/nodes/multiple",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
-								"nodes",
-								"multiple"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"GUID\": \"11111111-1111-1111-1111-111111111111\",\r\n    \"GraphGUID\": \"4fd09750-bfdf-448d-89d5-7f5ae6c300b8\",\r\n    \"Name\": \"My updated test node\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\",\r\n        \"Foo\": \"Bar\"\r\n    },\r\n    \"CreatedUtc\": \"2024-07-01 15:43:06.991834\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/nodes/11111111-1111-1111-1111-111111111111",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
-								"nodes",
-								"11111111-1111-1111-1111-111111111111"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Search",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"GraphGUID\": \"a1bb0532-56ad-4e35-80a4-ba269f4039fd\",\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Expr\": {\r\n    \"Left\": \"Mbps\",\r\n    \"Operator\": \"GreaterThan\",\r\n    \"Right\": 250\r\n  }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/nodes/search",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
-								"nodes",
-								"search"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/nodes/ffffffff-ffff-ffff-ffff-ffffffffffff",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
-								"nodes",
-								"ffffffff-ffff-ffff-ffff-ffffffffffff"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete all",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/nodes/all",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
-								"nodes",
-								"all"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete multiple",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "[\r\n    \"99191a81-32fd-499d-9bdf-6812377ade8d\",\r\n    \"92f87cb8-3eb7-4e3a-beb4-1199976588c4\"\r\n]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/nodes/multiple",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
-								"nodes",
-								"multiple"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Edges",
-			"item": [
-				{
-					"name": "Read all",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/edges",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"b4a19d9b-1951-4bea-acbd-fba11bc020db",
-								"edges"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Read",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/11111111-1111-1111-1111-111111111111",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
-								"edges",
-								"11111111-1111-1111-1111-111111111111"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Exists",
-					"request": {
-						"method": "HEAD",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/edges/3a35b214-150e-442e-bb4e-3515b3fa7cfe",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"b4a19d9b-1951-4bea-acbd-fba11bc020db",
-								"edges",
-								"3a35b214-150e-442e-bb4e-3515b3fa7cfe"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"2b1520be-d285-4f22-8c74-f296047162b9\",\r\n    \"To\": \"784cfa37-fb06-4f81-b10d-f1167dfe2b22\",\r\n    \"Cost\": 10,\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/edges",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"b4a19d9b-1951-4bea-acbd-fba11bc020db",
-								"edges"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create multiple",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "[\r\n    {\r\n        \"Name\": \"DigitalOcean to Control Plane\",\r\n        \"From\": \"b8c4d0b0-45fe-4f75-9dec-51b37b8d5b07\",\r\n        \"To\": \"a45676e7-3b04-4bcc-9f7f-8f829b5f9831\",\r\n        \"Cost\": 0\r\n    },\r\n    {\r\n        \"Name\": \"Azure to Active Directory\",\r\n        \"From\": \"4ac6b82b-3621-457c-938e-7902e11a8bd1\",\r\n        \"To\": \"309028fa-77a4-4309-99a6-ca16dc4ee041\",\r\n        \"Cost\": 0\r\n    }\r\n]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/edges/multiple",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
-								"edges",
-								"multiple"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"GUID\": \"FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF\",\r\n    \"GraphGUID\": \"4fd09750-bfdf-448d-89d5-7f5ae6c300b8\",\r\n    \"Name\": \"My updated test edge\",\r\n    \"From\": \"11111111-1111-1111-1111-111111111111\",\r\n    \"To\": \"22222222-2222-2222-2222-222222222222\",\r\n    \"Cost\": 10,\r\n    \"Data\": {\r\n        \"Hello\": \"World\",\r\n        \"Foo\": \"Bar\"\r\n    },\r\n    \"CreatedUtc\": \"2024-07-01 15:43:06.991834\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/ffffffff-ffff-ffff-ffff-ffffffffffff",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
-								"edges",
-								"ffffffff-ffff-ffff-ffff-ffffffffffff"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Search",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"GraphGUID\": \"a1bb0532-56ad-4e35-80a4-ba269f4039fd\",\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Expr\": {\r\n    \"Left\": \"Mbps\",\r\n    \"Operator\": \"GreaterThan\",\r\n    \"Right\": 250\r\n  }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/edges/search",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
-								"edges",
-								"search"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/11111111-1111-1111-1111-111111111111",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
-								"edges",
-								"11111111-1111-1111-1111-111111111111"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete all",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/all",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
-								"edges",
-								"all"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete multiple",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/all",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
-								"edges",
-								"all"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Routes and Traversal",
-			"item": [
-				{
-					"name": "Get routes",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"Graph\": \"54d82753-3d91-4d02-8eb1-c14ea8a87cea\",\r\n    \"From\": \"2d40dc7a-f003-4cca-b472-17f33d28507f\",\r\n    \"To\": \"25e73c66-cfb3-4495-9df4-9de555649a82\",\r\n    \"NodeFilter\": null,\r\n    \"EdgeFilter\": null\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/54d82753-3d91-4d02-8eb1-c14ea8a87cea/routes",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"54d82753-3d91-4d02-8eb1-c14ea8a87cea",
-								"routes"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get edges from node",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/11111111-1111-1111-1111-111111111111/edges/from",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"443f2e21-d93f-4348-9b18-a018b02fa050",
-								"nodes",
-								"11111111-1111-1111-1111-111111111111",
-								"edges",
-								"from"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get edges to node",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/22222222-2222-2222-2222-222222222222/edges/to",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"443f2e21-d93f-4348-9b18-a018b02fa050",
-								"nodes",
-								"22222222-2222-2222-2222-222222222222",
-								"edges",
-								"to"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get edges between nodes",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/edges/between?from=7ca8aaca-6380-4a1c-8f0a-5322b025ff71&to=3db4fa43-984c-425c-ae12-786a40c7b4f0",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
-								"edges",
-								"between"
-							],
-							"query": [
-								{
-									"key": "from",
-									"value": "7ca8aaca-6380-4a1c-8f0a-5322b025ff71"
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GUID\": \"01010101-0101-0101-0101-010101010101\",\r\n    \"Name\": \"Custom GUID\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
 								},
-								{
-									"key": "to",
-									"value": "3db4fa43-984c-425c-ae12-786a40c7b4f0"
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs"
+									]
 								}
-							]
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GUID\": \"baadcb8b-4b20-4b62-85e7-60dfde7942fc\",\r\n    \"Name\": \"My updated test graph\",\r\n    \"CreatedUtc\": \"2024-07-14T17:12:45.748920Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/baadcb8b-4b20-4b62-85e7-60dfde7942fc",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"baadcb8b-4b20-4b62-85e7-60dfde7942fc"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Expr\": {\r\n    \"Left\": \"Hello\",\r\n    \"Operator\": \"Equals\",\r\n    \"Right\": \"World\"\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/search",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/baadcb8b-4b20-4b62-85e7-60dfde7942fc",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"baadcb8b-4b20-4b62-85e7-60dfde7942fc"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete forcefully",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/01010101-0101-0101-0101-010101010101?force",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"01010101-0101-0101-0101-010101010101"
+									],
+									"query": [
+										{
+											"key": "force",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Export as GEXF",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/54d82753-3d91-4d02-8eb1-c14ea8a87cea/export/gexf?incldata",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"54d82753-3d91-4d02-8eb1-c14ea8a87cea",
+										"export",
+										"gexf"
+									],
+									"query": [
+										{
+											"key": "incldata",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "Get node edges",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/11111111-1111-1111-1111-111111111111/edges",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"443f2e21-d93f-4348-9b18-a018b02fa050",
-								"nodes",
-								"11111111-1111-1111-1111-111111111111",
-								"edges"
-							]
+					"name": "Batch",
+					"item": [
+						{
+							"name": "Existence",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Nodes\": [\r\n        \"ddbab487-ea6a-4ee4-8884-3ef55220e230\",\r\n        \"0c8c4f91-ae17-4f13-be5c-4d24a11ff703\",\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"Edges\": [\r\n        \"16edcc3a-7924-4334-bdeb-da1a31bc55ad\",\r\n        \"4057704f-37a3-4bea-8568-0384eeebcc71\",\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"EdgesBetween\": [\r\n        { \"From\": \"ddbab487-ea6a-4ee4-8884-3ef55220e230\", \"To\": \"1933a861-a86c-493b-809b-e1a15c577954\" },\r\n        { \"From\": \"d176c9f7-7584-408c-8b02-ea0db9e13d60\", \"To\": \"1933a861-a86c-493b-809b-e1a15c577954\" },\r\n        { \"From\": \"00000000-0000-0000-0000-000000000000\", \"To\": \"00000000-0000-0000-0000-000000000000\" }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/existence",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
+										"existence"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "Get node neighbors",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/11111111-1111-1111-1111-111111111111/neighbors",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"443f2e21-d93f-4348-9b18-a018b02fa050",
-								"nodes",
-								"11111111-1111-1111-1111-111111111111",
-								"neighbors"
-							]
+					"name": "Nodes",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/nodes",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
+										"nodes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/nodes/11111111-1111-1111-1111-111111111111",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/nodes/784cfa37-fb06-4f81-b10d-f1167dfe2b22",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"b4a19d9b-1951-4bea-acbd-fba11bc020db",
+										"nodes",
+										"784cfa37-fb06-4f81-b10d-f1167dfe2b22"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"My test node 1\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/nodes",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
+										"nodes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create multiple",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\r\n    {\r\n        \"Name\": \"Active Directory\",\r\n        \"Data\": {\r\n            \"Name\": \"Active Directory\"\r\n        }\r\n    },\r\n    {\r\n        \"Name\": \"Website\",\r\n        \"Data\": {\r\n            \"Name\": \"Website\"\r\n        }\r\n    }\r\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/nodes/multiple",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
+										"nodes",
+										"multiple"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GUID\": \"11111111-1111-1111-1111-111111111111\",\r\n    \"GraphGUID\": \"4fd09750-bfdf-448d-89d5-7f5ae6c300b8\",\r\n    \"Name\": \"My updated test node\",\r\n    \"Data\": {\r\n        \"Hello\": \"World\",\r\n        \"Foo\": \"Bar\"\r\n    },\r\n    \"CreatedUtc\": \"2024-07-01 15:43:06.991834\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/nodes/11111111-1111-1111-1111-111111111111",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"GraphGUID\": \"a1bb0532-56ad-4e35-80a4-ba269f4039fd\",\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Expr\": {\r\n    \"Left\": \"Mbps\",\r\n    \"Operator\": \"GreaterThan\",\r\n    \"Right\": 250\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/nodes/search",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
+										"nodes",
+										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/nodes/ffffffff-ffff-ffff-ffff-ffffffffffff",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+										"nodes",
+										"ffffffff-ffff-ffff-ffff-ffffffffffff"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete all",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/nodes/all",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+										"nodes",
+										"all"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete multiple",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\r\n    \"99191a81-32fd-499d-9bdf-6812377ade8d\",\r\n    \"92f87cb8-3eb7-4e3a-beb4-1199976588c4\"\r\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/nodes/multiple",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
+										"nodes",
+										"multiple"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "Get node parents",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/11111111-1111-1111-1111-111111111111/parents",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"443f2e21-d93f-4348-9b18-a018b02fa050",
-								"nodes",
-								"11111111-1111-1111-1111-111111111111",
-								"parents"
-							]
+					"name": "Edges",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/edges",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"b4a19d9b-1951-4bea-acbd-fba11bc020db",
+										"edges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/11111111-1111-1111-1111-111111111111",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+										"edges",
+										"11111111-1111-1111-1111-111111111111"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/edges/3a35b214-150e-442e-bb4e-3515b3fa7cfe",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"b4a19d9b-1951-4bea-acbd-fba11bc020db",
+										"edges",
+										"3a35b214-150e-442e-bb4e-3515b3fa7cfe"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"2b1520be-d285-4f22-8c74-f296047162b9\",\r\n    \"To\": \"784cfa37-fb06-4f81-b10d-f1167dfe2b22\",\r\n    \"Cost\": 10,\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/b4a19d9b-1951-4bea-acbd-fba11bc020db/edges",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"b4a19d9b-1951-4bea-acbd-fba11bc020db",
+										"edges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create multiple",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\r\n    {\r\n        \"Name\": \"DigitalOcean to Control Plane\",\r\n        \"From\": \"b8c4d0b0-45fe-4f75-9dec-51b37b8d5b07\",\r\n        \"To\": \"a45676e7-3b04-4bcc-9f7f-8f829b5f9831\",\r\n        \"Cost\": 0\r\n    },\r\n    {\r\n        \"Name\": \"Azure to Active Directory\",\r\n        \"From\": \"4ac6b82b-3621-457c-938e-7902e11a8bd1\",\r\n        \"To\": \"309028fa-77a4-4309-99a6-ca16dc4ee041\",\r\n        \"Cost\": 0\r\n    }\r\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/158bfe9b-8608-4120-8ca7-5d5ab022a89a/edges/multiple",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"158bfe9b-8608-4120-8ca7-5d5ab022a89a",
+										"edges",
+										"multiple"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GUID\": \"FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF\",\r\n    \"GraphGUID\": \"4fd09750-bfdf-448d-89d5-7f5ae6c300b8\",\r\n    \"Name\": \"My updated test edge\",\r\n    \"From\": \"11111111-1111-1111-1111-111111111111\",\r\n    \"To\": \"22222222-2222-2222-2222-222222222222\",\r\n    \"Cost\": 10,\r\n    \"Data\": {\r\n        \"Hello\": \"World\",\r\n        \"Foo\": \"Bar\"\r\n    },\r\n    \"CreatedUtc\": \"2024-07-01 15:43:06.991834\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/ffffffff-ffff-ffff-ffff-ffffffffffff",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+										"edges",
+										"ffffffff-ffff-ffff-ffff-ffffffffffff"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"GraphGUID\": \"a1bb0532-56ad-4e35-80a4-ba269f4039fd\",\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Expr\": {\r\n    \"Left\": \"Mbps\",\r\n    \"Operator\": \"GreaterThan\",\r\n    \"Right\": 250\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/edges/search",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
+										"edges",
+										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/11111111-1111-1111-1111-111111111111",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+										"edges",
+										"11111111-1111-1111-1111-111111111111"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete all",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/all",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+										"edges",
+										"all"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete multiple",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/4fd09750-bfdf-448d-89d5-7f5ae6c300b8/edges/all",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"4fd09750-bfdf-448d-89d5-7f5ae6c300b8",
+										"edges",
+										"all"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "Get node children",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/11111111-1111-1111-1111-111111111111/children",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"v1.0",
-								"graphs",
-								"443f2e21-d93f-4348-9b18-a018b02fa050",
-								"nodes",
-								"11111111-1111-1111-1111-111111111111",
-								"children"
-							]
+					"name": "Routes and Traversal",
+					"item": [
+						{
+							"name": "Get routes",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Graph\": \"54d82753-3d91-4d02-8eb1-c14ea8a87cea\",\r\n    \"From\": \"2d40dc7a-f003-4cca-b472-17f33d28507f\",\r\n    \"To\": \"25e73c66-cfb3-4495-9df4-9de555649a82\",\r\n    \"NodeFilter\": null,\r\n    \"EdgeFilter\": null\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/54d82753-3d91-4d02-8eb1-c14ea8a87cea/routes",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"54d82753-3d91-4d02-8eb1-c14ea8a87cea",
+										"routes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get edges from node",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/11111111-1111-1111-1111-111111111111/edges/from",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"443f2e21-d93f-4348-9b18-a018b02fa050",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111",
+										"edges",
+										"from"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get edges to node",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/22222222-2222-2222-2222-222222222222/edges/to",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"443f2e21-d93f-4348-9b18-a018b02fa050",
+										"nodes",
+										"22222222-2222-2222-2222-222222222222",
+										"edges",
+										"to"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get edges between nodes",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/a1bb0532-56ad-4e35-80a4-ba269f4039fd/edges/between?from=7ca8aaca-6380-4a1c-8f0a-5322b025ff71&to=3db4fa43-984c-425c-ae12-786a40c7b4f0",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"a1bb0532-56ad-4e35-80a4-ba269f4039fd",
+										"edges",
+										"between"
+									],
+									"query": [
+										{
+											"key": "from",
+											"value": "7ca8aaca-6380-4a1c-8f0a-5322b025ff71"
+										},
+										{
+											"key": "to",
+											"value": "3db4fa43-984c-425c-ae12-786a40c7b4f0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get node edges",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/11111111-1111-1111-1111-111111111111/edges",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"443f2e21-d93f-4348-9b18-a018b02fa050",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111",
+										"edges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get node neighbors",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/11111111-1111-1111-1111-111111111111/neighbors",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"443f2e21-d93f-4348-9b18-a018b02fa050",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111",
+										"neighbors"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get node parents",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/11111111-1111-1111-1111-111111111111/parents",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"443f2e21-d93f-4348-9b18-a018b02fa050",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111",
+										"parents"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get node children",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/graphs/443f2e21-d93f-4348-9b18-a018b02fa050/nodes/11111111-1111-1111-1111-111111111111/children",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"graphs",
+										"443f2e21-d93f-4348-9b18-a018b02fa050",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111",
+										"children"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
+				}
+			]
+		},
+		{
+			"name": "v3.0",
+			"item": [
+				{
+					"name": "Tenants",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"Another tenant\",\r\n    \"Active\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"Updated tenant\",\r\n    \"Active\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/0b571bd7-d63f-4a8b-aa43-96ef3ad6364d",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"0b571bd7-d63f-4a8b-aa43-96ef3ad6364d"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/0b571bd7-d63f-4a8b-aa43-96ef3ad6364d",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"0b571bd7-d63f-4a8b-aa43-96ef3ad6364d"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete forcefully",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/0b571bd7-d63f-4a8b-aa43-96ef3ad6364d?force",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"0b571bd7-d63f-4a8b-aa43-96ef3ad6364d"
+									],
+									"query": [
+										{
+											"key": "force",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Users",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/users",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/users/00000000-0000-0000-0000-000000000000",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"users",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/users/00000000-0000-0000-0000-000000000000",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"users",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"FirstName\": \"Another\",\r\n    \"LastName\": \"User\",\r\n    \"Email\": \"another@user.com\",\r\n    \"Password\": \"password\",\r\n    \"Active\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/users",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"FirstName\": \"Again Updated\",\r\n    \"LastName\": \"User\",\r\n    \"Email\": \"anotherbbb@user.com\",\r\n    \"Password\": \"password\",\r\n    \"Active\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/users/ef91fea1-30b2-4226-869d-ebf975b40392",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"users",
+										"ef91fea1-30b2-4226-869d-ebf975b40392"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/users/f534a33d-4617-4f03-b468-8080f2a1f4f2",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"users",
+										"f534a33d-4617-4f03-b468-8080f2a1f4f2"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Credentials",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/credentials",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"credentials"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/credentials/00000000-0000-0000-0000-000000000000",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"credentials",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/credentials/00000000-0000-0000-0000-000000000000",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"credentials",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"UserGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"Name\": \"New credential\",\r\n    \"BearerToken\": \"foobar\",\r\n    \"Active\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/credentials",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"credentials"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"UserGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"Name\": \"Updated credential\",\r\n    \"BearerToken\": \"default\",\r\n    \"Active\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/credentials/00000000-0000-0000-0000-000000000000",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"credentials",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/credentials/44da0a8a-5fad-488b-aeb5-affaa1b43a25",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"credentials",
+										"44da0a8a-5fad-488b-aeb5-affaa1b43a25"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Tags",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/de13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags",
+										"de13ed50-eada-4acc-a7b7-486e51a6a10f"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/be13ea50-eada-4acc-a7b7-486e51a6a10f",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags",
+										"be13ea50-eada-4acc-a7b7-486e51a6a10f"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GraphGUID\": null,\r\n    \"NodeGUID\": null,\r\n    \"EdgeGUID\": null,\r\n    \"Key\": \"mykey\",\r\n    \"Value\": \"myvalue\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Key\": \"updatedkey\",\r\n    \"Value\": \"myvalue\",\r\n    \"CreatedUtc\": \"2024-12-27T18:12:38.653402Z\",\r\n    \"LastUpdateUtc\": \"2024-12-27T18:12:38.653402Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/ce13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags",
+										"ce13ed50-eada-4acc-a7b7-486e51a6a10f"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/00000000-0000-0000-0000-000000000000",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Graphs",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"Another new graph\",\r\n    \"Tags\": {\r\n        \"Foo\": \"Bar\"\r\n    },\r\n    \"Data\": {\r\n        \"Key\": \"Value\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"Updated graph\",\r\n    \"Data\": {\r\n        \"My-key\": \"My-value\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/71199f05-2e8e-4064-b9ca-6400b86ebbd3",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"71199f05-2e8e-4064-b9ca-6400b86ebbd3"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Tags\": {\r\n    \"Foo\": \"Bar\"\r\n  },\r\n  \"Expr\": {\r\n    \"Left\": \"Key\",\r\n    \"Operator\": \"Equals\",\r\n    \"Right\": \"Value\"\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/search",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/71199f05-2e8e-4064-b9ca-6400b86ebbd3",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"71199f05-2e8e-4064-b9ca-6400b86ebbd3"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete forcefully",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/71199f05-2e8e-4064-b9ca-6400b86ebbd3?force",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"71199f05-2e8e-4064-b9ca-6400b86ebbd3"
+									],
+									"query": [
+										{
+											"key": "force",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Export as GEXF",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/export/gexf?incldata",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"export",
+										"gexf"
+									],
+									"query": [
+										{
+											"key": "incldata",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Batch",
+					"item": [
+						{
+							"name": "Existence",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Nodes\": [\r\n        \"ddbab487-ea6a-4ee4-8884-3ef55220e230\",\r\n        \"0c8c4f91-ae17-4f13-be5c-4d24a11ff703\",\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"Edges\": [\r\n        \"16edcc3a-7924-4334-bdeb-da1a31bc55ad\",\r\n        \"4057704f-37a3-4bea-8568-0384eeebcc71\",\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"EdgesBetween\": [\r\n        { \"From\": \"ddbab487-ea6a-4ee4-8884-3ef55220e230\", \"To\": \"1933a861-a86c-493b-809b-e1a15c577954\" },\r\n        { \"From\": \"d176c9f7-7584-408c-8b02-ea0db9e13d60\", \"To\": \"1933a861-a86c-493b-809b-e1a15c577954\" },\r\n        { \"From\": \"00000000-0000-0000-0000-000000000000\", \"To\": \"00000000-0000-0000-0000-000000000000\" }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/existence",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"existence"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Nodes",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/11111111-1111-1111-1111-111111111111",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/784cfa37-fb06-4f81-b10d-f1167dfe2b22",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"784cfa37-fb06-4f81-b10d-f1167dfe2b22"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"My test node\",\r\n    \"Tags\": {\r\n        \"Foo\": \"Bar\"\r\n    },\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create multiple",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\r\n    {\r\n        \"Name\": \"Active Directory\",\r\n        \"Tags\": {\r\n            \"Type\": \"ActiveDirectory\"\r\n        },\r\n        \"Data\": {\r\n            \"Name\": \"Active Directory\"\r\n        }\r\n    },\r\n    {\r\n        \"Name\": \"Website\",\r\n        \"Tags\": {\r\n            \"Type\": \"Website\"\r\n        },\r\n        \"Data\": {\r\n            \"Name\": \"Website\"\r\n        }\r\n    }\r\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/multiple",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"multiple"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"My test node 2\",\r\n    \"Data\": {\r\n        \"Updated\": \"Data\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/d8b4c1b6-7913-4216-a326-2aedc57360f8",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"d8b4c1b6-7913-4216-a326-2aedc57360f8"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Tags\": {\r\n    \"Type\": \"ActiveDirectory\"\r\n  },\r\n  \"Expr\": {\r\n    \"Left\": \"Name\",\r\n    \"Operator\": \"Equals\",\r\n    \"Right\": \"Active Directory\"\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/search",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/4e3ee872-26e1-4ca7-bcf7-cc439dbef954",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"4e3ee872-26e1-4ca7-bcf7-cc439dbef954"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete all",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/all",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"all"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete multiple",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\r\n    \"fcde5431-3350-4334-9807-93f1c83c0afd\",\r\n    \"08a1f4f3-7aaf-47d5-9c7d-cb427f983ed7\",\r\n    \"116e9790-b61e-4866-8f99-a60188c7c42c\",\r\n    \"f96dfbbd-ae0f-43fc-a8e4-ae1ce891d1a7\",\r\n    \"4d4f2160-040a-4f6d-9833-b4172d560d5c\",\r\n    \"868bf873-aceb-450d-be8f-07a392e0fa3f\",\r\n    \"11946503-2f48-487c-a2ba-18aaf3b1cd9a\",\r\n    \"371eb366-f93e-40d8-81dd-d1389979026d\",\r\n    \"8acbddd7-070c-4adb-900b-2291d225cf9f\",\r\n    \"5f93f58b-f785-4cc5-84a2-5707ffa7d04f\"\r\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/multiple",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"multiple"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Edges",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges/11111111-1111-1111-1111-111111111111",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges",
+										"11111111-1111-1111-1111-111111111111"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges/3a35b214-150e-442e-bb4e-3515b3fa7cfe",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges",
+										"3a35b214-150e-442e-bb4e-3515b3fa7cfe"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"816d5017-5ea4-44d4-b960-2f100eab37e4\",\r\n    \"To\": \"d8b4c1b6-7913-4216-a326-2aedc57360f8\",\r\n    \"Cost\": 10,\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create multiple",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\r\n    {\r\n        \"Name\": \"DigitalOcean to Control Plane\",\r\n        \"From\": \"b8c4d0b0-45fe-4f75-9dec-51b37b8d5b07\",\r\n        \"To\": \"a45676e7-3b04-4bcc-9f7f-8f829b5f9831\",\r\n        \"Cost\": 0\r\n    },\r\n    {\r\n        \"Name\": \"Azure to Active Directory\",\r\n        \"From\": \"4ac6b82b-3621-457c-938e-7902e11a8bd1\",\r\n        \"To\": \"309028fa-77a4-4309-99a6-ca16dc4ee041\",\r\n        \"Cost\": 0\r\n    }\r\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges/multiple",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges",
+										"multiple"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GUID\": \"FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF\",\r\n    \"GraphGUID\": \"4fd09750-bfdf-448d-89d5-7f5ae6c300b8\",\r\n    \"Name\": \"My updated test edge\",\r\n    \"From\": \"11111111-1111-1111-1111-111111111111\",\r\n    \"To\": \"22222222-2222-2222-2222-222222222222\",\r\n    \"Cost\": 10,\r\n    \"Data\": {\r\n        \"Hello\": \"World\",\r\n        \"Foo\": \"Bar\"\r\n    },\r\n    \"CreatedUtc\": \"2024-07-01 15:43:06.991834\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges/ffffffff-ffff-ffff-ffff-ffffffffffff",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges",
+										"ffffffff-ffff-ffff-ffff-ffffffffffff"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Ordering\": \"CreatedDescending\",\r\n    \"Tags\": {\r\n        \"Id\": \"1\"\r\n    },\r\n    \"Expr\": {\r\n        \"Left\": \"Hello\",\r\n        \"Operator\": \"Equals\",\r\n        \"Right\": \"World\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges/search",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges",
+										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges/11111111-1111-1111-1111-111111111111",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges",
+										"11111111-1111-1111-1111-111111111111"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete all",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges/all",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges",
+										"all"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete multiple",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges/all",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges",
+										"all"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Routes and Traversal",
+					"item": [
+						{
+							"name": "Get routes",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"From\": \"3c741e8d-56c7-420d-a0d6-baf69b931bab\",\r\n    \"To\": \"d9715aaa-0c97-4770-b66b-f685761547c8\",\r\n    \"NodeFilter\": null,\r\n    \"EdgeFilter\": null\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/routes",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"routes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get edges from node",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/3c741e8d-56c7-420d-a0d6-baf69b931bab/edges/from",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"3c741e8d-56c7-420d-a0d6-baf69b931bab",
+										"edges",
+										"from"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get edges to node",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/22222222-2222-2222-2222-222222222222/edges/to",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"22222222-2222-2222-2222-222222222222",
+										"edges",
+										"to"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get edges between nodes",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/edges/between?from=7ca8aaca-6380-4a1c-8f0a-5322b025ff71&to=3db4fa43-984c-425c-ae12-786a40c7b4f0",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"edges",
+										"between"
+									],
+									"query": [
+										{
+											"key": "from",
+											"value": "7ca8aaca-6380-4a1c-8f0a-5322b025ff71"
+										},
+										{
+											"key": "to",
+											"value": "3db4fa43-984c-425c-ae12-786a40c7b4f0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get node edges",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/11111111-1111-1111-1111-111111111111/edges",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111",
+										"edges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get node neighbors",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/11111111-1111-1111-1111-111111111111/neighbors",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111",
+										"neighbors"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get node parents",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/11111111-1111-1111-1111-111111111111/parents",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111",
+										"parents"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get node children",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000/nodes/11111111-1111-1111-1111-111111111111/children",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs",
+										"00000000-0000-0000-0000-000000000000",
+										"nodes",
+										"11111111-1111-1111-1111-111111111111",
+										"children"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -1270,6 +3349,16 @@
 			"response": []
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearertoken}}",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",
@@ -1300,8 +3389,9 @@
 		},
 		{
 			"key": "hostname",
-			"value": "localhost",
-			"type": "string"
+			"value": "ec2-18-217-169-161.us-east-2.compute.amazonaws.com",
+			"type": "string",
+			"disabled": true
 		},
 		{
 			"key": "port",
@@ -1310,9 +3400,18 @@
 		},
 		{
 			"key": "hostname",
-			"value": "host.docker.internal",
-			"type": "string",
-			"disabled": true
+			"value": "localhost",
+			"type": "string"
+		},
+		{
+			"key": "tenant",
+			"value": "00000000-0000-0000-0000-000000000000",
+			"type": "string"
+		},
+		{
+			"key": "bearertoken",
+			"value": "litegraphadmin",
+			"type": "string"
 		}
 	]
 }
