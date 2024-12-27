@@ -97,6 +97,10 @@
                     req.Authentication.Result = AuthenticationResultEnum.NotFound;
                     return;
                 }
+                else
+                {
+                    req.Authentication.CredentialGUID = req.Authentication.Credential.GUID;
+                }
 
                 if (!req.Authentication.Credential.Active)
                 {
@@ -112,6 +116,10 @@
                     req.Authentication.Result = AuthenticationResultEnum.NotFound;
                     return;
                 }
+                else
+                {
+                    req.Authentication.TenantGUID = req.Authentication.Tenant.GUID;
+                }
 
                 if (!req.Authentication.Tenant.Active)
                 {
@@ -126,6 +134,10 @@
                     _Logging.Warn(_Header + "user " + req.Authentication.Credential.UserGUID + " referenced in credential " + req.Authentication.Credential.GUID + " not found");
                     req.Authentication.Result = AuthenticationResultEnum.NotFound;
                     return;
+                }
+                else
+                {
+                    req.Authentication.UserGUID = req.Authentication.User.GUID;
                 }
 
                 if (!req.Authentication.User.Active)

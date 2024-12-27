@@ -61,6 +61,22 @@
         }
 
         /// <summary>
+        /// Bearer token.
+        /// </summary>
+        public string BearerToken
+        {
+            get
+            {
+                return _BearerToken;
+            }
+            set
+            {
+                if (String.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(BearerToken));
+                _BearerToken = value;
+            }
+        }
+
+        /// <summary>
         /// Timeout in milliseconds.
         /// </summary>
         public int TimeoutMs
@@ -82,6 +98,7 @@
 
         private string _Header = "[LiteGraphSdk] ";
         private string _Endpoint = null;
+        private string _BearerToken = null;
         private int _TimeoutMs = 300000;
 
         #endregion
@@ -92,11 +109,14 @@
         /// Instantiate.
         /// </summary>
         /// <param name="endpoint">Endpoint.</param>
-        public SdkBase(string endpoint)
+        /// <param name="bearerToken">Bearer token.</param>
+        public SdkBase(string endpoint, string bearerToken)
         {
             if (String.IsNullOrEmpty(endpoint)) throw new ArgumentNullException(nameof(endpoint));
+            if (String.IsNullOrEmpty(bearerToken)) throw new ArgumentNullException(nameof(bearerToken));
 
             Endpoint = endpoint;
+            BearerToken = bearerToken;
         }
 
         #endregion
@@ -188,6 +208,7 @@
             {
                 req.TimeoutMilliseconds = TimeoutMs;
                 req.ContentType = "application/json";
+                req.Authorization.BearerToken = BearerToken;
 
                 using (RestResponse resp = await req.SendAsync(json, token).ConfigureAwait(false))
                 {
@@ -233,6 +254,7 @@
             using (RestRequest req = new RestRequest(url, HttpMethod.Head))
             {
                 req.TimeoutMilliseconds = TimeoutMs;
+                req.Authorization.BearerToken = BearerToken;
 
                 using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                 {
@@ -272,6 +294,7 @@
             using (RestRequest req = new RestRequest(url))
             {
                 req.TimeoutMilliseconds = TimeoutMs;
+                req.Authorization.BearerToken = BearerToken;
 
                 using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                 {
@@ -317,6 +340,7 @@
             using (RestRequest req = new RestRequest(url))
             {
                 req.TimeoutMilliseconds = TimeoutMs;
+                req.Authorization.BearerToken = BearerToken;
 
                 using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                 {
@@ -356,6 +380,7 @@
             using (RestRequest req = new RestRequest(url))
             {
                 req.TimeoutMilliseconds = TimeoutMs;
+                req.Authorization.BearerToken = BearerToken;
 
                 using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                 {
@@ -409,6 +434,7 @@
             {
                 req.TimeoutMilliseconds = TimeoutMs;
                 req.ContentType = "application/json";
+                req.Authorization.BearerToken = BearerToken;
 
                 using (RestResponse resp = await req.SendAsync(json, token).ConfigureAwait(false))
                 {
@@ -454,6 +480,7 @@
             using (RestRequest req = new RestRequest(url, HttpMethod.Delete))
             {
                 req.TimeoutMilliseconds = TimeoutMs;
+                req.Authorization.BearerToken = BearerToken;
 
                 using (RestResponse resp = await req.SendAsync(token).ConfigureAwait(false))
                 {
@@ -498,6 +525,7 @@
             {
                 req.TimeoutMilliseconds = TimeoutMs;
                 req.ContentType = "application/json";
+                req.Authorization.BearerToken = BearerToken;
 
                 using (RestResponse resp = await req.SendAsync(json, token).ConfigureAwait(false))
                 {
@@ -546,6 +574,7 @@
             {
                 req.TimeoutMilliseconds = TimeoutMs;
                 req.ContentType = "application/json";
+                req.Authorization.BearerToken = BearerToken;
 
                 using (RestResponse resp = await req.SendAsync(json, token).ConfigureAwait(false))
                 {
@@ -599,6 +628,7 @@
             {
                 req.TimeoutMilliseconds = TimeoutMs;
                 req.ContentType = contentType;
+                req.Authorization.BearerToken = BearerToken;
 
                 using (RestResponse resp = await req.SendAsync(bytes, token).ConfigureAwait(false))
                 {

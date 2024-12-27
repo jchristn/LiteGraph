@@ -4,7 +4,7 @@
 		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
 		<Version>3.0.0</Version>
 		<Description>LiteGraph is a simple graph database abstraction with a RESTful interface, JSON data query support, and GEXF output support.</Description>
-		<PackageReleaseNotes>Batch existence, create, and deletion APIs</PackageReleaseNotes>
+		<PackageReleaseNotes>Refactor, multitenancy, users, credentials, and tags, including tag based retrieval</PackageReleaseNotes>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>Joel Christner</Authors>
 		<Company>Joel Christner</Company>

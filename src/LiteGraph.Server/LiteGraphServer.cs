@@ -190,7 +190,7 @@
 
             _Repository = new SqliteGraphRepository(_Settings.LiteGraph.GraphRepositoryFilename);
             _Repository.InitializeRepository();
-            _Repository.Logging.Enable = true;
+            _Repository.Logging.Enable = _Settings.Debug.DatabaseQueries;
             _Repository.Logging.Logger = LiteGraphLogger;
             _Repository.Logging.LogQueries = _Settings.Debug.DatabaseQueries;
             _Repository.Logging.LogResults = _Settings.Debug.DatabaseQueries;
@@ -206,7 +206,7 @@
             #region LiteGraph-Client
 
             _LiteGraph = new LiteGraphClient(_Repository, _Settings.Logging);
-            _LiteGraph.Logging.Enable = true;
+            _LiteGraph.Logging.Enable = _Settings.Debug.DatabaseQueries;
             _LiteGraph.Logging.Logger = LiteGraphLogger;
             _LiteGraph.Logging.LogQueries = _Settings.Debug.DatabaseQueries;
             _LiteGraph.Logging.LogResults = _Settings.Debug.DatabaseQueries;

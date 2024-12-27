@@ -29,7 +29,7 @@
         /// <summary>
         /// Timestamp from creation, in UTC.
         /// </summary>
-        public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
+        public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Timestamp from last update, in UTC.

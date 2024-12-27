@@ -25,7 +25,7 @@
         /// <summary>
         /// Debug database queries.
         /// </summary>
-        public bool DatabaseQueries { get; set; } = true;
+        public bool DatabaseQueries { get; set; } = false;
 
         /// <summary>
         /// Instantiate.
