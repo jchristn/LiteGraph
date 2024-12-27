@@ -15,9 +15,14 @@
         #region Public-Members
 
         /// <summary>
+        /// Tenant GUID.
+        /// </summary>
+        public Guid TenantGUID { get; set; } = default(Guid);
+
+        /// <summary>
         /// Graph GUID.
         /// </summary>
-        public Guid Graph { get; set; } = default(Guid);
+        public Guid GraphGUID { get; set; } = default(Guid);
 
         /// <summary>
         /// From node GUID.

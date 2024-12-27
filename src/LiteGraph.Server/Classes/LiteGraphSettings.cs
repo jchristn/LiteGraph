@@ -1,6 +1,7 @@
 ﻿namespace LiteGraph.Server.Classes
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// LiteGraph settings.
@@ -10,13 +11,34 @@
         #region Public-Members
 
         /// <summary>
-        /// Sqlite database filename.
+        /// Administrator bearer token.
         /// </summary>
-        public string Filename
+        public string AdminBearerToken
         {
             get
             {
-                return _Filename;
+                return _AdminBearerToken;
+            }
+            set
+            {
+                if (String.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(AdminBearerToken));
+                _AdminBearerToken = value;
+            }
+        }
+
+        /// <summary>
+        /// Sqlite data repository filename.
+        /// </summary>
+        public string GraphRepositoryFilename
+        {
+            get
+            {
+                return _GraphRepositoryFilename;
+            }
+            set
+            {
+                if (String.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(GraphRepositoryFilename));
+                _GraphRepositoryFilename = value;
             }
         }
 
@@ -38,7 +60,8 @@
 
         #region Private-Members
 
-        private string _Filename = "litegraph.db";
+        private string _AdminBearerToken = "litegraphadmin";
+        private string _GraphRepositoryFilename = "litegraph.db";
         private int _MaxConcurrentOperations = 4;
 
         #endregion

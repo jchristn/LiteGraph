@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-		<Version>2.1.0</Version>
+		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+		<Version>3.0.0</Version>
 		<Description>LiteGraph is a simple graph database abstraction with a RESTful interface, JSON data query support, and GEXF output support.</Description>
-		<PackageReleaseNotes>Batch existence, create, and deletion APIs</PackageReleaseNotes>
+		<PackageReleaseNotes>Refactor, multitenancy, users, credentials, and tags, including tag based retrieval</PackageReleaseNotes>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>Joel Christner</Authors>
 		<Company>Joel Christner</Company>
@@ -28,11 +28,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Caching" Version="3.1.1" />
+		<PackageReference Include="Caching" Version="3.1.2" />
 		<PackageReference Include="ExpressionTree" Version="1.0.2" />
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.8" />
 		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.8" />
-		<PackageReference Include="SyslogLogging" Version="2.0.5" />
+		<PackageReference Include="PrettyId" Version="1.0.3" />
+		<PackageReference Include="SyslogLogging" Version="2.0.7" />
 		<PackageReference Include="Timestamps" Version="1.0.9" />
 	</ItemGroup>
 

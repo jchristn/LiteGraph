@@ -6,8 +6,10 @@
     using System.Threading;
     using System.Linq;
     using LiteGraph.Gexf;
-    using LiteGraph.Repositories;
+    using LiteGraph.GraphRepositories;
     using LiteGraph.Serialization;
+    using System.Xml.Linq;
+    using System.Collections.Specialized;
 
     /// <summary>
     /// LiteGraph client.
@@ -53,7 +55,7 @@
         #region Private-Members
 
         private bool _Disposed = false;
-        private RepositoryBase _Repository = new SqliteRepository();
+        private GraphRepositoryBase _Repository = new SqliteGraphRepository();
         private SerializationHelper _Serializer = new SerializationHelper();
         private GexfWriter _Gexf = new GexfWriter();
 
@@ -64,13 +66,13 @@
         /// <summary>
         /// Instantiate LiteGraph client.
         /// </summary>
-        /// <param name="repository">Repository driver.</param>
+        /// <param name="repo">Graph repository driver.</param>
         /// <param name="logging">Logging.</param>
         public LiteGraphClient(
-            RepositoryBase repository = null,
+            GraphRepositoryBase repo = null,
             LoggingSettings logging = null)
         {
-            if (repository != null) _Repository = repository;
+            if (repo != null) _Repository = repo;
 
             if (logging != null) Logging = logging;
             else Logging = new LoggingSettings();
@@ -109,23 +111,450 @@
             return _Serializer.DeserializeJson<T>(data.ToString());
         }
 
+        #region Tenants
+
+        /// <summary>
+        /// Create a tenant.
+        /// </summary>
+        /// <param name="tenant">Tenant.</param>
+        /// <returns>Tenant.</returns>
+        public TenantMetadata CreateTenant(TenantMetadata tenant)
+        {
+            if (tenant == null) throw new ArgumentNullException(nameof(tenant));
+
+            TenantMetadata existing = _Repository.ReadTenant(tenant.GUID);
+            if (existing != null) return existing;
+
+            TenantMetadata created = _Repository.CreateTenant(tenant);
+            Logging.Log(SeverityEnum.Info, "created tenant name " + created.Name + " GUID " + created.GUID);
+            return created;
+        }
+
+        /// <summary>
+        /// Create a tenant using a unique name.
+        /// </summary>
+        /// <param name="guid">GUID.</param>
+        /// <param name="name">Unique name.</param>
+        /// <returns>Tenant.</returns>
+        public TenantMetadata CreateTenant(Guid guid, string name)
+        {
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            return CreateTenant(new TenantMetadata { GUID = guid, Name = name });
+        }
+
+        /// <summary>
+        /// Read tenants.
+        /// </summary>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Tenants.</returns>
+        public IEnumerable<TenantMetadata> ReadTenants(EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving tenants");
+
+            foreach (TenantMetadata tenant in _Repository.ReadTenants(order))
+            {
+                yield return tenant;
+            }
+        }
+
+        /// <summary>
+        /// Read a tenant by GUID.
+        /// </summary>
+        /// <param name="guid">GUID.</param>
+        /// <returns>Tenant.</returns>
+        public TenantMetadata ReadTenant(Guid guid)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving tenant with GUID " + guid);
+
+            return _Repository.ReadTenant(guid);
+        }
+
+        /// <summary>
+        /// Update a tenant.
+        /// </summary>
+        /// <param name="tenant">Tenant.</param>
+        /// <returns>Tenant.</returns>
+        public TenantMetadata UpdateTenant(TenantMetadata tenant)
+        {
+            if (tenant == null) throw new ArgumentNullException(nameof(tenant));
+
+            Logging.Log(SeverityEnum.Debug, "updating tenant with name " + tenant.Name + " GUID " + tenant.GUID);
+
+            return _Repository.UpdateTenant(tenant);
+        }
+
+        /// <summary>
+        /// Delete a tenant.
+        /// </summary>
+        /// <param name="guid">GUID.</param>
+        /// <param name="force">True to force deletion of subordinate objects.</param>
+        public void DeleteTenant(Guid guid, bool force = false)
+        {
+            TenantMetadata tenant = ReadTenant(guid);
+            if (tenant == null) return;
+
+            Logging.Log(SeverityEnum.Info, "deleting tenant with name " + tenant.Name + " GUID " + tenant.GUID);
+
+            _Repository.DeleteTenant(guid, force);
+        }
+
+        /// <summary>
+        /// Check if a tenant exists by GUID.
+        /// </summary>
+        /// <param name="guid">GUID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ExistsTenant(Guid guid)
+        {
+            return _Repository.ExistsTenant(guid);
+        }
+
+        #endregion
+
+        #region Users
+
+        /// <summary>
+        /// Create a user.
+        /// </summary>
+        /// <param name="user">User.</param>
+        /// <returns>User.</returns>
+        public UserMaster CreateUser(UserMaster user)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+
+            UserMaster existing = _Repository.ReadUser(user.TenantGUID, user.GUID);
+            if (existing != null) return existing;
+
+            UserMaster created = _Repository.CreateUser(user);
+            Logging.Log(SeverityEnum.Info, "created user email " + created.Email + " GUID " + created.GUID);
+            return created;
+        }
+
+        /// <summary>
+        /// Create a user using a unique name.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="firstName">First name.</param>
+        /// <param name="lastName">Last name.</param>
+        /// <param name="email">Email.</param>
+        /// <param name="password">Password.</param>
+        /// <returns>User.</returns>
+        public UserMaster CreateUser(Guid tenantGuid, Guid guid, string firstName, string lastName, string email, string password)
+        {
+            if (String.IsNullOrEmpty(firstName)) throw new ArgumentNullException(nameof(firstName));
+            if (String.IsNullOrEmpty(lastName)) throw new ArgumentNullException(nameof(lastName));
+            if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
+            if (String.IsNullOrEmpty(password)) throw new ArgumentNullException(nameof(password));
+            return CreateUser(new UserMaster { GUID = guid, TenantGUID = tenantGuid, FirstName = firstName, LastName = lastName, Email = email, Password = password });
+        }
+
+        /// <summary>
+        /// Read users.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="email">Email.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Users.</returns>
+        public IEnumerable<UserMaster> ReadUsers(Guid tenantGuid, string email, EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving users");
+
+            foreach (UserMaster user in _Repository.ReadUsers(tenantGuid, email, order))
+            {
+                yield return user;
+            }
+        }
+
+        /// <summary>
+        /// Read a user by GUID.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <returns>User.</returns>
+        public UserMaster ReadUser(Guid tenantGuid, Guid guid)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving user with GUID " + guid);
+
+            return _Repository.ReadUser(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Update a user.
+        /// </summary>
+        /// <param name="user">User.</param>
+        /// <returns>User.</returns>
+        public UserMaster UpdateUser(UserMaster user)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+
+            Logging.Log(SeverityEnum.Debug, "updating user with email " + user.Email + " GUID " + user.GUID);
+
+            return _Repository.UpdateUser(user);
+        }
+
+        /// <summary>
+        /// Delete a user.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        public void DeleteUser(Guid tenantGuid, Guid guid)
+        {
+            UserMaster user = ReadUser(tenantGuid, guid);
+            if (user == null) return;
+
+            Logging.Log(SeverityEnum.Info, "deleting user with email " + user.Email + " GUID " + user.GUID);
+
+            _Repository.DeleteUser(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Check if a user exists by GUID.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ExistsUser(Guid tenantGuid, Guid guid)
+        {
+            return _Repository.ExistsUser(tenantGuid, guid);
+        }
+
+        #endregion
+
+        #region Credentials
+
+        /// <summary>
+        /// Create a credential.
+        /// </summary>
+        /// <param name="cred">Credential.</param>
+        /// <returns>Credential.</returns>
+        public Credential CreateCredential(Credential cred)
+        {
+            if (cred == null) throw new ArgumentNullException(nameof(cred));
+
+            Credential existing = _Repository.ReadCredential(cred.TenantGUID, cred.GUID);
+            if (existing != null) return existing;
+
+            Credential created = _Repository.CreateCredential(cred);
+            Logging.Log(SeverityEnum.Info, "created credential " + created.GUID);
+            return created;
+        }
+
+        /// <summary>
+        /// Create a credential using a unique name.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="name">Name.</param>
+        /// <returns>Credential.</returns>
+        public Credential CreateCredential(Guid tenantGuid, Guid guid, string name)
+        {
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            return CreateCredential(new Credential { GUID = guid, TenantGUID = tenantGuid, Name = name });
+        }
+
+        /// <summary>
+        /// Read credentials.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="userGuid">User GUID.</param>
+        /// <param name="bearerToken">Bearer token.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Credentials.</returns>
+        public IEnumerable<Credential> ReadCredentials(Guid? tenantGuid, Guid? userGuid, string bearerToken, EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving credentials");
+
+            foreach (Credential credential in _Repository.ReadCredentials(tenantGuid, userGuid, bearerToken, order))
+            {
+                yield return credential;
+            }
+        }
+
+        /// <summary>
+        /// Read a credential by GUID.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <returns>Credential.</returns>
+        public Credential ReadCredential(Guid tenantGuid, Guid guid)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving credential with GUID " + guid);
+
+            return _Repository.ReadCredential(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Update a credential.
+        /// </summary>
+        /// <param name="credential">Credential.</param>
+        /// <returns>Credential.</returns>
+        public Credential UpdateCredential(Credential credential)
+        {
+            if (credential == null) throw new ArgumentNullException(nameof(credential));
+
+            Logging.Log(SeverityEnum.Debug, "updating credential " + credential.Name + " GUID " + credential.GUID);
+
+            return _Repository.UpdateCredential(credential);
+        }
+
+        /// <summary>
+        /// Delete a credential.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        public void DeleteCredential(Guid tenantGuid, Guid guid)
+        {
+            Credential credential = ReadCredential(tenantGuid, guid);
+            if (credential == null) return;
+
+            Logging.Log(SeverityEnum.Info, "deleting credential " + credential.Name + " GUID " + credential.GUID);
+
+            _Repository.DeleteCredential(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Check if a credential exists by GUID.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ExistsCredential(Guid tenantGuid, Guid guid)
+        {
+            return _Repository.ExistsCredential(tenantGuid, guid);
+        }
+
+        #endregion
+
+        #region Tags
+
+        /// <summary>
+        /// Create a tag.
+        /// </summary>
+        /// <param name="tag">Tag.</param>
+        /// <returns>Tag.</returns>
+        public TagMetadata CreateTag(TagMetadata tag)
+        {
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
+
+            TagMetadata existing = _Repository.ReadTag(tag.TenantGUID, tag.GUID);
+            if (existing != null) return existing;
+
+            TagMetadata created = _Repository.CreateTag(tag);
+            Logging.Log(SeverityEnum.Info, "created tag " + created.GUID);
+            return created;
+        }
+
+        /// <summary>
+        /// Create a tag using a unique name.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <param name="key">Key.</param>
+        /// <param name="val">Value.</param>
+        /// <returns>Tag.</returns>
+        public TagMetadata CreateTag(Guid tenantGuid, Guid graphGuid, Guid? nodeGuid, Guid? edgeGuid, string key, string val)
+        {
+            if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+            return CreateTag(new TagMetadata { GUID = Guid.NewGuid(), TenantGUID = tenantGuid, GraphGUID = graphGuid, NodeGUID = nodeGuid, EdgeGUID = edgeGuid, Key = key, Value = val });
+        }
+
+        /// <summary>
+        /// Read tags.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <param name="key">Key.</param>
+        /// <param name="val">Value.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Tags.</returns>
+        public IEnumerable<TagMetadata> ReadTags(Guid tenantGuid, Guid? graphGuid, Guid? nodeGuid, Guid? edgeGuid, string key, string val, EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving tags");
+
+            foreach (TagMetadata tag in _Repository.ReadTags(tenantGuid, graphGuid, nodeGuid, edgeGuid, key, val, order))
+            {
+                yield return tag;
+            }
+        }
+
+        /// <summary>
+        /// Read a tag by GUID.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <returns>Tag.</returns>
+        public TagMetadata ReadTag(Guid tenantGuid, Guid guid)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving tag with GUID " + guid);
+
+            return _Repository.ReadTag(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Update a tag.
+        /// </summary>
+        /// <param name="tag">TagMetadata.</param>
+        /// <returns>Tag.</returns>
+        public TagMetadata UpdateTag(TagMetadata tag)
+        {
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
+
+            Logging.Log(SeverityEnum.Debug, "updating tag " + tag.Key + " in GUID " + tag.GUID);
+
+            return _Repository.UpdateTag(tag);
+        }
+
+        /// <summary>
+        /// Delete a tag.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        public void DeleteTag(Guid tenantGuid, Guid guid)
+        {
+            TagMetadata tag = ReadTag(tenantGuid, guid);
+            if (tag == null) return;
+
+            Logging.Log(SeverityEnum.Info, "deleting tag " + tag.Key + " in GUID " + tag.GUID);
+
+            _Repository.DeleteTag(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Check if a tag exists by GUID.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ExistsTagMetadata(Guid tenantGuid, Guid guid)
+        {
+            return _Repository.ExistsTag(tenantGuid, guid);
+        }
+
+        #endregion
+
         #region Graphs
 
         /// <summary>
         /// Create a graph using a unique name.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
         /// <param name="name">Unique name.</param>
+        /// <param name="tags">Tags.</param>
         /// <param name="data">Data.</param>
         /// <returns>Graph.</returns>
-        public Graph CreateGraph(Guid guid, string name, object data = null)
+        public Graph CreateGraph(Guid tenantGuid, Guid guid, string name, NameValueCollection tags = null, object data = null)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            Graph existing = _Repository.ReadGraph(guid);
+            Graph existing = _Repository.ReadGraph(tenantGuid, guid);
             if (existing != null) return existing;
 
-            Graph graph = _Repository.CreateGraph(guid, name, data);
+            Graph graph = _Repository.CreateGraph(tenantGuid, guid, name, data, tags);
             Logging.Log(SeverityEnum.Info, "created graph name " + name + " GUID " + graph.GUID);
             return graph;
         }
@@ -133,6 +562,8 @@
         /// <summary>
         /// Read graphs.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="tags">Tags on which to filter results.</param>
         /// <param name="expr">
         /// Graph filter expression for Data JSON body.
         /// Expression left terms must follow the form of Sqlite JSON paths.
@@ -140,6 +571,8 @@
         /// <param name="order">Enumeration order.</param>
         /// <returns>Graphs.</returns>
         public IEnumerable<Graph> ReadGraphs(
+            Guid tenantGuid,
+            NameValueCollection tags = null,
             Expr expr = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
@@ -149,7 +582,7 @@
 
             Logging.Log(SeverityEnum.Debug, "retrieving graphs");
 
-            foreach (Graph graph in _Repository.ReadGraphs(expr, order))
+            foreach (Graph graph in _Repository.ReadGraphs(tenantGuid, tags, expr, order))
             {
                 yield return graph;
             }
@@ -158,13 +591,14 @@
         /// <summary>
         /// Read a graph by GUID.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <returns>Graph.</returns>
-        public Graph ReadGraph(Guid graphGuid)
+        public Graph ReadGraph(Guid tenantGuid, Guid graphGuid)
         {
             Logging.Log(SeverityEnum.Debug, "retrieving graph with GUID " + graphGuid);
 
-            return _Repository.ReadGraph(graphGuid);
+            return _Repository.ReadGraph(tenantGuid, graphGuid);
         }
 
         /// <summary>
@@ -184,11 +618,12 @@
         /// <summary>
         /// Delete a graph.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">GUID.</param>
         /// <param name="force">True to force deletion of nodes and edges.</param>
-        public void DeleteGraph(Guid graphGuid, bool force = false)
+        public void DeleteGraph(Guid tenantGuid, Guid graphGuid, bool force = false)
         {
-            Graph graph = ReadGraph(graphGuid);
+            Graph graph = ReadGraph(tenantGuid, graphGuid);
             if (graph == null) return;
 
             Logging.Log(SeverityEnum.Info, "deleting graph with name " + graph.Name + " GUID " + graph.GUID);
@@ -197,50 +632,53 @@
             {
                 Logging.Log(SeverityEnum.Info, "deleting graph edges and nodes for graph GUID " + graph.GUID);
 
-                _Repository.DeleteEdges(graph.GUID);
-                _Repository.DeleteNodes(graph.GUID);
+                _Repository.DeleteEdges(tenantGuid, graph.GUID);
+                _Repository.DeleteNodes(tenantGuid, graph.GUID);
             }
 
-            if (_Repository.ReadNodes(graph.GUID).Count() > 0)
+            if (_Repository.ReadNodes(tenantGuid, graph.GUID).Count() > 0)
                 throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
 
-            if (_Repository.ReadEdges(graph.GUID).Count() > 0)
+            if (_Repository.ReadEdges(tenantGuid, graph.GUID).Count() > 0)
                 throw new InvalidOperationException("The specified graph has dependent nodes or edges.");
 
-            _Repository.DeleteGraph(graph.GUID, force);
+            _Repository.DeleteGraph(tenantGuid, graph.GUID, force);
         }
 
         /// <summary>
         /// Check if a graph exists by GUID.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
         /// <returns>True if exists.</returns>
-        public bool ExistsGraph(Guid guid)
+        public bool ExistsGraph(Guid tenantGuid, Guid guid)
         {
-            return _Repository.ExistsGraph(guid);
+            return _Repository.ExistsGraph(tenantGuid, guid);
         }
 
         /// <summary>
         /// Export graph to GEXF.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
         /// <param name="filename">Filename.</param>
         /// <param name="includeData">True to include data.</param>
-        public void ExportGraphToGexfFile(Guid guid, string filename, bool includeData = false)
+        public void ExportGraphToGexfFile(Guid tenantGuid, Guid guid, string filename, bool includeData = false)
         {
             if (String.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
-            _Gexf.ExportToFile(this, guid, filename, includeData);
+            _Gexf.ExportToFile(this, tenantGuid, guid, filename, includeData);
         }
 
         /// <summary>
         /// Render a graph as GEXF.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid"></param>
         /// <param name="includeData"></param>
         /// <returns></returns>
-        public string RenderGraphAsGexf(Guid guid, bool includeData = false)
+        public string RenderGraphAsGexf(Guid tenantGuid, Guid guid, bool includeData = false)
         {
-            return _Gexf.RenderAsGexf(this, guid, includeData);
+            return _Gexf.RenderAsGexf(this, tenantGuid, guid, includeData);
         }
 
         #endregion
@@ -256,10 +694,10 @@
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
 
-            if (!_Repository.ExistsGraph(node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
-            if (_Repository.ExistsNode(node.GraphGUID, node.GUID)) throw new ArgumentException("A node with GUID '" + node.GUID + "' already exists in graph '" + node.GraphGUID + "'.");
+            if (!_Repository.ExistsGraph(node.TenantGUID, node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
+            if (_Repository.ExistsNode(node.TenantGUID,node.GraphGUID, node.GUID)) throw new ArgumentException("A node with GUID '" + node.GUID + "' already exists in graph '" + node.GraphGUID + "'.");
 
-            Node existing = _Repository.ReadNode(node.GraphGUID, node.GUID);
+            Node existing = _Repository.ReadNode(node.TenantGUID, node.GraphGUID, node.GUID);
             if (existing != null) return existing;
 
             Node created = _Repository.CreateNode(node);
@@ -272,16 +710,17 @@
         /// <summary>
         /// Create nodes.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="edges">Nodes.</param>
         /// <returns>Nodes.</returns>
-        public List<Node> CreateNodes(Guid graphGuid, List<Node> edges)
+        public List<Node> CreateNodes(Guid tenantGuid, Guid graphGuid, List<Node> edges)
         {
             if (edges == null) throw new ArgumentNullException(nameof(edges));
 
-            if (!_Repository.ExistsGraph(graphGuid)) throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
+            if (!_Repository.ExistsGraph(tenantGuid, graphGuid)) throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
 
-            List<Node> created = _Repository.CreateMultipleNodes(graphGuid, edges);
+            List<Node> created = _Repository.CreateMultipleNodes(tenantGuid, graphGuid, edges);
             Logging.Log(SeverityEnum.Debug, "created " + created.Count + " node(s) in graph " + graphGuid);
 
             return created;
@@ -290,23 +729,29 @@
         /// <summary>
         /// Read nodes.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="tags">Tags on which to filter results.</param>
         /// <param name="expr">
         /// Node filter expression for Data JSON body.
         /// Expression left terms must follow the form of Sqlite JSON paths.
         /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
         /// <param name="order">Enumeration order.</param>
+        /// <param name="skip">Number of records to skip.</param>
         /// <returns>Nodes.</returns>
         public IEnumerable<Node> ReadNodes(
+            Guid tenantGuid,
             Guid graphGuid,
+            NameValueCollection tags = null,
             Expr expr = null,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
+            int skip = 0)
         {
             if (order == EnumerationOrderEnum.CostAscending
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            foreach (Node node in _Repository.ReadNodes(graphGuid, expr, order))
+            foreach (Node node in _Repository.ReadNodes(tenantGuid, graphGuid, tags,expr, order, skip))
             {
                 yield return node;
             }
@@ -315,12 +760,13 @@
         /// <summary>
         /// Read node.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
         /// <returns>Node.</returns>
-        public Node ReadNode(Guid graphGuid, Guid nodeGuid)
+        public Node ReadNode(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
         {
-            return _Repository.ReadNode(graphGuid, nodeGuid);
+            return _Repository.ReadNode(tenantGuid, graphGuid, nodeGuid);
         }
 
         /// <summary>
@@ -332,8 +778,8 @@
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
 
-            if (!_Repository.ExistsGraph(node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
-            if (!_Repository.ExistsNode(node.GraphGUID, node.GUID)) throw new ArgumentException("No node with GUID '" + node.GUID + "' exists in graph '" + node.GraphGUID + "'.");
+            if (!_Repository.ExistsGraph(node.TenantGUID, node.GraphGUID)) throw new ArgumentException("No graph with GUID '" + node.GraphGUID + "' exists.");
+            if (!_Repository.ExistsNode(node.TenantGUID, node.GraphGUID, node.GUID)) throw new ArgumentException("No node with GUID '" + node.GUID + "' exists in graph '" + node.GraphGUID + "'.");
 
             Node updated = _Repository.UpdateNode(node);
 
@@ -345,52 +791,56 @@
         /// <summary>
         /// Delete a node and all associated edges.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
-        public void DeleteNode(Guid graphGuid, Guid nodeGuid)
+        public void DeleteNode(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
         {
-            Node node = _Repository.ReadNode(graphGuid, nodeGuid);
+            Node node = _Repository.ReadNode(tenantGuid, graphGuid, nodeGuid);
             if (node != null)
             {
                 Logging.Log(SeverityEnum.Info, "deleting edges connected to node " + nodeGuid + " in graph " + graphGuid);
 
-                foreach (Edge edge in _Repository.GetConnectedEdges(graphGuid, nodeGuid))
-                    _Repository.DeleteEdge(graphGuid, edge.GUID);
+                foreach (Edge edge in _Repository.GetConnectedEdges(tenantGuid, graphGuid, nodeGuid))
+                    _Repository.DeleteEdge(tenantGuid, graphGuid, edge.GUID);
 
                 Logging.Log(SeverityEnum.Info, "deleting node " + nodeGuid + " in graph " + graphGuid);
 
-                _Repository.DeleteNode(graphGuid, nodeGuid);
+                _Repository.DeleteNode(tenantGuid, graphGuid, nodeGuid);
             }
         }
 
         /// <summary>
         /// Delete all nodes associated with a graph.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
-        public void DeleteNodes(Guid graphGuid)
+        public void DeleteNodes(Guid tenantGuid, Guid graphGuid)
         {
-            _Repository.DeleteNodes(graphGuid);
+            _Repository.DeleteNodes(tenantGuid, graphGuid);
         }
 
         /// <summary>
         /// Delete specific nodes associated with a graph.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="nodeGuids">Node GUIDs.</param>
-        public void DeleteNodes(Guid graphGuid, List<Guid> nodeGuids)
+        public void DeleteNodes(Guid tenantGuid, Guid graphGuid, List<Guid> nodeGuids)
         {
-            _Repository.DeleteNodes(graphGuid, nodeGuids);
+            _Repository.DeleteNodes(tenantGuid, graphGuid, nodeGuids);
         }
 
         /// <summary>
         /// Check existence of a node.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
         /// <returns>True if exists.</returns>
-        public bool ExistsNode(Guid graphGuid, Guid nodeGuid)
+        public bool ExistsNode(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
         {
-            return _Repository.ExistsNode(graphGuid, nodeGuid);
+            return _Repository.ExistsNode(tenantGuid, graphGuid, nodeGuid);
         }
 
         #endregion
@@ -406,13 +856,13 @@
         {
             if (edge == null) throw new ArgumentNullException(nameof(edge));
 
-            if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
-            if (_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("An edge with GUID '" + edge.GUID + "' already exists in graph '" + edge.GraphGUID + "'.");
+            if (!_Repository.ExistsGraph(edge.TenantGUID, edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
+            if (_Repository.ExistsEdge(edge.TenantGUID, edge.GraphGUID, edge.GUID)) throw new ArgumentException("An edge with GUID '" + edge.GUID + "' already exists in graph '" + edge.GraphGUID + "'.");
 
-            if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
-            if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.TenantGUID, edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.TenantGUID,edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
 
-            Edge existing = _Repository.ReadEdge(edge.GraphGUID, edge.GUID);
+            Edge existing = _Repository.ReadEdge(edge.TenantGUID, edge.GraphGUID, edge.GUID);
             if (existing != null) return existing;
 
             Edge created = _Repository.CreateEdge(edge);
@@ -425,16 +875,17 @@
         /// <summary>
         /// Create edges.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="edges">Edges.</param>
         /// <returns>Edges.</returns>
-        public List<Edge> CreateEdges(Guid graphGuid, List<Edge> edges)
+        public List<Edge> CreateEdges(Guid tenantGuid, Guid graphGuid, List<Edge> edges)
         {
             if (edges == null) throw new ArgumentNullException(nameof(edges));
 
-            if (!_Repository.ExistsGraph(graphGuid)) throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
+            if (!_Repository.ExistsGraph(tenantGuid, graphGuid)) throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
 
-            List<Edge> created = _Repository.CreateMultipleEdges(graphGuid, edges);
+            List<Edge> created = _Repository.CreateMultipleEdges(tenantGuid, graphGuid, edges);
             Logging.Log(SeverityEnum.Debug, "created " + created.Count + " edges(s) in graph " + graphGuid);
 
             return created;
@@ -443,19 +894,23 @@
         /// <summary>
         /// Create an edge between two nodes.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="fromNode">From node.</param>
         /// <param name="toNode">To node.</param>
         /// <param name="name">Name.</param>
         /// <param name="cost">Cost.</param>
+        /// <param name="tags">Tags.</param>
         /// <param name="data">Data.</param>
         /// <returns>Edge.</returns>
         public Edge CreateEdge(
+            Guid tenantGuid,
             Guid graphGuid,
             Node fromNode,
             Node toNode,
             string name,
             int cost = 0,
+            NameValueCollection tags = null,
             object data = null)
         {
             if (fromNode == null) throw new ArgumentNullException(nameof(fromNode));
@@ -464,6 +919,7 @@
 
             Edge edge = new Edge
             {
+                TenantGUID = tenantGuid,
                 GraphGUID = graphGuid,
                 From = fromNode.GUID,
                 Name = name,
@@ -472,11 +928,11 @@
                 Data = data
             };
 
-            if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
-            if (_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("An edge with GUID '" + edge.GUID + "' already exists in graph '" + edge.GraphGUID + "'.");
+            if (!_Repository.ExistsGraph(edge.TenantGUID, edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
+            if (_Repository.ExistsEdge(edge.TenantGUID, edge.GraphGUID, edge.GUID)) throw new ArgumentException("An edge with GUID '" + edge.GUID + "' already exists in graph '" + edge.GraphGUID + "'.");
 
-            if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
-            if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.TenantGUID, edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.TenantGUID,edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
 
             Edge created = _Repository.CreateEdge(edge);
 
@@ -488,19 +944,25 @@
         /// <summary>
         /// Read edges.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="tags">Tags on which to filter results.</param>
         /// <param name="expr">
         /// Edge filter expression for Data JSON body.
         /// Expression left terms must follow the form of Sqlite JSON paths.
         /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
         /// <param name="order">Enumeration order.</param>
+        /// <param name="skip">The number of records to skip.</param>
         /// <returns>Edges.</returns>
         public IEnumerable<Edge> ReadEdges(
+            Guid tenantGuid,
             Guid graphGuid,
+            NameValueCollection tags = null,
             Expr expr = null,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
+            int skip = 0)
         {
-            foreach (Edge edge in _Repository.ReadEdges(graphGuid, expr, order))
+            foreach (Edge edge in _Repository.ReadEdges(tenantGuid, graphGuid, tags, expr, order, skip))
             {
                 yield return edge;
             }
@@ -509,12 +971,13 @@
         /// <summary>
         /// Read edge.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="edgeGuid">Edge GUID.</param>
         /// <returns>Edge.</returns>
-        public Edge ReadEdge(Guid graphGuid, Guid edgeGuid)
+        public Edge ReadEdge(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
         {
-            return _Repository.ReadEdge(graphGuid, edgeGuid);
+            return _Repository.ReadEdge(tenantGuid, graphGuid, edgeGuid);
         }
 
         /// <summary>
@@ -526,11 +989,11 @@
         {
             if (edge == null) throw new ArgumentNullException(nameof(edge));
 
-            if (!_Repository.ExistsGraph(edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
-            if (!_Repository.ExistsEdge(edge.GraphGUID, edge.GUID)) throw new ArgumentException("No edge with GUID '" + edge.GUID + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsGraph(edge.TenantGUID, edge.GraphGUID)) throw new ArgumentException("No graph with GUID '" + edge.GraphGUID + "' exists.");
+            if (!_Repository.ExistsEdge(edge.TenantGUID, edge.GraphGUID, edge.GUID)) throw new ArgumentException("No edge with GUID '" + edge.GUID + "' exists in graph '" + edge.GraphGUID + "'");
 
-            if (!_Repository.ExistsNode(edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
-            if (!_Repository.ExistsNode(edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.TenantGUID, edge.GraphGUID, edge.From)) throw new ArgumentException("No node with GUID '" + edge.From + "' exists in graph '" + edge.GraphGUID + "'");
+            if (!_Repository.ExistsNode(edge.TenantGUID, edge.GraphGUID, edge.To)) throw new ArgumentException("No node with GUID '" + edge.To + "' exists in graph '" + edge.GraphGUID + "'");
 
             Edge updated = _Repository.UpdateEdge(edge);
 
@@ -542,14 +1005,15 @@
         /// <summary>
         /// Delete edge.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="edgeGuid">Edge GUID.</param>
-        public void DeleteEdge(Guid graphGuid, Guid edgeGuid)
+        public void DeleteEdge(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
         {
-            Edge edge = _Repository.ReadEdge(graphGuid, edgeGuid);
+            Edge edge = _Repository.ReadEdge(tenantGuid, graphGuid, edgeGuid);
             if (edge != null)
             {
-                _Repository.DeleteEdge(graphGuid, edgeGuid);
+                _Repository.DeleteEdge(tenantGuid, graphGuid, edgeGuid);
                 Logging.Log(SeverityEnum.Debug, "deleted edge " + edgeGuid + " in graph " + graphGuid);
             }
         }
@@ -557,31 +1021,34 @@
         /// <summary>
         /// Delete all edges associated with a graph.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
-        public void DeleteEdges(Guid graphGuid)
+        public void DeleteEdges(Guid tenantGuid, Guid graphGuid)
         {
-            _Repository.DeleteEdges(graphGuid);
+            _Repository.DeleteEdges(tenantGuid, graphGuid);
         }
 
         /// <summary>
         /// Delete specific edges associated with a graph.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="edgeGuids">Edge GUIDs.</param>
-        public void DeleteEdges(Guid graphGuid, List<Guid> edgeGuids)
+        public void DeleteEdges(Guid tenantGuid, Guid graphGuid, List<Guid> edgeGuids)
         {
-            _Repository.DeleteEdges(graphGuid, edgeGuids);
+            _Repository.DeleteEdges(tenantGuid, graphGuid, edgeGuids);
         }
 
         /// <summary>
         /// Check if an edge exists by GUID.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="edgeGuid">Edge GUID.</param>
         /// <returns>True if exists.</returns>
-        public bool ExistsEdge(Guid graphGuid, Guid edgeGuid)
+        public bool ExistsEdge(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
         {
-            return _Repository.ExistsEdge(graphGuid, edgeGuid);
+            return _Repository.ExistsEdge(tenantGuid, graphGuid, edgeGuid);
         }
 
         #endregion
@@ -591,14 +1058,15 @@
         /// <summary>
         /// Batch existence check.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="req">Existence request.</param>
         /// <returns>Existence result.</returns>
-        public ExistenceResult BatchExistence(Guid graphGuid, ExistenceRequest req)
+        public ExistenceResult BatchExistence(Guid tenantGuid, Guid graphGuid, ExistenceRequest req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (!req.ContainsExistenceRequest()) throw new ArgumentException("Supplied existence request contains no valid existence filters.");
-            return _Repository.BatchExistence(graphGuid, req);
+            return _Repository.BatchExistence(tenantGuid, graphGuid, req);
         }
 
         #endregion
@@ -608,6 +1076,7 @@
         /// <summary>
         /// Get parents for a given node.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
         /// <param name="edgeFilter">
@@ -617,6 +1086,7 @@
         /// <param name="order">Enumeration order.</param>
         /// <returns>Nodes.</returns>
         public IEnumerable<Node> GetParents(
+            Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
             Expr edgeFilter = null,
@@ -626,7 +1096,7 @@
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            foreach (Node node in _Repository.GetParents(graphGuid, nodeGuid, edgeFilter, order))
+            foreach (Node node in _Repository.GetParents(tenantGuid, graphGuid, nodeGuid, edgeFilter, order))
             {
                 yield return node;
             }
@@ -635,6 +1105,7 @@
         /// <summary>
         /// Get children for a given node.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
         /// <param name="edgeFilter">
@@ -644,6 +1115,7 @@
         /// <param name="order">Enumeration order.</param>
         /// <returns>Nodes.</returns>
         public IEnumerable<Node> GetChildren(
+            Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
             Expr edgeFilter = null,
@@ -653,7 +1125,7 @@
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            foreach (Node node in _Repository.GetChildren(graphGuid, nodeGuid, edgeFilter, order))
+            foreach (Node node in _Repository.GetChildren(tenantGuid, graphGuid, nodeGuid, edgeFilter, order))
             {
                 yield return node;
             }
@@ -663,6 +1135,7 @@
         /// Get neighbors for a given node.
         /// </summary>
         /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
         /// <param name="edgeFilter">
         /// Edge filter expression for Data JSON body.
@@ -675,6 +1148,7 @@
         /// <param name="order">Enumeration order.</param>
         /// <returns>Nodes.</returns>
         public IEnumerable<Node> GetNeighbors(
+            Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
             Expr edgeFilter = null,
@@ -685,7 +1159,7 @@
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            foreach (Node node in _Repository.GetNeighbors(graphGuid, nodeGuid, edgeFilter, nodeFilter, order))
+            foreach (Node node in _Repository.GetNeighbors(tenantGuid, graphGuid, nodeGuid, edgeFilter, nodeFilter, order))
             {
                 yield return node;
             }
@@ -695,6 +1169,7 @@
         /// Get routes between two nodes.
         /// </summary>
         /// <param name="searchType">Search type.</param>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="fromNodeGuid">From node GUID.</param>
         /// <param name="toNodeGuid">To node GUID.</param>
@@ -709,6 +1184,7 @@
         /// <returns>Route details.</returns>
         public IEnumerable<RouteDetail> GetRoutes(
             SearchTypeEnum searchType,
+            Guid tenantGuid,
             Guid graphGuid,
             Guid fromNodeGuid,
             Guid toNodeGuid,
@@ -716,7 +1192,8 @@
             Expr nodeFilter = null)
         {
             foreach (RouteDetail route in _Repository.GetRoutes(
-                searchType,
+                searchType, 
+                tenantGuid,
                 graphGuid,
                 fromNodeGuid,
                 toNodeGuid,
@@ -730,8 +1207,10 @@
         /// <summary>
         /// Get edges from a given node.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="fromNodeGuid">From node GUID.</param>
+        /// <param name="tags">Tags on which to filter edges.</param>
         /// <param name="edgeFilter">
         /// Edge filter expression for Data JSON body.
         /// Expression left terms must follow the form of Sqlite JSON paths.
@@ -739,12 +1218,14 @@
         /// <param name="order">Enumeration order.</param>
         /// <returns>Edges.</returns>
         public IEnumerable<Edge> GetEdgesFrom(
+            Guid tenantGuid,
             Guid graphGuid,
             Guid fromNodeGuid,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            foreach (Edge edge in _Repository.GetEdgesFrom(graphGuid, fromNodeGuid, edgeFilter, order))
+            foreach (Edge edge in _Repository.GetEdgesFrom(tenantGuid, graphGuid, fromNodeGuid, tags, edgeFilter, order))
             {
                 yield return edge;
             }
@@ -753,8 +1234,10 @@
         /// <summary>
         /// Get edges to a given node.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="toNodeGuid">To node GUID.</param>
+        /// <param name="tags">Tags on which to filter edges.</param>
         /// <param name="edgeFilter">
         /// Edge filter expression for Data JSON body.
         /// Expression left terms must follow the form of Sqlite JSON paths.
@@ -762,20 +1245,24 @@
         /// <param name="order">Enumeration order.</param>
         /// <returns>Edges.</returns>
         public IEnumerable<Edge> GetEdgesTo(
+            Guid tenantGuid,
             Guid graphGuid,
             Guid toNodeGuid,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            return _Repository.GetEdgesTo(graphGuid, toNodeGuid, edgeFilter, order);
+            return _Repository.GetEdgesTo(tenantGuid, graphGuid, toNodeGuid, tags, edgeFilter, order);
         }
 
         /// <summary>
         /// Get edges between two nodes.
         /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="fromNodeGuid">From node GUID.</param>
         /// <param name="toNodeGuid">To node GUID.</param>
+        /// <param name="tags">Tags on which to filter edges.</param>
         /// <param name="edgeFilter">
         /// Edge filter expression for Data JSON body.
         /// Expression left terms must follow the form of Sqlite JSON paths.
@@ -783,13 +1270,15 @@
         /// <param name="order">Enumeration order.</param>
         /// <returns>Edges.</returns>
         public IEnumerable<Edge> GetEdgesBetween(
+            Guid tenantGuid,
             Guid graphGuid,
             Guid fromNodeGuid,
             Guid toNodeGuid,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            foreach (Edge edge in _Repository.GetEdgesBetween(graphGuid, fromNodeGuid, toNodeGuid, edgeFilter, order))
+            foreach (Edge edge in _Repository.GetEdgesBetween(tenantGuid, graphGuid, fromNodeGuid, toNodeGuid, tags, edgeFilter, order))
             {
                 yield return edge;
             }

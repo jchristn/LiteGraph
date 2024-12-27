@@ -1,10 +1,10 @@
 {
-  "CreatedUtc": "2024-07-17T22:16:59.873301Z",
+  "CreatedUtc": "2024-12-27T22:19:01.489573Z",
   "Logging": {
     "Enable": true,
     "Servers": [
       {
-        "Hostname": "localhost",
+        "Hostname": "127.0.0.1",
         "Port": 514
       }
     ],
@@ -60,11 +60,14 @@
     }
   },
   "LiteGraph": {
-    "Filename": "litegraph.db"
+    "AdminBearerToken": "litegraphadmin",
+    "GraphRepositoryFilename": "litegraph.db",
+    "MaxConcurrentOperations": 4
   },
   "Debug": {
     "Authentication": false,
     "Exceptions": true,
-    "Requests": false
+    "Requests": false,
+    "DatabaseQueries": false
   }
 }

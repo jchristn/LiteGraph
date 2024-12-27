@@ -1,6 +1,8 @@
 ﻿namespace LiteGraph
 {
     using System;
+    using System.Collections.Generic;
+    using System.Collections.Specialized;
 
     /// <summary>
     /// Edge in the graph.
@@ -8,6 +10,11 @@
     public class Edge
     {
         #region Public-Members
+
+        /// <summary>
+        /// Tenant GUID.
+        /// </summary>
+        public Guid TenantGUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Globally-unique identifier.
@@ -47,12 +54,33 @@
         /// <summary>
         /// Cost.
         /// </summary>
-        public int Cost { get; set; } = 0;
+        public int Cost
+        {
+            get
+            {
+                return _Cost;
+            }
+            set
+            {
+                if (value < 0) throw new ArgumentOutOfRangeException(nameof(Cost));
+                _Cost = value;
+            }
+        }
 
         /// <summary>
         /// Timestamp from creation, in UTC.
         /// </summary>
         public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Timestamp from last update, in UTC.
+        /// </summary>
+        public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Tags.
+        /// </summary>
+        public NameValueCollection Tags { get; set; } = null;
 
         /// <summary>
         /// Object data.
@@ -62,6 +90,8 @@
         #endregion
 
         #region Private-Members
+
+        private int _Cost = 0;
 
         #endregion
 

@@ -5,7 +5,7 @@
     /// <summary>
     /// Constants.
     /// </summary>
-    public static class Constants
+    internal static class Constants
     {
         /// <summary>
         /// Logo.
@@ -33,11 +33,6 @@
         public static string SettingsFile = "./litegraph.json";
 
         /// <summary>
-        /// Webserver port environment variable.
-        /// </summary>
-        public static string WebserverPortEnvironmentVariable = "LITEGRAPH_PORT";
-
-        /// <summary>
         /// Log file directory.
         /// </summary>
         public static string LogDirectory = "./logs/";
@@ -47,10 +42,21 @@
         /// </summary>
         public static string LogFilename = "litegraph.log";
 
+        #region Environment-Variables
+
         /// <summary>
-        /// Hostname header key.
+        /// Webserver port environment variable.
         /// </summary>
-        public static string HostnameHeader = "x-hostname";
+        public static string WebserverPortEnvironmentVariable = "LITEGRAPH_PORT";
+
+        /// <summary>
+        /// Data database filename environment variable.
+        /// </summary>
+        public static string DatabaseFilenameEnvironmentVariable = "LITEGRAPH_DB";
+
+        #endregion
+
+        #region Content-Types
 
         /// <summary>
         /// Content-type value for XML.
@@ -66,6 +72,15 @@
         /// Content-type value for HTML.
         /// </summary>
         public static string HtmlContentType = "text/html";
+
+        /// <summary>
+        /// Favicon content type.
+        /// </summary>
+        public static string FaviconContentType = "image/x-icon";
+
+        #endregion
+
+        #region HTML
 
         /// <summary>
         /// Default homepage contents.
@@ -84,9 +99,49 @@
         /// </summary>
         public static string FaviconFile = "./assets/favicon.ico";
 
+        #endregion
+
+        #region Headers
+
         /// <summary>
-        /// Favicon content type.
+        /// Hostname header key.
         /// </summary>
-        public static string FaviconContentType = "image/x-icon";
+        public static string HostnameHeader = "x-hostname";
+
+        /// <summary>
+        /// Authorization header.
+        /// </summary>
+        public static string AuthorizationHeader = "Authorization";
+
+        #endregion
+
+        #region Querystring
+
+        /// <summary>
+        /// Skip querystring key.
+        /// </summary>
+        public static string SkipQuerystring = "skip";
+
+        /// <summary>
+        /// Force querystring key.
+        /// </summary>
+        public static string ForceQuerystring = "force";
+
+        /// <summary>
+        /// Include data querystring key.
+        /// </summary>
+        public static string IncludeDataQuerystring = "incldata";
+
+        /// <summary>
+        /// From GUID querystring key.
+        /// </summary>
+        public static string FromGuidQuerystring = "from";
+
+        /// <summary>
+        /// To GUID querystring key.
+        /// </summary>
+        public static string ToGuidQuerystring = "to";
+
+        #endregion
     }
 }

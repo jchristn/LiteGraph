@@ -122,7 +122,61 @@
 
         private class NameValueCollectionConverter : JsonConverter<NameValueCollection>
         {
-            public override NameValueCollection Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+            public override NameValueCollection Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                if (reader.TokenType != JsonTokenType.StartObject)
+                {
+                    throw new JsonException("Expected start of object");
+                }
+
+                var collection = new NameValueCollection();
+
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonTokenType.EndObject)
+                    {
+                        return collection;
+                    }
+
+                    if (reader.TokenType != JsonTokenType.PropertyName)
+                    {
+                        throw new JsonException("Expected property name");
+                    }
+
+                    string key = reader.GetString();
+
+                    reader.Read();
+                    if (reader.TokenType == JsonTokenType.Null)
+                    {
+                        collection.Add(key, null);
+                        continue;
+                    }
+
+                    if (reader.TokenType != JsonTokenType.String)
+                    {
+                        throw new JsonException("Expected string value");
+                    }
+
+                    string value = reader.GetString();
+
+                    // If the value contains commas, split it and add each value separately
+                    if (!string.IsNullOrEmpty(value) && value.Contains(","))
+                    {
+                        var values = value.Split(',')
+                                        .Select(v => v.Trim());
+                        foreach (var v in values)
+                        {
+                            collection.Add(key, v);
+                        }
+                    }
+                    else
+                    {
+                        collection.Add(key, value);
+                    }
+                }
+
+                throw new JsonException("Expected end of object");
+            }
 
             public override void Write(Utf8JsonWriter writer, NameValueCollection value, JsonSerializerOptions options)
             {

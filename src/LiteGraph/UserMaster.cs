@@ -2,14 +2,19 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Specialized;
+    using System.Text.Json.Serialization;
 
     /// <summary>
-    /// Node in the graph.
+    /// User.
     /// </summary>
-    public class Node
+    public class UserMaster
     {
         #region Public-Members
+
+        /// <summary>
+        /// GUID.
+        /// </summary>
+        public Guid GUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Tenant GUID.
@@ -17,22 +22,32 @@
         public Guid TenantGUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// Globally-unique identifier.
+        /// First name.
         /// </summary>
-        public Guid GUID { get; set; } = Guid.NewGuid();
+        public string FirstName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Globally-unique identifier for the graph.
+        /// Last name.
         /// </summary>
-        public Guid GraphGUID { get; set; } = Guid.NewGuid();
+        public string LastName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Name.
+        /// Email.
         /// </summary>
-        public string Name { get; set; } = null;
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
-        /// Timestamp from creation, in UTC.
+        /// Password.
+        /// </summary>
+        public string Password { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Active.
+        /// </summary>
+        public bool Active { get; set; } = true;
+
+        /// <summary>
+        /// Creation time, in UTC.
         /// </summary>
         public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
 
@@ -40,16 +55,6 @@
         /// Timestamp from last update, in UTC.
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Tags.
-        /// </summary>
-        public NameValueCollection Tags { get; set; } = null;
-
-        /// <summary>
-        /// Object data.
-        /// </summary>
-        public object Data { get; set; } = null;
 
         #endregion
 
@@ -60,9 +65,9 @@
         #region Constructors-and-Factories
 
         /// <summary>
-        /// Instantiate the object.
+        /// Instantiate.
         /// </summary>
-        public Node()
+        public UserMaster()
         {
 
         }

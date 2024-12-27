@@ -5,10 +5,12 @@
     using System.IO;
     using System.Text;
     using System.Threading;
-    using LiteGraph.Repositories;
+    using LiteGraph.GraphRepositories;
     using LiteGraph.Serialization;
+    using LiteGraph.Server.API.Agnostic;
     using LiteGraph.Server.API.REST;
     using LiteGraph.Server.Classes;
+    using LiteGraph.Server.Services;
     using SyslogLogging;
     using WatsonWebserver;
 
@@ -25,12 +27,17 @@
 
         private static string _Header = "[LiteGraphServer] ";
         private static int _ProcessId = Environment.ProcessId;
+        private static bool _CreateDefaultRecords = false;
 
         private static Settings _Settings = new Settings();
         private static LoggingModule _Logging = null;
+        private static SerializationHelper _Serializer = new SerializationHelper();
+
+        private static GraphRepositoryBase _Repository = null;
         private static LiteGraphClient _LiteGraph = null;
 
-        private static SerializationHelper _Serializer = new SerializationHelper();
+        private static ServiceHandler _ServiceHandler = null;
+        private static AuthenticationService _AuthenticationService = null;
         private static RestServiceHandler _RestService = null;
 
         private static CancellationTokenSource _TokenSource = new CancellationTokenSource();
@@ -47,7 +54,7 @@
             InitializeSettings();
             InitializeGlobals();
 
-            _Logging.Info(_Header + "starting at " + DateTime.UtcNow + " using process ID " + _ProcessId);
+            _Logging.Info(_Header + "started at " + DateTime.UtcNow + " using process ID " + _ProcessId);
 
             EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
             bool waitHandleSignal = false;
@@ -100,6 +107,7 @@
             {
                 Console.WriteLine("Settings file '" + Constants.SettingsFile + "' does not exist, creating");
                 File.WriteAllBytes(Constants.SettingsFile, Encoding.UTF8.GetBytes(_Serializer.SerializeJson(_Settings, true)));
+                _CreateDefaultRecords = true;
             }
             else
             {
@@ -129,6 +137,9 @@
                     Console.WriteLine("Invalid webserver port detected in environment variable " + Constants.WebserverPortEnvironmentVariable);
                 }
             }
+
+            string dbFilename = Environment.GetEnvironmentVariable(Constants.DatabaseFilenameEnvironmentVariable);
+            if (!String.IsNullOrEmpty(dbFilename)) _Settings.LiteGraph.GraphRepositoryFilename = dbFilename;
 
             #endregion
 
@@ -175,33 +186,138 @@
 
             #endregion
 
+            #region Repositories
+
+            _Repository = new SqliteGraphRepository(_Settings.LiteGraph.GraphRepositoryFilename);
+            _Repository.InitializeRepository();
+            _Repository.Logging.Enable = _Settings.Debug.DatabaseQueries;
+            _Repository.Logging.Logger = LiteGraphLogger;
+            _Repository.Logging.LogQueries = _Settings.Debug.DatabaseQueries;
+            _Repository.Logging.LogResults = _Settings.Debug.DatabaseQueries;
+
+            #endregion
+
+            #region Create-Default-Records
+
+            if (_CreateDefaultRecords) CreateDefaultRecords();
+
+            #endregion
+
             #region LiteGraph-Client
 
-            _LiteGraph = new LiteGraphClient(new SqliteRepository(_Settings.LiteGraph.Filename), _Settings.Logging);
-
-            _LiteGraph.Logging.Enable = true;
+            _LiteGraph = new LiteGraphClient(_Repository, _Settings.Logging);
+            _LiteGraph.Logging.Enable = _Settings.Debug.DatabaseQueries;
             _LiteGraph.Logging.Logger = LiteGraphLogger;
+            _LiteGraph.Logging.LogQueries = _Settings.Debug.DatabaseQueries;
+            _LiteGraph.Logging.LogResults = _Settings.Debug.DatabaseQueries;
 
             _LiteGraph.InitializeRepository();
 
             #endregion
 
-            #region REST-Server
+            #region Services
+
+            _AuthenticationService = new AuthenticationService(
+                _Settings,
+                _Logging,
+                _Serializer,
+                _Repository);
+
+            _ServiceHandler = new ServiceHandler(
+                _Settings, 
+                _Logging, 
+                _LiteGraph, 
+                _Serializer, 
+                _AuthenticationService);
 
             _RestService = new RestServiceHandler(
                 _Settings,
                 _Logging,
                 _LiteGraph,
-                _Serializer);
+                _Serializer,
+                _AuthenticationService,
+                _ServiceHandler);
 
             #endregion
-
-            Console.WriteLine("");
         }
 
         private static void LiteGraphLogger(SeverityEnum sev, string msg)
         {
             _Logging.Debug(msg);
+        }
+
+        private static void CreateDefaultRecords()
+        {
+            #region Metadata-Records
+
+            Console.WriteLine("Creating default records in database " + _Settings.LiteGraph.GraphRepositoryFilename);
+
+            TenantMetadata tenant = new TenantMetadata
+            {
+                GUID = Guid.Parse("00000000-0000-0000-0000-000000000000"),
+                Name = "Default tenant",
+                Active = true,
+                CreatedUtc = DateTime.UtcNow
+            };
+
+            if (!_Repository.ExistsTenant(tenant.GUID))
+            {
+                tenant = _Repository.CreateTenant(tenant);
+                Console.WriteLine("| Created tenant     : " + tenant.GUID);
+            }
+
+            UserMaster user = new UserMaster
+            {
+                GUID = Guid.Parse("00000000-0000-0000-0000-000000000000"),
+                TenantGUID = tenant.GUID,
+                FirstName = "Default",
+                LastName = "User",
+                Email = "default@user.com",
+                Password = "password",
+                Active = true,
+                CreatedUtc = DateTime.UtcNow
+            };
+
+            if (!_Repository.ExistsUser(tenant.GUID, user.GUID))
+            {
+                user = _Repository.CreateUser(user);
+                Console.WriteLine("| Created user       : " + user.GUID + " email: " + user.Email + " pass: " + user.Password);
+            }
+
+            Credential cred = new Credential
+            {
+                GUID = Guid.Parse("00000000-0000-0000-0000-000000000000"),
+                TenantGUID = tenant.GUID,
+                UserGUID = user.GUID,
+                Name = "Default credential",
+                BearerToken = "default",
+                Active = true,
+                CreatedUtc = DateTime.UtcNow
+            };
+
+            if (!_Repository.ExistsCredential(cred.TenantGUID, cred.GUID))
+            {
+                cred = _Repository.CreateCredential(cred);
+                Console.WriteLine("| Created credential : " + cred.GUID + " bearer token: " + cred.BearerToken);
+            }
+
+            Graph graph = new Graph
+            {
+                GUID = Guid.Parse("00000000-0000-0000-0000-000000000000"),
+                TenantGUID = tenant.GUID,
+                Name = "Default graph",
+                CreatedUtc = DateTime.UtcNow
+            };
+
+            if (!_Repository.ExistsGraph(graph.TenantGUID, graph.GUID))
+            {
+                graph = _Repository.CreateGraph(graph);
+                Console.WriteLine("| Created graph      : " + graph.GUID + " " + graph.Name);
+            }
+
+            #endregion
+
+            Console.WriteLine("Finished creating default records");
         }
 
         #endregion

@@ -6,42 +6,59 @@
 
 LiteGraph is a lightweight graph database built using Sqlite with support for exporting to GEXF.
 
-## New in v2.1.x
+## New in v3.0.x
 
-- Added batch APIs for existence, deletion, and creation
-- Minor internal refactor 
+- Major internal refactor to support multitenancy and authentication, including tenants (`TenantMetadata`), users (`UserMaster`), and credentials (`Credential`)
+- Graph, node, and edge objects are now contained within a given tenant (`TenantGUID`)
+- Extensible key and value metadata (`TagMetadata`) support for graphs, nodes, and edges
+- Schema changes to make column names more accurate (`id` becomes `guid`)
+- Setup script to create default records
+- Environment variables for webserver port (`LITEGRAPH_PORT`) and database filename (`LITEGRAPH_DB`)
+- Moved logic into a protocol-agnostic handler layer to support future protocols
+- Added last update UTC timestamp to each object (`LastUpdateUtc`)
+- Authentication using bearer tokens (`Authorization: Bearer [token]`)
+- System administrator bearer token defined within the settings file (`Settings.LiteGraph.AdminBearerToken`) with default value `litegraphadmin`
+- Tag-based retrieval and filtering for graphs, nodes, and edges
+- Updated SDK and test project
+- Updated Postman collection
 
 ## Bugs, Feedback, or Enhancement Requests
 
 Please feel free to start an issue or a discussion!
 
-## Simple Example
+## Simple Example, Embedded 
 
-Refer to the ```Test``` project for a full example.
+Embedding LiteGraph into your application is simple and requires no configuration of users or credentials.  Refer to the ```Test``` project for a full example.
 
 ```csharp
 using LiteGraph;
 
 LiteGraphClient graph = new LiteGraphClient(); // using Sqlite file litegraph.db
 LiteGraphClient graph = new LiteGraphClient(
-  new SqliteRepository("mygraph.db")
+  new SqliteRepository("mydatabase.db")
   ); // use a specific file
 
+graph.InitializeRepository();
+
+// Create a tenant
+TenantMetadata tenant = graph.CreateTenant(Guid.NewGuid(), "My tenant");
+
 // Create a graph
-Graph graph = graph.CreateGraph(Guid.NewGuid(), "This is my graph!");
+Graph graph = graph.CreateGraph(tenant.GUID, "This is my graph!");
 
 // Create nodes
-Node node1 = graph.CreateNode(graph.GUID, new Node { Name = "node1" });
-Node node2 = graph.CreateNode(graph.GUID, new Node { Name = "node2" });
-Node node3 = graph.CreateNode(graph.GUID, new Node { Name = "node3" });
+Node node1 = graph.CreateNode(tenant.GUID, graph.GUID, new Node { Name = "node1" });
+Node node2 = graph.CreateNode(tenant.GUID, graph.GUID, new Node { Name = "node2" });
+Node node3 = graph.CreateNode(tenant.GUID, graph.GUID, new Node { Name = "node3" });
 
 // Create edges
-Edge edge1 = graph.CreateEdge(graph.GUID, node1.GUID, node2.GUID, "Node 1 to node 2");
-Edge edge2 = graph.CreateEdge(graph.GUID, node2.GUID, node3.GUID, "Node 2 to node 3");
+Edge edge1 = graph.CreateEdge(tenant.GUID, graph.GUID, node1.GUID, node2.GUID, "Node 1 to node 2");
+Edge edge2 = graph.CreateEdge(tenant.GUID, graph.GUID, node2.GUID, node3.GUID, "Node 2 to node 3");
 
 // Find routes
 foreach (RouteDetail route in graph.GetRoutes(
   SearchTypeEnum.DepthFirstSearch,
+  tenant.GUID,
   graph.GUID,
   node1.GUID,
   node2.GUID))
@@ -50,12 +67,30 @@ foreach (RouteDetail route in graph.GetRoutes(
 }
 
 // Export to GEXF file
-graph.ExportGraphToGexfFile(graph.GUID, "mygraph.gexf");
+graph.ExportGraphToGexfFile(tenant.GUID, graph.GUID, "mygraph.gexf");
 ```
 
-## Working with Object Data
+## Working with Object Tags and Data
 
-The `Data` property can be attached to any `Graph`, `Node`, or `Edge` object.  The value must be serializable to JSON.  This value is retrieved when reading objects, and filters can be created to retrieve only objects that have matches based on elements in the object stored in `Data`.  Refer to [ExpressionTree](https://github.com/jchristn/ExpressionTree/) for information on how to craft expressions.
+The `Tags` property is a `NameValueCollection` allowing you to attach key-value pairs to any `Graph`, `Node`, or `Edge`.  These key-value pairs are stored in a separate look-aside table which is accessed upon creation, update, deletion, retrieval, or search of the aforementioned types.
+
+The `Data` property can also be attached to any `Graph`, `Node`, or `Edge` object and supports any object serializable to JSON.  This value is retrieved when reading or searching objects, and filters can be created to retrieve only objects that have matches based on elements in the object stored in `Data`.  Refer to [ExpressionTree](https://github.com/jchristn/ExpressionTree/) for information on how to craft expressions.
+
+### Storing and Searching Tags
+
+```csharp
+NameValueCollection nvc = new NameValueCollection();
+nvc.Add("key", "value");
+
+graph.CreateNode(tenant.GUID, new Node { Name = "Joel", Tags = nvc });
+
+foreach (Node node in graph.ReadNodes(tenant.GUID, graph.GUID, nvc))
+{
+  Console.WriteLine(...);
+}
+```
+
+### Storing and Searching Data
 
 ```csharp
 using ExpressionTree;
@@ -68,7 +103,7 @@ class Person
 }
 
 Person person1 = new Person { Name = "Joel", Age = 47, City = "San Jose" };
-graph.CreateNode(graph.GUID, new Node { Name = "Joel", Data = person1 });
+graph.CreateNode(tenant.GUID, graph.GUID, new Node { Name = "Joel", Data = person1 });
 
 Expr expr = new Expr 
 {
@@ -77,7 +112,7 @@ Expr expr = new Expr
   "Right": "San Jose"
 };
 
-foreach (Node node in graph.ReadNodes(graph.GUID, expr))
+foreach (Node node in graph.ReadNodes(tenant.GUID, graph.GUID, null, expr))
 {
   Console.WriteLine(...);
 }
@@ -104,14 +139,23 @@ Using settings file './litegraph.json'
 Settings file './litegraph.json' does not exist, creating
 Initializing logging
 | syslog://127.0.0.1:514
-2024-07-17 20:56:13 INSPIRON-14 1 Debug [LiteGraphServer] logging initialized
-2024-07-17 20:56:13 INSPIRON-14 1 Debug [RestServiceHandler] starting REST server on http://localhost:8701/
+2024-12-27 22:09:08 joel-laptop Debug [LiteGraphServer] logging initialized
+Creating default records in database litegraph.db
+| Created tenant     : 00000000-0000-0000-0000-000000000000
+| Created user       : 00000000-0000-0000-0000-000000000000 email: default@user.com pass: password
+| Created credential : 00000000-0000-0000-0000-000000000000 bearer token: default
+| Created graph      : 00000000-0000-0000-0000-000000000000 Default graph
+Finished creating default records
+2024-12-27 22:09:09 joel-laptop Debug [ServiceHandler] initialized service handler
+2024-12-27 22:09:09 joel-laptop Info [RestServiceHandler] starting REST server on http://localhost:8701/
+2024-12-27 22:09:09 joel-laptop Alert [RestServiceHandler]
 
-Important!
-| Configured to listen on localhost; LiteGraph will not be externally accessible
-| Modify ./litegraph.json to change the REST listener hostname
+NOTICE
+------
+LiteGraph is configured to listen on localhost and will not be externally accessible.
+Modify ./litegraph.json to change the REST listener hostname to make externally accessible.
 
-2024-07-17 20:56:13 INSPIRON-14 1 Info [LiteGraphServer] starting at 7/17/2024 8:56:13 PM using process ID 3256
+2024-12-27 22:09:09 joel-laptop Info [LiteGraphServer] started at 12/27/2024 10:09:09 PM using process ID 56556
 ```
 
 ## Running in Docker

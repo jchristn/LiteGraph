@@ -33,7 +33,7 @@
         /// Last modified date.
         /// </summary>
         [XmlAttribute(AttributeName = "lastmodifieddate")]
-        public DateTime LastModifiedDate { get; set; } = DateTime.Now.ToUniversalTime();
+        public DateTime LastModifiedDate { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Instantiate the object.

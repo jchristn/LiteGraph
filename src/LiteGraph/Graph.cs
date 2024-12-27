@@ -1,6 +1,8 @@
 ﻿namespace LiteGraph
 {
     using System;
+    using System.Collections.Generic;
+    using System.Collections.Specialized;
 
     /// <summary>
     /// Graph.
@@ -8,6 +10,11 @@
     public class Graph
     {
         #region Public-Members
+
+        /// <summary>
+        /// Tenant GUID.
+        /// </summary>
+        public Guid TenantGUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Globally-unique identifier.
@@ -22,7 +29,17 @@
         /// <summary>
         /// Timestamp from creation, in UTC.
         /// </summary>
-        public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
+        public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Timestamp from last update, in UTC.
+        /// </summary>
+        public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Tags.
+        /// </summary>
+        public NameValueCollection Tags { get; set; } = null;
 
         /// <summary>
         /// Object data.
