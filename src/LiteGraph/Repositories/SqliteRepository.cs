@@ -96,8 +96,8 @@
 
         #region Private-Members
 
-        private string _Filename = "litegraph.db";
-        private string _ConnectionString = "Data Source=litegraph.db;Pooling=false";
+        private string _Filename = "lgdata.db";
+        private string _ConnectionString = "Data Source=lgdata.db;Pooling=false";
         private int _MaxStatementLength = 1000000; // https://www.sqlite.org/limits.html
         private int _SelectBatchSize = 100;
         private string _TimestampFormat = "yyyy-MM-dd HH:mm:ss.ffffff";
@@ -112,7 +112,7 @@
         /// Instantiate.
         /// </summary>
         /// <param name="filename">Sqlite database filename.</param>
-        public SqliteRepository(string filename = "litegraph.db")
+        public SqliteRepository(string filename = "lgdata.db")
         {
             if (string.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
 
@@ -2197,6 +2197,7 @@
                 Name = GetDataRowStringValue(row, "name"),
                 From = Guid.Parse(row["fromguid"].ToString()),
                 To = Guid.Parse(row["toguid"].ToString()),
+                Cost = Convert.ToInt32(row["cost"].ToString()),
                 Data = GetDataRowJsonValue(row, "data"),
                 CreatedUtc = DateTime.Parse(row["createdutc"].ToString())
             };

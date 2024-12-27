@@ -62,6 +62,7 @@
             _Webserver.Routes.PreRouting = PreRoutingHandler;
             _Webserver.Routes.AuthenticateRequest = AuthenticateRequest;
             _Webserver.Routes.PostRouting = PostRoutingHandler;
+            _Webserver.Routes.Preflight = OptionsHandler;
 
             InitializeRoutes();
 
@@ -129,6 +130,52 @@
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}/parents", NodeParentsRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/graphs/{graphGuid}/nodes/{nodeGuid}/children", NodeChildrenRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/graphs/{graphGuid}/routes", GetRoutesRoute, ExceptionRoute);
+        }
+
+        internal async Task OptionsHandler(HttpContextBase ctx)
+        {
+            NameValueCollection responseHeaders = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
+
+            string[] requestedHeaders = null;
+            string headers = "";
+
+            if (ctx.Request.Headers != null)
+            {
+                for (int i = 0; i < ctx.Request.Headers.Count; i++)
+                {
+                    string key = ctx.Request.Headers.GetKey(i);
+                    string value = ctx.Request.Headers.Get(i);
+                    if (String.IsNullOrEmpty(key)) continue;
+                    if (String.IsNullOrEmpty(value)) continue;
+                    if (String.Compare(key.ToLower(), "access-control-request-headers") == 0)
+                    {
+                        requestedHeaders = value.Split(',');
+                        break;
+                    }
+                }
+            }
+
+            if (requestedHeaders != null)
+            {
+                foreach (string curr in requestedHeaders)
+                {
+                    headers += ", " + curr;
+                }
+            }
+
+            responseHeaders.Add("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, PUT, POST, DELETE");
+            responseHeaders.Add("Access-Control-Allow-Headers", "*, Content-Type, X-Requested-With, " + headers);
+            responseHeaders.Add("Access-Control-Expose-Headers", "Content-Type, X-Requested-With, " + headers);
+            responseHeaders.Add("Access-Control-Allow-Origin", "*");
+            responseHeaders.Add("Accept", "*/*");
+            responseHeaders.Add("Accept-Language", "en-US, en");
+            responseHeaders.Add("Accept-Charset", "ISO-8859-1, utf-8");
+            responseHeaders.Add("Connection", "keep-alive");
+
+            ctx.Response.StatusCode = 200;
+            ctx.Response.Headers = responseHeaders;
+            await ctx.Response.Send();
+            return;
         }
 
         internal async Task PreRoutingHandler(HttpContextBase ctx)

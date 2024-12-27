@@ -47,7 +47,18 @@
         /// <summary>
         /// Cost.
         /// </summary>
-        public int Cost { get; set; } = 0;
+        public int Cost
+        {
+            get
+            {
+                return _Cost;
+            }
+            set
+            {
+                if (value < 0) throw new ArgumentOutOfRangeException(nameof(Cost));
+                _Cost = value;
+            }
+        }
 
         /// <summary>
         /// Timestamp from creation, in UTC.
@@ -62,6 +73,8 @@
         #endregion
 
         #region Private-Members
+
+        private int _Cost = 0;
 
         #endregion
 

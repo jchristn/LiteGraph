@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
 		<Version>2.1.1</Version>
 		<Description>SDK for LiteGraph, a simple graph database abstraction with a RESTful interface, JSON data query support, and GEXF output support.</Description>
 		<PackageReleaseNotes>Batch existence, create, and deletion APIs</PackageReleaseNotes>
