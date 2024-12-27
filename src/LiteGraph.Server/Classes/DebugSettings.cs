@@ -23,6 +23,11 @@
         public bool Requests { get; set; } = false;
 
         /// <summary>
+        /// Debug database queries.
+        /// </summary>
+        public bool DatabaseQueries { get; set; } = true;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public DebugSettings()

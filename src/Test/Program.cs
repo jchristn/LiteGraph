@@ -137,7 +137,7 @@
 
             #region Graph
 
-            Graph graph = _Client.CreateGraph(tenant.GUID, Guid.NewGuid(), "Sample Graph 1", new GraphMetadata { Description = "This is my sample graph #2" });
+            Graph graph = _Client.CreateGraph(tenant.GUID, Guid.NewGuid(), "Sample Graph 1", null, new GraphMetadata { Description = "This is my sample graph #2" });
 
             #endregion
 
@@ -182,7 +182,7 @@
 
             #region Graph
 
-            Graph graph = _Client.CreateGraph(tenant.GUID, Guid.NewGuid(), "Sample Graph 2", new GraphMetadata { Description = "This is my sample graph #2" });
+            Graph graph = _Client.CreateGraph(tenant.GUID, Guid.NewGuid(), "Sample Graph 2", null, new GraphMetadata { Description = "This is my sample graph #2" });
 
             #endregion
 

@@ -77,8 +77,11 @@
 
             if (_Localhost.Contains(_Settings.Rest.Hostname))
             {
-                _Logging.Alert(_Header + "configured to listen on localhost, LiteGraph will not be externally accessible");
-                _Logging.Alert(_Header + "modify " + Constants.SettingsFile + " to change the REST listener hostname");
+                _Logging.Alert(_Header + Environment.NewLine + Environment.NewLine
+                    + "NOTICE" + Environment.NewLine 
+                    + "------" + Environment.NewLine
+                    + "LiteGraph is configured to listen on localhost and will not be externally accessible." + Environment.NewLine
+                    + "Modify " + Constants.SettingsFile + " to change the REST listener hostname to make externally accessible." + Environment.NewLine);
             }
         }
 
@@ -245,22 +248,29 @@
         {
             RequestContext req = null;
 
+            ctx.Response.Headers.Add(Constants.HostnameHeader, _Hostname);
+            ctx.Response.ContentType = Constants.JsonContentType;
+
             try
             {
                 req = new RequestContext(ctx);
+            }
+            catch (FormatException fe)
+            {
+                _Logging.Warn(_Header + "format exception building request context" + Environment.NewLine + fe.ToString());
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, fe.Message), true));
+                return;
             }
             catch (Exception e)
             {
                 _Logging.Warn(_Header + ctx.Request.Source.IpAddress + " exception building request context" + Environment.NewLine + e.ToString());
                 ctx.Response.StatusCode = 500;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "Unable to build request context.")));
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "Unable to build request context."), true));
                 return;
             }
 
             ctx.Metadata = req;
-            ctx.Response.Headers.Add(Constants.HostnameHeader, _Hostname);
-            ctx.Response.ContentType = Constants.JsonContentType;
-
             if (_Settings.Debug.Requests)
                 _Logging.Debug(_Serializer.SerializeJson(ctx.Request, true));
         }
@@ -478,6 +488,7 @@
             }
 
             req.Tenant = _Serializer.DeserializeJson<TenantMetadata>(ctx.Request.DataAsString);
+            req.Tenant.GUID = req.TenantGUID.Value;
             await WrappedRequestHandler(ctx, req, _ServiceHandler.TenantUpdate);
         }
 
@@ -512,6 +523,7 @@
             }
 
             req.User = _Serializer.DeserializeJson<UserMaster>(ctx.Request.DataAsString);
+            req.User.TenantGUID = req.TenantGUID.Value;
             await WrappedRequestHandler(ctx, req, _ServiceHandler.UserCreate);
         }
 
@@ -564,6 +576,8 @@
             }
 
             req.User = _Serializer.DeserializeJson<UserMaster>(ctx.Request.DataAsString);
+            req.User.TenantGUID = req.TenantGUID.Value;
+            req.User.GUID = req.UserGUID.Value;
             await WrappedRequestHandler(ctx, req, _ServiceHandler.UserUpdate);
         }
 
@@ -598,6 +612,7 @@
             }
 
             req.Credential = _Serializer.DeserializeJson<Credential>(ctx.Request.DataAsString);
+            req.Credential.TenantGUID = req.TenantGUID.Value;
             await WrappedRequestHandler(ctx, req, _ServiceHandler.CredentialCreate);
         }
 
@@ -650,6 +665,8 @@
             }
 
             req.Credential = _Serializer.DeserializeJson<Credential>(ctx.Request.DataAsString);
+            req.Credential.TenantGUID = req.TenantGUID.Value;
+            req.Credential.GUID = req.CredentialGUID.Value;
             await WrappedRequestHandler(ctx, req, _ServiceHandler.CredentialUpdate);
         }
 
@@ -678,6 +695,7 @@
             }
 
             req.Tag = _Serializer.DeserializeJson<TagMetadata>(ctx.Request.DataAsString);
+            req.Tag.TenantGUID = req.TenantGUID.Value;
             await WrappedRequestHandler(ctx, req, _ServiceHandler.TagCreate);
         }
 
@@ -709,6 +727,8 @@
             }
 
             req.Tag = _Serializer.DeserializeJson<TagMetadata>(ctx.Request.DataAsString);
+            req.Tag.TenantGUID = req.TenantGUID.Value;
+            req.Tag.GUID = req.TagGUID.Value;
             await WrappedRequestHandler(ctx, req, _ServiceHandler.TagUpdate);
         }
 
@@ -806,7 +826,18 @@
         private async Task GraphGexfExportRoute(HttpContextBase ctx)
         {
             RequestContext req = (RequestContext)ctx.Metadata;
-            await WrappedRequestHandler(ctx, req, _ServiceHandler.GraphGexfExport);
+            ResponseContext resp = await _ServiceHandler.GraphGexfExport(req);
+            if (!resp.Success)
+            {
+                ctx.Response.StatusCode = 500;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.InternalError), true));
+            }
+            else
+            {
+                ctx.Response.ContentType = Constants.XmlContentType;
+                ctx.Response.StatusCode = 200;
+                await ctx.Response.Send(resp.Data.ToString());
+            }
         }
 
         #endregion
@@ -890,6 +921,7 @@
             req.Node = _Serializer.DeserializeJson<Node>(ctx.Request.DataAsString);
             req.Node.TenantGUID = req.TenantGUID.Value;
             req.Node.GraphGUID = req.GraphGUID.Value;
+            req.Node.GUID = req.NodeGUID.Value;
             await WrappedRequestHandler(ctx, req, _ServiceHandler.NodeUpdate);
         }
 
@@ -1118,14 +1150,14 @@
                 }
                 else if (resp.Success)
                 {
-                    ctx.Response.StatusCode = resp.StatusCode;
                     if (resp.Data != null) await ctx.Response.Send(_Serializer.SerializeJson(resp.Data, true));
                     else await ctx.Response.Send();
                     return;
                 }
                 else
                 {
-                    ctx.Response.StatusCode = resp.StatusCode;
+                    if (resp.Error != null) ctx.Response.StatusCode = resp.Error.StatusCode;
+                    else ctx.Response.StatusCode = 418;
                     if (resp.Error != null && ctx.Request.Method != HttpMethod.HEAD) await ctx.Response.Send(_Serializer.SerializeJson(resp.Error, true));
                     else await ctx.Response.Send();
                     return;
@@ -1133,18 +1165,21 @@
             }
             catch (InvalidOperationException ioe)
             {
+                _Logging.Warn(_Header + "invalid operation exception: " + Environment.NewLine + ioe.ToString());
                 ctx.Response.StatusCode = 409;
                 await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.Conflict, null, ioe.Message), true));
                 return;
             }
             catch (KeyNotFoundException knfe)
             {
+                _Logging.Warn(_Header + "invalid operation exception: " + Environment.NewLine + knfe.ToString());
                 ctx.Response.StatusCode = 404;
                 await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound, null, knfe.Message), true));
                 return;
             }
             catch (ArgumentException e)
             {
+                _Logging.Warn(_Header + "invalid operation exception: " + Environment.NewLine + e.ToString());
                 ctx.Response.StatusCode = 400;
                 await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
                 return;

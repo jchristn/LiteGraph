@@ -3,6 +3,7 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Data;
     using System.Linq;
     using System.Threading.Tasks;
@@ -104,6 +105,7 @@
         private string _TimestampFormat = "yyyy-MM-dd HH:mm:ss.ffffff";
         private readonly object _QueryLock = new object();
         private readonly object _CreateLock = new object();
+        private SerializationHelper _Serializer = new SerializationHelper();
 
         #endregion
 
@@ -625,7 +627,7 @@
         /// <inheritdoc />
         public override IEnumerable<TagMetadata> ReadTags(
             Guid tenantGuid,
-            Guid graphGuid,
+            Guid? graphGuid,
             Guid? nodeGuid,
             Guid? edgeGuid,
             string key,
@@ -696,21 +698,21 @@
 
             created = GraphFromDataRow(createResult.Rows[0]);
 
-            if (graph.Tags != null && graph.Tags is Dictionary<string, string> dict)
+            if (graph.Tags != null && graph.Tags is NameValueCollection nvc)
             {
                 List<TagMetadata> tags = new List<TagMetadata>();
-                foreach (KeyValuePair<string, string> tag in dict)
+                foreach (string key in nvc.AllKeys)
                 {
                     tags.Add(new TagMetadata
                     {
                         TenantGUID = graph.TenantGUID,
                         GraphGUID = graph.GUID,
-                        Key = tag.Key,
-                        Value = tag.Value
+                        Key = key,
+                        Value = nvc.Get(key)
                     });
-
-                    CreateMultipleTags(graph.TenantGUID, graph.GUID, tags);
                 }
+
+                if (tags.Count > 0) CreateMultipleTags(graph.TenantGUID, graph.GUID, tags);
             }
 
             created.Tags = graph.Tags;
@@ -718,9 +720,10 @@
         }
 
         /// <inheritdoc />
-        public override Graph CreateGraph(Guid tenantGuid, Guid guid, string name, object data = null, Dictionary<string, string> tags = null)
+        public override Graph CreateGraph(Guid tenantGuid, Guid guid, string name, object data = null, NameValueCollection tags = null)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+
             return CreateGraph(new Graph
             {
                 GUID = guid,
@@ -734,7 +737,7 @@
         /// <inheritdoc />
         public override IEnumerable<Graph> ReadGraphs(
             Guid tenantGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr graphFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
@@ -750,7 +753,7 @@
                 {
                     Graph graph = GraphFromDataRow(result.Rows[i]);
                     List<TagMetadata> allTags = ReadTags(tenantGuid, graph.GUID, null, null, null, null).ToList();
-                    if (allTags != null) graph.Tags = TagMetadata.ToDictionary(allTags);
+                    if (allTags != null) graph.Tags = TagMetadata.ToNameValueCollection(allTags);
                     yield return graph;
                     skip++;
                 }
@@ -765,7 +768,7 @@
             {
                 Graph graph = GraphFromDataRow(result.Rows[0]);
                 List<TagMetadata> tags = ReadTags(tenantGuid, guid, null, null, null, null).ToList();
-                if (tags != null) graph.Tags = TagMetadata.ToDictionary(tags);
+                if (tags != null) graph.Tags = TagMetadata.ToNameValueCollection(tags);
                 return graph;
             }
             return null;
@@ -785,12 +788,12 @@
                 CreateMultipleTags(
                     graph.TenantGUID, 
                     graph.GUID, 
-                    TagMetadata.FromDictionary(
+                    TagMetadata.FromNameValueCollection(
                         graph.TenantGUID,
                         graph.GUID,
                         null,
                         null,
-                        graph.Tags as Dictionary<string, string>));
+                        graph.Tags));
                 updated.Tags = graph.Tags;
             }
             return updated;
@@ -866,22 +869,22 @@
 
             created = NodeFromDataRow(createResult.Rows[0]);
 
-            if (node.Tags != null && node.Tags is Dictionary<string, string> dict)
+            if (node.Tags != null)
             {
                 List<TagMetadata> tags = new List<TagMetadata>();
-                foreach (KeyValuePair<string, string> tag in dict)
+                foreach (string key in node.Tags)
                 {
                     tags.Add(new TagMetadata
                     {
                         TenantGUID = node.TenantGUID,
                         GraphGUID = node.GraphGUID,
                         NodeGUID = node.GUID,
-                        Key = tag.Key,
-                        Value = tag.Value
+                        Key = key,
+                        Value = node.Tags.Get(key)
                     });
-
-                    CreateMultipleTags(node.TenantGUID, node.GUID, tags);
                 }
+
+                if (tags.Count > 0) CreateMultipleTags(node.TenantGUID, node.GraphGUID, tags);
             }
 
             created.Tags = node.Tags;
@@ -889,7 +892,7 @@
         }
 
         /// <inheritdoc />
-        public override Node CreateNode(Guid tenantGuid, Guid graphGuid, Guid guid, string name, object data = null, Dictionary<string, string> tags = null)
+        public override Node CreateNode(Guid tenantGuid, Guid graphGuid, Guid guid, string name, object data = null, NameValueCollection tags = null)
         {
             return CreateNode(new Node
             {
@@ -905,57 +908,14 @@
         /// <inheritdoc />
         public override List<Node> CreateMultipleNodes(Guid tenantGuid, Guid graphGuid, List<Node> nodes)
         {
-            if (nodes == null || nodes.Count < 1) return null;
-            ValidateTenantExists(tenantGuid);
-            ValidateGraphExists(tenantGuid, graphGuid);
-
-            List<TagMetadata> tags = new List<TagMetadata>();
+            if (nodes == null || nodes.Count < 1) return new List<Node>();
+            List<Node> created = new List<Node>();
 
             foreach (Node node in nodes)
             {
-                ValidateTags(node.Tags);
                 node.TenantGUID = tenantGuid;
                 node.GraphGUID = graphGuid;
-                if (node.Tags != null) tags.AddRange(TagMetadata.FromDictionary(tenantGuid, graphGuid, node.GUID, null, (node.Tags as Dictionary<string, string>)));
-            }
-
-            ExistenceRequest req = new ExistenceRequest
-            {
-                Nodes = nodes.Select(n => n.GUID).ToList()
-            };
-
-            ExistenceResult result = BatchExistence(tenantGuid, graphGuid, req);
-            if (result.ExistingNodes != null && result.ExistingNodes.Count > 0)
-                throw new InvalidOperationException("The requested node GUIDs already exist: " + string.Join(",", result.ExistingNodes));
-
-            string createQuery = InsertMultipleNodesQuery(tenantGuid, nodes);
-            string retrieveQuery = SelectMultipleNodesQuery(tenantGuid, nodes.Select(n => n.GUID).ToList());
-            DataTable createResult = null;
-            DataTable retrieveResult = null;
-
-            lock (_CreateLock)
-            {
-                createResult = Query(createQuery, true);
-                retrieveResult = Query(retrieveQuery, true);
-            }
-
-            List<Node> created = NodesFromDataTable(retrieveResult);
-
-            if (tags != null && tags.Count > 0)
-            {
-                List<TagMetadata> createdTags = CreateMultipleTags(tenantGuid, graphGuid, tags);
-                foreach (Node node in created)
-                {
-                    node.Tags = createdTags.Where(t =>
-                               t.TenantGUID == tenantGuid &&
-                               t.GraphGUID == graphGuid &&
-                               t.NodeGUID == node.GUID)
-                           .ToDictionary(
-                               t => t.Key,
-                               t => t.Value,
-                               StringComparer.OrdinalIgnoreCase
-                           );
-                }
+                created.Add(CreateNode(node));
             }
 
             return created;
@@ -965,7 +925,7 @@
         public override IEnumerable<Node> ReadNodes(
             Guid tenantGuid,
             Guid graphGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags,
             Expr nodeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
@@ -982,7 +942,7 @@
                 {
                     Node node = NodeFromDataRow(result.Rows[i]);
                     List<TagMetadata> allTags = ReadTags(tenantGuid, graphGuid, node.GUID, null, null, null).ToList();
-                    if (allTags != null) node.Tags = TagMetadata.ToDictionary(allTags);
+                    if (allTags != null) node.Tags = TagMetadata.ToNameValueCollection(allTags);
                     yield return node;
                     skip++;
                 }
@@ -998,7 +958,7 @@
             {
                 Node node = NodeFromDataRow(result.Rows[0]);
                 List<TagMetadata> tags = ReadTags(tenantGuid, graphGuid, nodeGuid, null, null, null).ToList();
-                if (tags != null) node.Tags = TagMetadata.ToDictionary(tags);
+                if (tags != null) node.Tags = TagMetadata.ToNameValueCollection(tags);
                 return node;
             }
             return null;
@@ -1018,12 +978,12 @@
                 CreateMultipleTags(
                     node.TenantGUID,
                     node.GraphGUID,
-                    TagMetadata.FromDictionary(
+                    TagMetadata.FromNameValueCollection(
                         node.TenantGUID,
                         node.GraphGUID, 
                         node.GUID,
                         null,
-                        node.Tags as Dictionary<string, string>));
+                        node.Tags as NameValueCollection));
                 updated.Tags = node.Tags;
             }
             return updated;
@@ -1395,7 +1355,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
@@ -1410,7 +1370,9 @@
                 {
                     for (int i = 0; i < result.Rows.Count; i++)
                     {
-                        yield return EdgeFromDataRow(result.Rows[i]);
+                        Edge edge = EdgeFromDataRow(result.Rows[i]);
+                        edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                        yield return edge;
                         skip++;
                     }
                 }
@@ -1426,7 +1388,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Dictionary<string, string> tags,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
@@ -1441,7 +1403,9 @@
                 {
                     for (int i = 0; i < result.Rows.Count; i++)
                     {
-                        yield return EdgeFromDataRow(result.Rows[i]);
+                        Edge edge = EdgeFromDataRow(result.Rows[i]);
+                        edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                        yield return edge;
                         skip++;
                     }
                 }
@@ -1457,7 +1421,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
@@ -1472,7 +1436,9 @@
                 {
                     for (int i = 0; i < result.Rows.Count; i++)
                     {
-                        yield return EdgeFromDataRow(result.Rows[i]);
+                        Edge edge = EdgeFromDataRow(result.Rows[i]);
+                        edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                        yield return edge;
                         skip++;
                     }
                 }
@@ -1489,7 +1455,7 @@
             Guid graphGuid,
             Guid fromNodeGuid,
             Guid toNodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
@@ -1504,7 +1470,9 @@
                 {
                     for (int i = 0; i < result.Rows.Count; i++)
                     {
-                        yield return EdgeFromDataRow(result.Rows[i]);
+                        Edge edge = EdgeFromDataRow(result.Rows[i]);
+                        edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                        yield return edge;
                         skip++;
                     }
                 }
@@ -1537,22 +1505,10 @@
 
             created = EdgeFromDataRow(createResult.Rows[0]);
 
-            if (edge.Tags != null && edge.Tags is Dictionary<string, string> dict)
+            if (edge.Tags != null)
             {
-                List<TagMetadata> tags = new List<TagMetadata>();
-                foreach (KeyValuePair<string, string> tag in dict)
-                {
-                    tags.Add(new TagMetadata
-                    {
-                        TenantGUID = edge.TenantGUID,
-                        GraphGUID = edge.GraphGUID,
-                        EdgeGUID = edge.GUID,
-                        Key = tag.Key,
-                        Value = tag.Value
-                    });
-
-                    CreateMultipleTags(edge.TenantGUID, edge.GUID, tags);
-                }
+                List<TagMetadata> tags = TagMetadata.FromNameValueCollection(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, edge.Tags);
+                if (tags.Count > 0) CreateMultipleTags(edge.TenantGUID, edge.GraphGUID, tags);
             }
 
             created.Tags = edge.Tags;
@@ -1560,7 +1516,7 @@
         }
 
         /// <inheritdoc />
-        public override Edge CreateEdge(Guid tenantGuid, Guid graphGuid, Guid guid, Guid fromGuid, Guid toGuid, string name, int cost = 0, object data = null, Dictionary<string, string> tags = null)
+        public override Edge CreateEdge(Guid tenantGuid, Guid graphGuid, Guid guid, Guid fromGuid, Guid toGuid, string name, int cost = 0, object data = null, NameValueCollection tags = null)
         {
             return CreateEdge(new Edge
             {
@@ -1579,59 +1535,14 @@
         /// <inheritdoc />
         public override List<Edge> CreateMultipleEdges(Guid tenantGuid, Guid graphGuid, List<Edge> edges)
         {
-            if (edges == null || edges.Count < 1) return null;
-            ValidateTenantExists(tenantGuid);
-            ValidateGraphExists(tenantGuid, graphGuid);
-
-            List<TagMetadata> tags = new List<TagMetadata>();
+            if (edges == null || edges.Count < 1) return new List<Edge>();
+            List<Edge> created = new List<Edge>();
 
             foreach (Edge edge in edges)
             {
-                ValidateTags(edge.Tags);
                 edge.TenantGUID = tenantGuid;
                 edge.GraphGUID = graphGuid;
-                if (edge.Tags != null) tags.AddRange(TagMetadata.FromDictionary(tenantGuid, graphGuid, edge.GUID, null, (edge.Tags as Dictionary<string, string>)));
-            }
-
-            ExistenceRequest req = new ExistenceRequest();
-            req.Edges = edges.Select(n => n.GUID).ToList();
-            req.Nodes = edges.Select(n => n.From).Concat(edges.Select(n => n.To)).Distinct().ToList();
-
-            ExistenceResult result = BatchExistence(tenantGuid, graphGuid, req);
-            if (result.ExistingEdges != null && result.ExistingEdges.Count > 0)
-                throw new InvalidOperationException("The requested edge GUIDs already exist: " + string.Join(",", result.ExistingEdges));
-
-            if (result.MissingNodes != null && result.MissingNodes.Count > 0)
-                throw new KeyNotFoundException("The specified node GUIDs do not exist: " + string.Join(",", result.MissingNodes));
-
-            string createQuery = InsertMultipleEdgesQuery(tenantGuid, edges);
-            string retrieveQuery = SelectMultipleEdgesQuery(tenantGuid, edges.Select(n => n.GUID).ToList());
-            DataTable createResult = null;
-            DataTable retrieveResult = null;
-
-            lock (_CreateLock)
-            {
-                createResult = Query(createQuery, true);
-                retrieveResult = Query(retrieveQuery, true);
-            }
-
-            List<Edge> created = EdgesFromDataTable(retrieveResult);
-
-            if (tags != null && tags.Count > 0)
-            {
-                List<TagMetadata> createdTags = CreateMultipleTags(tenantGuid, graphGuid, tags);
-                foreach (Edge edge in created)
-                {
-                    edge.Tags = createdTags.Where(t =>
-                               t.TenantGUID == tenantGuid &&
-                               t.GraphGUID == graphGuid &&
-                               t.EdgeGUID == edge.GUID)
-                           .ToDictionary(
-                               t => t.Key,
-                               t => t.Value,
-                               StringComparer.OrdinalIgnoreCase
-                           );
-                }
+                created.Add(CreateEdge(edge));
             }
 
             return created;
@@ -1641,7 +1552,7 @@
         public override IEnumerable<Edge> ReadEdges(
             Guid tenantGuid,
             Guid graphGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
@@ -1658,7 +1569,7 @@
                 {
                     Edge edge = EdgeFromDataRow(result.Rows[i]);
                     List<TagMetadata> allTags = ReadTags(tenantGuid, graphGuid, null, edge.GUID, null, null).ToList();
-                    if (allTags != null) edge.Tags = TagMetadata.ToDictionary(allTags);
+                    if (allTags != null) edge.Tags = TagMetadata.ToNameValueCollection(allTags);
                     yield return edge;
                     skip++;
                 }
@@ -1674,7 +1585,7 @@
             {
                 Edge edge = EdgeFromDataRow(result.Rows[0]);
                 List<TagMetadata> tags = ReadTags(tenantGuid, graphGuid, null, edgeGuid, null, null).ToList();
-                if (tags != null) edge.Tags = TagMetadata.ToDictionary(tags);
+                if (tags != null) edge.Tags = TagMetadata.ToNameValueCollection(tags);
                 return edge;
             }
             return null;
@@ -1694,12 +1605,12 @@
                 CreateMultipleTags(
                     edge.TenantGUID,
                     edge.GraphGUID,
-                    TagMetadata.FromDictionary(
+                    TagMetadata.FromNameValueCollection(
                         edge.TenantGUID,
                         edge.GraphGUID,
                         null,
                         edge.GUID,
-                        edge.Tags as Dictionary<string, string>));
+                        edge.Tags));
                 updated.Tags = edge.Tags;
             }
             return updated;
@@ -1957,7 +1868,7 @@
                 "CREATE TABLE IF NOT EXISTS 'tags' ("
                 + "guid VARCHAR(64) NOT NULL UNIQUE, "
                 + "tenantguid VARCHAR(64) NOT NULL, "
-                + "graphguid VARCHAR(64) NOT NULL, "
+                + "graphguid VARCHAR(64), "
                 + "nodeguid VARCHAR(64), "
                 + "edgeguid VARCHAR(64), "
                 + "tagkey VARCHAR(256), "
@@ -2571,14 +2482,11 @@
             return clause;
         }
 
-        private void ValidateTags(object tags)
+        private void ValidateTags(NameValueCollection tags)
         {
             if (tags == null) return;
-            if (tags is Dictionary<string, string> dict)
-                foreach (KeyValuePair<string, string> tag in dict)
-                    if (String.IsNullOrEmpty(tag.Key)) throw new ArgumentException("The supplied tags contains a null or empty key.");
-            else
-                throw new ArgumentException("The supplied tags property does not contain a dictionary.");
+            foreach (string key in tags.AllKeys)
+                if (String.IsNullOrEmpty(key)) throw new ArgumentException("The supplied tags contains a null or empty key.");
         }
 
         private void ValidateTenantExists(Guid tenantGuid)
@@ -2593,22 +2501,27 @@
                 throw new ArgumentException("No user with GUID '" + userGuid + "' exists.");
         }
 
-        private void ValidateGraphExists(Guid tenantGuid, Guid graphGuid)
+        private void ValidateGraphExists(Guid tenantGuid, Guid? graphGuid)
         {
-            if (!ExistsGraph(tenantGuid, graphGuid))
-                throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
+            if (graphGuid == null) return;
+            if (!ExistsGraph(tenantGuid, graphGuid.Value))
+                throw new ArgumentException("No graph with GUID '" + graphGuid.Value + "' exists.");
         }
 
-        private void ValidateNodeExists(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
+        private void ValidateNodeExists(Guid tenantGuid, Guid? graphGuid, Guid? nodeGuid)
         {
-            if (!ExistsNode(tenantGuid, graphGuid, nodeGuid))
-                throw new ArgumentException("No node with GUID '" + nodeGuid + "' exists.");
+            if (graphGuid == null) return;
+            if (nodeGuid == null) return;
+            if (!ExistsNode(tenantGuid, graphGuid.Value, nodeGuid.Value))
+                throw new ArgumentException("No node with GUID '" + nodeGuid.Value + "' exists.");
         }
 
-        private void ValidateEdgeExists(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
+        private void ValidateEdgeExists(Guid tenantGuid, Guid? graphGuid, Guid? edgeGuid)
         {
-            if (!ExistsEdge(tenantGuid, graphGuid, edgeGuid))
-                throw new ArgumentException("No edge with GUID '" + edgeGuid + "' exists.");
+            if (graphGuid == null) return;
+            if (edgeGuid == null) return;
+            if (!ExistsEdge(tenantGuid, graphGuid.Value, edgeGuid.Value))
+                throw new ArgumentException("No edge with GUID '" + edgeGuid.Value + "' exists.");
         }
 
         #endregion
@@ -2659,19 +2572,14 @@
                 "UPDATE 'tenants' SET "
                 + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
                 + "name = '" + Sanitize(tenant.Name) + "',"
-                + "active = '" + (tenant.Active ? "1" : "0") + " "
+                + "active = " + (tenant.Active ? "1" : "0") + " "
                 + "WHERE guid = '" + tenant.GUID + "' "
                 + "RETURNING *;";
         }
 
-        private string DeleteTenantQuery(string name)
-        {
-            return "DELETE FROM 'tenants' WHERE name = '" + Sanitize(name) + "';";
-        }
-
         private string DeleteTenantQuery(Guid guid)
         {
-            return "DELETE FROM 'tenants' WHERE id = '" + guid + "';";
+            return "DELETE FROM 'tenants' WHERE guid = '" + guid + "';";
         }
 
         private string DeleteTenantUsersQuery(Guid guid)
@@ -2763,7 +2671,7 @@
                 + "lastname = '" + Sanitize(user.LastName) + "',"
                 + "email = '" + Sanitize(user.Email) + "',"
                 + "password = '" + Sanitize(user.Password) + "',"
-                + "active = '" + (user.Active ? "1" : "0") + " "
+                + "active = " + (user.Active ? "1" : "0") + " "
                 + "WHERE guid = '" + user.GUID + "' "
                 + "RETURNING *;";
         }
@@ -2790,6 +2698,7 @@
             return new UserMaster
             {
                 GUID = Guid.Parse(row["guid"].ToString()),
+                TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
                 FirstName = GetDataRowStringValue(row, "firstname"),
                 LastName = GetDataRowStringValue(row, "lastname"),
                 Email = GetDataRowStringValue(row, "email"),
@@ -2865,7 +2774,7 @@
                 "UPDATE 'creds' SET "
                 + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
                 + "name = '" + Sanitize(cred.Name) + "',"
-                + "active = '" + (cred.Active ? "1" : "0") + " "
+                + "active = " + (cred.Active ? "1" : "0") + " "
                 + "WHERE guid = '" + cred.GUID + "' "
                 + "RETURNING *;";
         }
@@ -2903,7 +2812,7 @@
                 + "VALUES ("
                 + "'" + tag.GUID + "',"
                 + "'" + tag.TenantGUID + "',"
-                + "'" + tag.GraphGUID + "',"
+                + (tag.GraphGUID != null ? "'" + tag.GraphGUID.Value + "'" : "NULL") + ","
                 + (tag.NodeGUID != null ? "'" + tag.NodeGUID.Value + "'" : "NULL") + ","
                 + (tag.EdgeGUID != null ? "'" + tag.EdgeGUID.Value + "'" : "NULL") + ","
                 + "'" + Sanitize(tag.Key) + "',"
@@ -3040,7 +2949,7 @@
 
         private string DeleteTagsForGraphOnlyQuery(Guid tenantGuid, Guid graphGuid)
         {
-            string ret = "DELETE * FROM 'tags' WHERE tenantguid = '" + tenantGuid + "' AND graphguid = '" + graphGuid + "' "
+            string ret = "DELETE FROM 'tags' WHERE tenantguid = '" + tenantGuid + "' AND graphguid = '" + graphGuid + "' "
                 + "AND nodeguid IS NULL AND edgeguid IS NULL;";
             return ret;
         }
@@ -3053,11 +2962,11 @@
             {
                 GUID = Guid.Parse(row["guid"].ToString()),
                 TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
-                GraphGUID = Guid.Parse(row["graphguid"].ToString()),
+                GraphGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "graphguid")) ? Guid.Parse(row["graphguid"].ToString()) : null),
                 NodeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "nodeguid")) ? Guid.Parse(row["nodeguid"].ToString()) : null),
-                EdgeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "nodeguid")) ? Guid.Parse(row["nodeguid"].ToString()) : null),
+                EdgeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "edgeguid")) ? Guid.Parse(row["edgeguid"].ToString()) : null),
                 Key = GetDataRowStringValue(row, "tagkey"),
-                Value = GetDataRowStringValue(row, "value"),
+                Value = GetDataRowStringValue(row, "tagvalue"),
                 CreatedUtc = DateTime.Parse(row["createdutc"].ToString()),
                 LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString())
             };
@@ -3107,7 +3016,7 @@
 
         private string SelectGraphsQuery(
             Guid tenantGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags,
             Expr graphFilter = null,
             int skip = 0,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
@@ -3124,10 +3033,11 @@
 
             if (tags != null && tags.Count > 0)
             {
-                foreach (KeyValuePair<string, string> tag in tags)
+                foreach (string key in tags.AllKeys)
                 {
-                    ret += "AND tags.tagkey = '" + Sanitize(tag.Key) + "' ";
-                    if (!String.IsNullOrEmpty(tag.Value)) ret += "AND tags.tagvalue = '" + Sanitize(tag.Value) + "' ";
+                    string val = tags.Get(key);
+                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
+                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
                     else ret += "AND tags.tagvalue IS NULL ";
                 }
             }
@@ -3143,13 +3053,20 @@
 
         private string UpdateGraphQuery(Graph graph)
         {
-            return
-                "UPDATE 'graphs' "
-                + "SET name = '" + Sanitize(graph.Name) + "',"
-                + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "' "
-                + "WHERE guid = '" + graph.GUID + "' "
+            string ret =
+                "UPDATE 'graphs' SET "
+                + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
+                + "name = '" + Sanitize(graph.Name) + "',";
+                
+            if (graph.Data == null) ret += "data = null ";
+            else ret += "data = '" + Sanitize(Serializer.SerializeJson(graph.Data, false)) + "' ";
+
+            ret += 
+                "WHERE guid = '" + graph.GUID + "' "
                 + "AND tenantguid = '" + graph.TenantGUID + "' "
                 + "RETURNING *;";
+
+            return ret;
         }
 
         private string DeleteGraphQuery(Guid tenantGuid, string name)
@@ -3265,7 +3182,7 @@
         private string SelectNodesQuery(
             Guid tenantGuid,
             Guid graphGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags,
             Expr nodeFilter = null,
             int skip = 0,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
@@ -3284,10 +3201,11 @@
 
             if (tags != null && tags.Count > 0)
             {
-                foreach (KeyValuePair<string, string> tag in tags)
+                foreach (string key in tags)
                 {
-                    ret += "AND tags.tagkey = '" + Sanitize(tag.Key) + "' ";
-                    if (!String.IsNullOrEmpty(tag.Value)) ret += "AND tags.tagvalue = '" + Sanitize(tag.Value) + "' ";
+                    string val = tags.Get(key);
+                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
+                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
                     else ret += "AND tags.tagvalue IS NULL ";
                 }
             }
@@ -3546,7 +3464,7 @@
         private string SelectEdgesQuery(
             Guid tenantGuid,
             Guid graphGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags,
             Expr edgeFilter = null,
             int skip = 0,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
@@ -3566,10 +3484,11 @@
 
             if (tags != null && tags.Count > 0)
             {
-                foreach (KeyValuePair<string, string> tag in tags)
+                foreach (string key in tags.AllKeys)
                 {
-                    ret += "AND tags.tagkey = '" + Sanitize(tag.Key) + "' ";
-                    if (!String.IsNullOrEmpty(tag.Value)) ret += "AND tags.tagvalue = '" + Sanitize(tag.Value) + "' ";
+                    string val = tags.Get(key);
+                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
+                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
                     else ret += "AND tags.tagvalue IS NULL ";
                 }
             }
@@ -3587,7 +3506,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags,
             Expr edgeFilter = null,
             int skip = 0,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
@@ -3610,10 +3529,11 @@
 
             if (tags != null && tags.Count > 0)
             {
-                foreach (KeyValuePair<string, string> tag in tags)
+                foreach (string key in tags.AllKeys)
                 {
-                    ret += "AND tags.tagkey = '" + Sanitize(tag.Key) + "' ";
-                    if (!String.IsNullOrEmpty(tag.Value)) ret += "AND tags.tagvalue = '" + Sanitize(tag.Value) + "' ";
+                    string val = tags.Get(key);
+                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
+                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
                     else ret += "AND tags.tagvalue IS NULL ";
                 }
             }
@@ -3631,7 +3551,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags,
             Expr edgeFilter = null,
             int skip = 0,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
@@ -3652,10 +3572,11 @@
 
             if (tags != null && tags.Count > 0)
             {
-                foreach (KeyValuePair<string, string> tag in tags)
+                foreach (string key in tags.AllKeys)
                 {
-                    ret += "AND tags.tagkey = '" + Sanitize(tag.Key) + "' ";
-                    if (!String.IsNullOrEmpty(tag.Value)) ret += "AND tags.tagvalue = '" + Sanitize(tag.Value) + "' ";
+                    string val = tags.Get(key);
+                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
+                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
                     else ret += "AND tags.tagvalue IS NULL ";
                 }
             }
@@ -3673,7 +3594,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags,
             Expr edgeFilter = null,
             int skip = 0,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
@@ -3694,10 +3615,11 @@
 
             if (tags != null && tags.Count > 0)
             {
-                foreach (KeyValuePair<string, string> tag in tags)
+                foreach (string key in tags)
                 {
-                    ret += "AND tags.tagkey = '" + Sanitize(tag.Key) + "' ";
-                    if (!String.IsNullOrEmpty(tag.Value)) ret += "AND tags.tagvalue = '" + Sanitize(tag.Value) + "' ";
+                    string val = tags.Get(key);
+                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
+                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
                     else ret += "AND tags.tagvalue IS NULL ";
                 }
             }
@@ -3716,7 +3638,7 @@
             Guid graphGuid,
             Guid from,
             Guid to,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags,
             Expr edgeFilter = null,
             int skip = 0,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
@@ -3738,10 +3660,11 @@
 
             if (tags != null && tags.Count > 0)
             {
-                foreach (KeyValuePair<string, string> tag in tags)
+                foreach (string key in tags)
                 {
-                    ret += "AND tags.tagkey = '" + Sanitize(tag.Key) + "' ";
-                    if (!String.IsNullOrEmpty(tag.Value)) ret += "AND tags.tagvalue = '" + Sanitize(tag.Value) + "' ";
+                    string val = tags.Get(key);
+                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
+                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
                     else ret += "AND tags.tagvalue IS NULL ";
                 }
             }

@@ -83,49 +83,57 @@
                 return;
             }
 
-            req.Authentication.Credential = _Repository.ReadCredentialByBearerToken(req.Authentication.BearerToken);
-            if (req.Authentication.Credential == null)
+            if (req.Authentication.BearerToken.Equals(_Settings.LiteGraph.AdminBearerToken))
             {
-                _Logging.Warn(_Header + "unable to find bearer token " + req.Authentication.BearerToken);
-                req.Authentication.Result = AuthenticationResultEnum.NotFound;
-                return;
+                _Logging.Info(_Header + "admin bearer token in use from " + req.Ip);
+                req.Authentication.IsAdmin = true;
             }
-
-            if (!req.Authentication.Credential.Active)
+            else
             {
-                _Logging.Warn(_Header + "credential " + req.Authentication.Credential.GUID + " is inactive");
-                req.Authentication.Result = AuthenticationResultEnum.Inactive;
-                return;
-            }
+                req.Authentication.Credential = _Repository.ReadCredentialByBearerToken(req.Authentication.BearerToken);
+                if (req.Authentication.Credential == null)
+                {
+                    _Logging.Warn(_Header + "unable to find bearer token " + req.Authentication.BearerToken);
+                    req.Authentication.Result = AuthenticationResultEnum.NotFound;
+                    return;
+                }
 
-            req.Authentication.Tenant = _Repository.ReadTenant(req.Authentication.Credential.TenantGUID);
-            if (req.Authentication.Tenant == null)
-            {
-                _Logging.Warn(_Header + "tenant " + req.Authentication.Credential.TenantGUID + " referenced in credential " + req.Authentication.Credential.GUID + " not found");
-                req.Authentication.Result = AuthenticationResultEnum.NotFound;
-                return;
-            }
+                if (!req.Authentication.Credential.Active)
+                {
+                    _Logging.Warn(_Header + "credential " + req.Authentication.Credential.GUID + " is inactive");
+                    req.Authentication.Result = AuthenticationResultEnum.Inactive;
+                    return;
+                }
 
-            if (!req.Authentication.Tenant.Active)
-            {
-                _Logging.Warn(_Header + "tenant " + req.Authentication.Credential.TenantGUID + " referenced in credential " + req.Authentication.Credential.GUID + " is inactive");
-                req.Authentication.Result = AuthenticationResultEnum.Inactive;
-                return;
-            }
+                req.Authentication.Tenant = _Repository.ReadTenant(req.Authentication.Credential.TenantGUID);
+                if (req.Authentication.Tenant == null)
+                {
+                    _Logging.Warn(_Header + "tenant " + req.Authentication.Credential.TenantGUID + " referenced in credential " + req.Authentication.Credential.GUID + " not found");
+                    req.Authentication.Result = AuthenticationResultEnum.NotFound;
+                    return;
+                }
 
-            req.Authentication.User = _Repository.ReadUser(req.Authentication.Credential.TenantGUID, req.Authentication.Credential.UserGUID);
-            if (req.Authentication.User == null)
-            {
-                _Logging.Warn(_Header + "user " + req.Authentication.Credential.UserGUID + " referenced in credential " + req.Authentication.Credential.GUID + " not found");
-                req.Authentication.Result = AuthenticationResultEnum.NotFound;
-                return;
-            }
+                if (!req.Authentication.Tenant.Active)
+                {
+                    _Logging.Warn(_Header + "tenant " + req.Authentication.Credential.TenantGUID + " referenced in credential " + req.Authentication.Credential.GUID + " is inactive");
+                    req.Authentication.Result = AuthenticationResultEnum.Inactive;
+                    return;
+                }
 
-            if (!req.Authentication.User.Active)
-            {
-                _Logging.Warn(_Header + "user " + req.Authentication.Credential.UserGUID + " referenced in credential " + req.Authentication.Credential.GUID + " is inactive");
-                req.Authentication.Result = AuthenticationResultEnum.Inactive;
-                return;
+                req.Authentication.User = _Repository.ReadUser(req.Authentication.Credential.TenantGUID, req.Authentication.Credential.UserGUID);
+                if (req.Authentication.User == null)
+                {
+                    _Logging.Warn(_Header + "user " + req.Authentication.Credential.UserGUID + " referenced in credential " + req.Authentication.Credential.GUID + " not found");
+                    req.Authentication.Result = AuthenticationResultEnum.NotFound;
+                    return;
+                }
+
+                if (!req.Authentication.User.Active)
+                {
+                    _Logging.Warn(_Header + "user " + req.Authentication.Credential.UserGUID + " referenced in credential " + req.Authentication.Credential.GUID + " is inactive");
+                    req.Authentication.Result = AuthenticationResultEnum.Inactive;
+                    return;
+                }
             }
 
             req.Authentication.Result = AuthenticationResultEnum.Success;

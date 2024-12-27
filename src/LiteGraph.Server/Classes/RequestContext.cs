@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -23,6 +24,11 @@
         /// API version.
         /// </summary>
         public ApiVersionEnum ApiVersion { get; set; } = ApiVersionEnum.Unknown;
+
+        /// <summary>
+        /// Request type.
+        /// </summary>
+        public RequestTypeEnum RequestType { get; set; } = RequestTypeEnum.Unknown;
 
         /// <summary>
         /// Requestor IP.
@@ -68,6 +74,92 @@
             get
             {
                 return _Authorization;
+            }
+        }
+
+        /// <summary>
+        /// Content-type.
+        /// </summary>
+        public string ContentType { get; set; } = null;
+
+        /// <summary>
+        /// Content length.
+        /// </summary>
+        public long ContentLength
+        {
+            get
+            {
+                return _ContentLength;
+            }
+            set
+            {
+                if (value < 0) throw new ArgumentOutOfRangeException(nameof(ContentLength));
+                _ContentLength = value;
+            }
+        }
+
+        /// <summary>
+        /// Data.
+        /// </summary>
+        public byte[] Data { get; set; } = null;
+
+        /// <summary>
+        /// HTTP method.
+        /// </summary>
+        public HttpMethod Method
+        {
+            get
+            {
+                if (_Http != null) return _Http.Request.Method;
+                return HttpMethod.UNKNOWN;
+            }
+        }
+
+        /// <summary>
+        /// URL.
+        /// </summary>
+        public string Url
+        {
+            get
+            {
+                if (_Http != null) return _Http.Request.Url.Full;
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Querystring.
+        /// </summary>
+        public string Querystring
+        {
+            get
+            {
+                if (_Http != null) return _Http.Request.Query.Querystring;
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Headers.
+        /// </summary>
+        public NameValueCollection Headers
+        {
+            get
+            {
+                if (_Http != null) return _Http.Request.Headers;
+                return new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
+            }
+        }
+
+        /// <summary>
+        /// Query.
+        /// </summary>
+        public NameValueCollection Query
+        {
+            get
+            {
+                if (_Http != null) return _Http.Request.Query.Elements;
+                return new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
             }
         }
 
@@ -224,7 +316,9 @@
 
         #region Private-Members
 
+        private long _ContentLength = 0;
         private HttpContextBase _Http = null;
+        private UrlContext _Url = null;
         private AuthenticationContext _Authentication = new AuthenticationContext();
         private AuthorizationContext _Authorization = new AuthorizationContext();
 
@@ -241,6 +335,13 @@
         public RequestContext(HttpContextBase ctx)
         {
             _Http = ctx ?? throw new ArgumentNullException(nameof(ctx));
+            _Url = new UrlContext(
+                ctx.Request.Method,
+                ctx.Request.Url.RawWithoutQuery,
+                ctx.Request.Query.Elements,
+                ctx.Request.Headers);
+
+            RequestType = _Url.RequestType;
 
             SetApiVersion();
             SetAuthValues();
@@ -270,29 +371,33 @@
         private void SetAuthValues()
         {
             if (_Http.Request.HeaderExists(Constants.AuthorizationHeader))
-                _Authentication.BearerToken = _Http.Request.RetrieveHeaderValue(Constants.AuthorizationHeader);
+            {
+                string authHeader = _Http.Request.RetrieveHeaderValue(Constants.AuthorizationHeader);
+                if (authHeader.ToLower().StartsWith("bearer "))
+                    _Authentication.BearerToken = authHeader.Substring(7);
+            }
         }
 
         private void SetRequestValues()
         {
-            if (_Http.Request.Url.Parameters.Count > 0)
+            if (_Url.UrlParameters.Count > 0)
             {
-                if (_Http.Request.Url.Parameters.AllKeys.Contains("tenantGuid")) TenantGUID = Guid.Parse(_Http.Request.Url.Parameters.Get("tenantGuid"));
-                if (_Http.Request.Url.Parameters.AllKeys.Contains("userGuid")) UserGUID = Guid.Parse(_Http.Request.Url.Parameters.Get("userGuid"));
-                if (_Http.Request.Url.Parameters.AllKeys.Contains("credentialGuid")) CredentialGUID = Guid.Parse(_Http.Request.Url.Parameters.Get("credentialGuid"));
-                if (_Http.Request.Url.Parameters.AllKeys.Contains("graphGuid")) GraphGUID = Guid.Parse(_Http.Request.Url.Parameters.Get("graphGuid"));
-                if (_Http.Request.Url.Parameters.AllKeys.Contains("nodeGuid")) NodeGUID = Guid.Parse(_Http.Request.Url.Parameters.Get("nodeGuid"));
-                if (_Http.Request.Url.Parameters.AllKeys.Contains("edgeGuid")) EdgeGUID = Guid.Parse(_Http.Request.Url.Parameters.Get("edgeGuid"));
-                if (_Http.Request.Url.Parameters.AllKeys.Contains("tagGuid")) TagGUID = Guid.Parse(_Http.Request.Url.Parameters.Get("tagGuid"));
+                if (_Url.UrlParameters.AllKeys.Contains("tenantGuid")) TenantGUID = Guid.Parse(_Url.GetParameter("tenantGuid"));
+                if (_Url.UrlParameters.AllKeys.Contains("userGuid")) UserGUID = Guid.Parse(_Url.GetParameter("userGuid"));
+                if (_Url.UrlParameters.AllKeys.Contains("credentialGuid")) CredentialGUID = Guid.Parse(_Url.GetParameter("credentialGuid"));
+                if (_Url.UrlParameters.AllKeys.Contains("graphGuid")) GraphGUID = Guid.Parse(_Url.GetParameter("graphGuid"));
+                if (_Url.UrlParameters.AllKeys.Contains("nodeGuid")) NodeGUID = Guid.Parse(_Url.GetParameter("nodeGuid"));
+                if (_Url.UrlParameters.AllKeys.Contains("edgeGuid")) EdgeGUID = Guid.Parse(_Url.GetParameter("edgeGuid"));
+                if (_Url.UrlParameters.AllKeys.Contains("tagGuid")) TagGUID = Guid.Parse(_Url.GetParameter("tagGuid"));
             }
 
-            if (_Http.Request.QuerystringExists(Constants.SkipQuerystring))
-                if (Int32.TryParse(_Http.Request.RetrieveQueryValue(Constants.SkipQuerystring), out int skip)) Skip = skip;
+            if (_Url.QueryExists(Constants.SkipQuerystring))
+                if (Int32.TryParse(_Url.GetQueryValue(Constants.SkipQuerystring), out int skip)) Skip = skip;
 
-            if (_Http.Request.QuerystringExists(Constants.ForceQuerystring)) Force = true;
-            if (_Http.Request.QuerystringExists(Constants.IncludeDataQuerystring)) IncludeData = true;
-            if (_Http.Request.QuerystringExists(Constants.FromGuidQuerystring)) FromGUID = Guid.Parse(_Http.Request.RetrieveQueryValue(Constants.FromGuidQuerystring));
-            if (_Http.Request.QuerystringExists(Constants.ToGuidQuerystring)) ToGUID = Guid.Parse(_Http.Request.RetrieveQueryValue(Constants.ToGuidQuerystring));
+            if (_Url.QueryExists(Constants.ForceQuerystring)) Force = true;
+            if (_Url.QueryExists(Constants.IncludeDataQuerystring)) IncludeData = true;
+            if (_Url.QueryExists(Constants.FromGuidQuerystring)) FromGUID = Guid.Parse(_Url.GetQueryValue(Constants.FromGuidQuerystring));
+            if (_Url.QueryExists(Constants.ToGuidQuerystring)) ToGUID = Guid.Parse(_Url.GetQueryValue(Constants.ToGuidQuerystring));
         }
 
         #endregion

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
 
     /// <summary>
     /// Edge in the graph.
@@ -79,7 +80,7 @@
         /// <summary>
         /// Tags.
         /// </summary>
-        public object Tags { get; set; } = null;
+        public NameValueCollection Tags { get; set; } = null;
 
         /// <summary>
         /// Object data.

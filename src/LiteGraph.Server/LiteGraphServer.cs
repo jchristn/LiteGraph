@@ -54,7 +54,7 @@
             InitializeSettings();
             InitializeGlobals();
 
-            _Logging.Info(_Header + "starting at " + DateTime.UtcNow + " using process ID " + _ProcessId);
+            _Logging.Info(_Header + "started at " + DateTime.UtcNow + " using process ID " + _ProcessId);
 
             EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
             bool waitHandleSignal = false;
@@ -189,6 +189,11 @@
             #region Repositories
 
             _Repository = new SqliteGraphRepository(_Settings.LiteGraph.GraphRepositoryFilename);
+            _Repository.InitializeRepository();
+            _Repository.Logging.Enable = true;
+            _Repository.Logging.Logger = LiteGraphLogger;
+            _Repository.Logging.LogQueries = _Settings.Debug.DatabaseQueries;
+            _Repository.Logging.LogResults = _Settings.Debug.DatabaseQueries;
 
             #endregion
 
@@ -203,6 +208,8 @@
             _LiteGraph = new LiteGraphClient(_Repository, _Settings.Logging);
             _LiteGraph.Logging.Enable = true;
             _LiteGraph.Logging.Logger = LiteGraphLogger;
+            _LiteGraph.Logging.LogQueries = _Settings.Debug.DatabaseQueries;
+            _LiteGraph.Logging.LogResults = _Settings.Debug.DatabaseQueries;
 
             _LiteGraph.InitializeRepository();
 
@@ -232,8 +239,6 @@
                 _ServiceHandler);
 
             #endregion
-
-            Console.WriteLine("");
         }
 
         private static void LiteGraphLogger(SeverityEnum sev, string msg)

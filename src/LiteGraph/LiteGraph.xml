@@ -893,7 +893,7 @@
             <param name="tags">Tags.</param>
             <returns>Tags.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadTags(System.Guid,System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadTags(System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <summary>
             Read tags.
             </summary>
@@ -953,7 +953,7 @@
             <param name="graph">Graph.</param>
             <returns>Graph.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateGraph(System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.Dictionary{System.String,System.String})">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateGraph(System.Guid,System.Guid,System.String,System.Object,System.Collections.Specialized.NameValueCollection)">
             <summary>
             Create a graph using a unique name.
             </summary>
@@ -964,7 +964,7 @@
             <param name="tags">Tags.</param>
             <returns>Graph.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadGraphs(System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadGraphs(System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <summary>
             Read graphs.
             </summary>
@@ -1029,7 +1029,7 @@
             <param name="node">Node.</param>
             <returns>Node.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateNode(System.Guid,System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.Dictionary{System.String,System.String})">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateNode(System.Guid,System.Guid,System.Guid,System.String,System.Object,System.Collections.Specialized.NameValueCollection)">
             <summary>
             Create a node.
             </summary>
@@ -1050,7 +1050,7 @@
             <param name="nodes">Nodes.</param>
             <returns>Nodes.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadNodes(System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadNodes(System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <summary>
             Read nodes.
             </summary>
@@ -1128,7 +1128,7 @@
             <param name="edge">Edge.</param>
             <returns>Edge.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateEdge(System.Guid,System.Guid,System.Guid,System.Guid,System.Guid,System.String,System.Int32,System.Object,System.Collections.Generic.Dictionary{System.String,System.String})">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateEdge(System.Guid,System.Guid,System.Guid,System.Guid,System.Guid,System.String,System.Int32,System.Object,System.Collections.Specialized.NameValueCollection)">
             <summary>
             Create an edge between two nodes.
             </summary>
@@ -1152,7 +1152,7 @@
             <param name="edges">Edges.</param>
             <returns>Edges.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadEdges(System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadEdges(System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <summary>
             Read edges.
             </summary>
@@ -1316,7 +1316,7 @@
             For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
             <returns>Route details.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.GetConnectedEdges(System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.GetConnectedEdges(System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <summary>
             Get edges connected to or initiated from a given node.
             </summary>
@@ -1332,7 +1332,7 @@
             <param name="skip">The number of records to skip.</param>
             <returns>Edges.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.GetEdgesFrom(System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.GetEdgesFrom(System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <summary>
             Get edges from a given node.
             </summary>
@@ -1348,7 +1348,7 @@
             <param name="skip">The number of records to skip.</param>
             <returns>Edges.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.GetEdgesTo(System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.GetEdgesTo(System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <summary>
             Get edges to a given node.
             </summary>
@@ -1364,7 +1364,7 @@
             <param name="skip">The number of records to skip.</param>
             <returns>Edges.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.GetEdgesBetween(System.Guid,System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.GetEdgesBetween(System.Guid,System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <summary>
             Get edges between two neighboring nodes.
             </summary>
@@ -1520,7 +1520,7 @@
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadTag(System.Guid,System.Guid)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadTags(System.Guid,System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadTags(System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.UpdateTag(LiteGraph.TagMetadata)">
@@ -1529,10 +1529,10 @@
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateGraph(LiteGraph.Graph)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateGraph(System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.Dictionary{System.String,System.String})">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateGraph(System.Guid,System.Guid,System.String,System.Object,System.Collections.Specialized.NameValueCollection)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadGraphs(System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadGraphs(System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadGraph(System.Guid,System.Guid)">
@@ -1556,13 +1556,13 @@
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateNode(LiteGraph.Node)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateNode(System.Guid,System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.Dictionary{System.String,System.String})">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateNode(System.Guid,System.Guid,System.Guid,System.String,System.Object,System.Collections.Specialized.NameValueCollection)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateMultipleNodes(System.Guid,System.Guid,System.Collections.Generic.List{LiteGraph.Node})">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadNodes(System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadNodes(System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadNode(System.Guid,System.Guid,System.Guid)">
@@ -1607,28 +1607,28 @@
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.BatchExistence(System.Guid,System.Guid,LiteGraph.ExistenceRequest)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.GetConnectedEdges(System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.GetConnectedEdges(System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.GetEdgesFrom(System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.GetEdgesFrom(System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.GetEdgesTo(System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.GetEdgesTo(System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.GetEdgesBetween(System.Guid,System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.GetEdgesBetween(System.Guid,System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateEdge(LiteGraph.Edge)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateEdge(System.Guid,System.Guid,System.Guid,System.Guid,System.Guid,System.String,System.Int32,System.Object,System.Collections.Generic.Dictionary{System.String,System.String})">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateEdge(System.Guid,System.Guid,System.Guid,System.Guid,System.Guid,System.String,System.Int32,System.Object,System.Collections.Specialized.NameValueCollection)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateMultipleEdges(System.Guid,System.Guid,System.Collections.Generic.List{LiteGraph.Edge})">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadEdges(System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadEdges(System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadEdge(System.Guid,System.Guid,System.Guid)">
@@ -1875,7 +1875,7 @@
             <param name="val">Value.</param>
             <returns>Tag.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.ReadTags(System.Guid,System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,LiteGraph.EnumerationOrderEnum)">
+        <member name="M:LiteGraph.LiteGraphClient.ReadTags(System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,LiteGraph.EnumerationOrderEnum)">
             <summary>
             Read tags.
             </summary>
@@ -1918,17 +1918,18 @@
             <param name="guid">GUID.</param>
             <returns>True if exists.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.CreateGraph(System.Guid,System.Guid,System.String,System.Object)">
+        <member name="M:LiteGraph.LiteGraphClient.CreateGraph(System.Guid,System.Guid,System.String,System.Collections.Specialized.NameValueCollection,System.Object)">
             <summary>
             Create a graph using a unique name.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
             <param name="name">Unique name.</param>
+            <param name="tags">Tags.</param>
             <param name="data">Data.</param>
             <returns>Graph.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.ReadGraphs(System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
+        <member name="M:LiteGraph.LiteGraphClient.ReadGraphs(System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
             Read graphs.
             </summary>
@@ -2006,7 +2007,7 @@
             <param name="edges">Nodes.</param>
             <returns>Nodes.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.ReadNodes(System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.ReadNodes(System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <summary>
             Read nodes.
             </summary>
@@ -2085,7 +2086,7 @@
             <param name="edges">Edges.</param>
             <returns>Edges.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.CreateEdge(System.Guid,System.Guid,LiteGraph.Node,LiteGraph.Node,System.String,System.Int32,System.Object)">
+        <member name="M:LiteGraph.LiteGraphClient.CreateEdge(System.Guid,System.Guid,LiteGraph.Node,LiteGraph.Node,System.String,System.Int32,System.Collections.Specialized.NameValueCollection,System.Object)">
             <summary>
             Create an edge between two nodes.
             </summary>
@@ -2095,10 +2096,11 @@
             <param name="toNode">To node.</param>
             <param name="name">Name.</param>
             <param name="cost">Cost.</param>
+            <param name="tags">Tags.</param>
             <param name="data">Data.</param>
             <returns>Edge.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.ReadEdges(System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
+        <member name="M:LiteGraph.LiteGraphClient.ReadEdges(System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
             <summary>
             Read edges.
             </summary>
@@ -2235,7 +2237,7 @@
             For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
             <returns>Route details.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetEdgesFrom(System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
+        <member name="M:LiteGraph.LiteGraphClient.GetEdgesFrom(System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
             Get edges from a given node.
             </summary>
@@ -2250,7 +2252,7 @@
             <param name="order">Enumeration order.</param>
             <returns>Edges.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetEdgesTo(System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
+        <member name="M:LiteGraph.LiteGraphClient.GetEdgesTo(System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
             Get edges to a given node.
             </summary>
@@ -2265,7 +2267,7 @@
             <param name="order">Enumeration order.</param>
             <returns>Edges.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.GetEdgesBetween(System.Guid,System.Guid,System.Guid,System.Guid,System.Collections.Generic.Dictionary{System.String,System.String},ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
+        <member name="M:LiteGraph.LiteGraphClient.GetEdgesBetween(System.Guid,System.Guid,System.Guid,System.Guid,System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
             <summary>
             Get edges between two nodes.
             </summary>
@@ -2669,14 +2671,14 @@
             Instantiate.
             </summary>
         </member>
-        <member name="M:LiteGraph.TagMetadata.ToDictionary(System.Collections.Generic.List{LiteGraph.TagMetadata})">
+        <member name="M:LiteGraph.TagMetadata.ToNameValueCollection(System.Collections.Generic.List{LiteGraph.TagMetadata})">
             <summary>
-            Convert a list of tag metadata to a dictionary.
+            Convert a list of tag metadata to a name value collection.
             </summary>
             <param name="tags">Tags.</param>
-            <returns>Dictionary.</returns>
+            <returns>Name value collection.</returns>
         </member>
-        <member name="M:LiteGraph.TagMetadata.FromDictionary(System.Guid,System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Collections.Generic.Dictionary{System.String,System.String})">
+        <member name="M:LiteGraph.TagMetadata.FromNameValueCollection(System.Guid,System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Collections.Specialized.NameValueCollection)">
             <summary>
             Convert a dictionary to a list of tags.
             </summary>
@@ -2684,8 +2686,19 @@
             <param name="graphGuid">Graph GUID.</param>
             <param name="nodeGuid">Node GUID.</param>
             <param name="edgeGuid">Edge GUID.</param>
-            <param name="dict">Dictionary.</param>
+            <param name="nvc">Name value collection.</param>
             <returns>List of tags.</returns>
+        </member>
+        <member name="M:LiteGraph.TagMetadata.FromTags(System.Collections.Generic.List{LiteGraph.TagMetadata},System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid})">
+            <summary>
+            Retrieve tags from a given name value collection.
+            </summary>
+            <param name="tags">Tags.</param>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+            <param name="edgeGuid">Edge GUID.</param>
+            <returns>Name value collection.</returns>
         </member>
         <member name="T:LiteGraph.TenantMetadata">
             <summary>

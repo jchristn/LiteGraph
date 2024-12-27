@@ -3,6 +3,7 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Data;
     using System.Linq;
     using ExpressionTree;
@@ -349,7 +350,7 @@
         /// <returns>Tags.</returns>
         public abstract IEnumerable<TagMetadata> ReadTags(
             Guid tenantGuid,
-            Guid graphGuid,
+            Guid? graphGuid,
             Guid? nodeGuid,
             Guid? edgeGuid,
             string key,
@@ -416,7 +417,7 @@
         /// <param name="data">Data.</param>
         /// <param name="tags">Tags.</param>
         /// <returns>Graph.</returns>
-        public abstract Graph CreateGraph(Guid tenantGuid, Guid guid, string name, object data = null, Dictionary<string, string> tags = null);
+        public abstract Graph CreateGraph(Guid tenantGuid, Guid guid, string name, object data = null, NameValueCollection tags = null);
 
         /// <summary>
         /// Read graphs.
@@ -432,7 +433,7 @@
         /// <returns>Graphs.</returns>
         public abstract IEnumerable<Graph> ReadGraphs(
             Guid tenantGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr graphFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0);
@@ -502,7 +503,7 @@
         /// <param name="data">Data.</param>
         /// <param name="tags">Tags.</param>
         /// <returns>Node.</returns>
-        public abstract Node CreateNode(Guid tenantGuid, Guid graphGuid, Guid guid, string name, object data = null, Dictionary<string, string> tags = null);
+        public abstract Node CreateNode(Guid tenantGuid, Guid graphGuid, Guid guid, string name, object data = null, NameValueCollection tags = null);
 
         /// <summary>
         /// Create multiple nodes.
@@ -529,7 +530,7 @@
         public abstract IEnumerable<Node> ReadNodes(
             Guid tenantGuid,
             Guid graphGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr nodeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0);
@@ -614,7 +615,7 @@
         /// <param name="data">Data.</param>
         /// <param name="tags">Tags.</param>
         /// <returns>Edge.</returns>
-        public abstract Edge CreateEdge(Guid tenantGuid, Guid graphGuid, Guid guid, Guid fromGuid, Guid toGuid, string name, int cost = 0, object data = null, Dictionary<string, string> tags = null);
+        public abstract Edge CreateEdge(Guid tenantGuid, Guid graphGuid, Guid guid, Guid fromGuid, Guid toGuid, string name, int cost = 0, object data = null, NameValueCollection tags = null);
 
         /// <summary>
         /// Create multiple edges.
@@ -641,7 +642,7 @@
         public abstract IEnumerable<Edge> ReadEdges(
             Guid tenantGuid,
             Guid graphGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0);
@@ -847,7 +848,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0);
@@ -870,7 +871,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0);
@@ -893,7 +894,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0);
@@ -918,7 +919,7 @@
             Guid graphGuid,
             Guid fromNodeGuid,
             Guid toNodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0);

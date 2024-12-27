@@ -3,6 +3,7 @@
     using ExpressionTree;
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Linq;
 
     /// <summary>
@@ -46,7 +47,7 @@
         /// <summary>
         /// Search tags.
         /// </summary>
-        public Dictionary<string, string> Tags
+        public NameValueCollection Tags
         {
             get
             {
@@ -54,7 +55,7 @@
             }
             set
             {
-                if (value == null) value = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+                if (value == null) value = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
                 _Tags = value;
             }
         }
@@ -69,7 +70,7 @@
         #region Private-Members
 
         private int _Skip = 0;
-        private Dictionary<string, string> _Tags { get; set; } = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+        private NameValueCollection _Tags { get; set; } = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
 
         #endregion
 

@@ -9,6 +9,7 @@
     using LiteGraph.GraphRepositories;
     using LiteGraph.Serialization;
     using System.Xml.Linq;
+    using System.Collections.Specialized;
 
     /// <summary>
     /// LiteGraph client.
@@ -470,10 +471,8 @@
         /// <param name="val">Value.</param>
         /// <param name="order">Enumeration order.</param>
         /// <returns>Tags.</returns>
-        public IEnumerable<TagMetadata> ReadTags(Guid tenantGuid, Guid graphGuid, Guid? nodeGuid, Guid? edgeGuid, string key, string val, EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        public IEnumerable<TagMetadata> ReadTags(Guid tenantGuid, Guid? graphGuid, Guid? nodeGuid, Guid? edgeGuid, string key, string val, EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-
             Logging.Log(SeverityEnum.Debug, "retrieving tags");
 
             foreach (TagMetadata tag in _Repository.ReadTags(tenantGuid, graphGuid, nodeGuid, edgeGuid, key, val, order))
@@ -545,16 +544,17 @@
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
         /// <param name="name">Unique name.</param>
+        /// <param name="tags">Tags.</param>
         /// <param name="data">Data.</param>
         /// <returns>Graph.</returns>
-        public Graph CreateGraph(Guid tenantGuid, Guid guid, string name, object data = null)
+        public Graph CreateGraph(Guid tenantGuid, Guid guid, string name, NameValueCollection tags = null, object data = null)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             Graph existing = _Repository.ReadGraph(tenantGuid, guid);
             if (existing != null) return existing;
 
-            Graph graph = _Repository.CreateGraph(tenantGuid, guid, name, data);
+            Graph graph = _Repository.CreateGraph(tenantGuid, guid, name, data, tags);
             Logging.Log(SeverityEnum.Info, "created graph name " + name + " GUID " + graph.GUID);
             return graph;
         }
@@ -572,7 +572,7 @@
         /// <returns>Graphs.</returns>
         public IEnumerable<Graph> ReadGraphs(
             Guid tenantGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr expr = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
@@ -742,7 +742,7 @@
         public IEnumerable<Node> ReadNodes(
             Guid tenantGuid,
             Guid graphGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr expr = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
@@ -900,6 +900,7 @@
         /// <param name="toNode">To node.</param>
         /// <param name="name">Name.</param>
         /// <param name="cost">Cost.</param>
+        /// <param name="tags">Tags.</param>
         /// <param name="data">Data.</param>
         /// <returns>Edge.</returns>
         public Edge CreateEdge(
@@ -909,6 +910,7 @@
             Node toNode,
             string name,
             int cost = 0,
+            NameValueCollection tags = null,
             object data = null)
         {
             if (fromNode == null) throw new ArgumentNullException(nameof(fromNode));
@@ -955,7 +957,7 @@
         public IEnumerable<Edge> ReadEdges(
             Guid tenantGuid,
             Guid graphGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr expr = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
@@ -1219,7 +1221,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid fromNodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
@@ -1246,7 +1248,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid toNodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
@@ -1272,7 +1274,7 @@
             Guid graphGuid,
             Guid fromNodeGuid,
             Guid toNodeGuid,
-            Dictionary<string, string> tags = null,
+            NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {

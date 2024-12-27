@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Linq;
     using System.Security.Cryptography;
     using System.Text.Json.Serialization;
@@ -26,7 +27,7 @@
         /// <summary>
         /// Graph GUID.
         /// </summary>
-        public Guid GraphGUID { get; set; } = Guid.NewGuid();
+        public Guid? GraphGUID { get; set; } = null;
 
         /// <summary>
         /// Node GUID.
@@ -75,18 +76,22 @@
         }
 
         /// <summary>
-        /// Convert a list of tag metadata to a dictionary.
+        /// Convert a list of tag metadata to a name value collection.
         /// </summary>
         /// <param name="tags">Tags.</param>
-        /// <returns>Dictionary.</returns>
-        public static Dictionary<string, string> ToDictionary(List<TagMetadata> tags)
+        /// <returns>Name value collection.</returns>
+        public static NameValueCollection ToNameValueCollection(List<TagMetadata> tags)
         {
             if (tags == null) return null;
-            return tags.ToDictionary(
-                t => t.Key,
-                t => t.Value,
-                StringComparer.OrdinalIgnoreCase
-            );
+
+            NameValueCollection nvc = new NameValueCollection();
+
+            foreach (TagMetadata tag in tags)
+            {
+                nvc.Add(tag.Key, tag.Value);
+            }
+
+            return nvc;
         }
 
         /// <summary>
@@ -96,22 +101,65 @@
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
         /// <param name="edgeGuid">Edge GUID.</param>
-        /// <param name="dict">Dictionary.</param>
+        /// <param name="nvc">Name value collection.</param>
         /// <returns>List of tags.</returns>
-        public static List<TagMetadata> FromDictionary(Guid tenantGuid, Guid graphGuid, Guid? nodeGuid, Guid? edgeGuid, Dictionary<string, string> dict)
+        public static List<TagMetadata> FromNameValueCollection(Guid tenantGuid, Guid graphGuid, Guid? nodeGuid, Guid? edgeGuid, NameValueCollection nvc)
         {
-            if (dict == null) return new List<TagMetadata>();
+            if (nvc == null) return new List<TagMetadata>();
 
-            return dict.Where(kvp => kvp.Key != null)
-                       .Select(kvp => new TagMetadata
-                       {
-                           TenantGUID = tenantGuid,
-                           GraphGUID = graphGuid,
-                           NodeGUID = nodeGuid,
-                           EdgeGUID = edgeGuid,
-                           Key = kvp.Key,
-                           Value = kvp.Value
-                       }).ToList();
+            List<TagMetadata> ret = new List<TagMetadata>();
+
+            foreach (string key in nvc.AllKeys)
+            {
+                TagMetadata tag = new TagMetadata
+                {
+                    TenantGUID = tenantGuid,
+                    GraphGUID = graphGuid,
+                    NodeGUID = nodeGuid,
+                    EdgeGUID = edgeGuid,
+                    Key = key,
+                    Value = nvc.Get(key)
+                };
+
+                ret.Add(tag);
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Retrieve tags from a given name value collection.
+        /// </summary>
+        /// <param name="tags">Tags.</param>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <returns>Name value collection.</returns>
+        public static NameValueCollection FromTags(
+            List<TagMetadata> tags,
+            Guid tenantGuid,
+            Guid? graphGuid = null,
+            Guid? nodeGuid = null,
+            Guid? edgeGuid = null)
+        {
+            NameValueCollection nvc = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
+
+            if (tags == null) return nvc;
+
+            var matchingTags = tags.Where(t => 
+                t != null &&  
+                t.TenantGUID == tenantGuid &&
+                (graphGuid == null ? t.GraphGUID == null : t.GraphGUID == graphGuid) &&
+                (nodeGuid == null ? t.NodeGUID == null : t.NodeGUID == nodeGuid) &&
+                (edgeGuid == null ? t.EdgeGUID == null : t.EdgeGUID == edgeGuid));
+
+            foreach (var tag in matchingTags)
+            {
+                nvc.Add(tag.Key, tag.Value);
+            }
+
+            return nvc;
         }
 
         #endregion

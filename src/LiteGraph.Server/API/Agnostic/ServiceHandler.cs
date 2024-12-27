@@ -97,6 +97,7 @@
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Tenant == null) throw new ArgumentNullException(nameof(req.Tenant));
             if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
+            req.Tenant.GUID = req.TenantGUID.Value;
             TenantMetadata obj = _LiteGraph.UpdateTenant(req.Tenant);
             if (obj == null) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
             return new ResponseContext(req, obj);
@@ -119,6 +120,7 @@
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.User == null) throw new ArgumentNullException(nameof(req.User));
             if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
+            req.User.TenantGUID = req.TenantGUID.Value;
             UserMaster obj = _LiteGraph.CreateUser(req.User);
             return new ResponseContext(req, obj);
         }
@@ -154,6 +156,7 @@
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.User == null) throw new ArgumentNullException(nameof(req.User));
             if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
+            req.User.TenantGUID = req.TenantGUID.Value;
             UserMaster obj = _LiteGraph.UpdateUser(req.User);
             if (obj == null) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
             return new ResponseContext(req, obj);
@@ -176,6 +179,7 @@
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Credential == null) throw new ArgumentNullException(nameof(req.Credential));
             if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
+            req.Credential.TenantGUID = req.TenantGUID.Value;
             Credential obj = _LiteGraph.CreateCredential(req.Credential);
             return new ResponseContext(req, obj);
         }
@@ -211,6 +215,7 @@
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Credential == null) throw new ArgumentNullException(nameof(req.Credential));
             if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
+            req.Credential.TenantGUID = req.TenantGUID.Value;
             Credential obj = _LiteGraph.UpdateCredential(req.Credential);
             if (obj == null) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
             return new ResponseContext(req, obj);
@@ -232,6 +237,7 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Tag == null) throw new ArgumentNullException(nameof(req.Tag));
+            req.Tag.TenantGUID = req.TenantGUID.Value;
             TagMetadata obj = _LiteGraph.CreateTag(req.Tag);
             return new ResponseContext(req, obj);
         }
@@ -239,7 +245,7 @@
         internal async Task<ResponseContext> TagReadMany(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
-            List<TagMetadata> objs = _LiteGraph.ReadTags(req.TenantGUID.Value, req.GraphGUID.Value, null, null, null, null).ToList();
+            List<TagMetadata> objs = _LiteGraph.ReadTags(req.TenantGUID.Value, null, null, null, null, null).ToList();
             if (objs == null) objs = new List<TagMetadata>();
             return new ResponseContext(req, objs);
         }
@@ -264,6 +270,7 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Tag == null) throw new ArgumentNullException(nameof(req.Tag));
+            req.Tag.TenantGUID = req.TenantGUID.Value;
             TagMetadata obj = _LiteGraph.UpdateTag(req.Tag);
             if (obj == null) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
             return new ResponseContext(req, obj);
@@ -284,7 +291,14 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Graph == null) throw new ArgumentNullException(nameof(req.Graph));
-            Graph graph = _LiteGraph.CreateGraph(req.TenantGUID.Value, req.Graph.GUID, req.Graph.Name, req.Graph.Data);
+            req.Graph.TenantGUID = req.TenantGUID.Value;
+
+            Graph graph = _LiteGraph.CreateGraph(
+                req.TenantGUID.Value, 
+                req.Graph.GUID, 
+                req.Graph.Name, 
+                req.Graph.Tags, 
+                req.Graph.Data);
             return new ResponseContext(req, graph);
         }
 
@@ -334,6 +348,7 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Graph == null) throw new ArgumentNullException(nameof(req.Graph));
+            req.Graph.TenantGUID = req.TenantGUID.Value;
             req.Graph = _LiteGraph.UpdateGraph(req.Graph);
             if (req.Graph == null) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
             else return new ResponseContext(req, req.Graph);
@@ -387,6 +402,8 @@
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Node == null) throw new ArgumentNullException(nameof(req.Node));
             if (!_LiteGraph.ExistsGraph(req.TenantGUID.Value, req.GraphGUID.Value)) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+            req.Node.TenantGUID = req.TenantGUID.Value;
+            req.Node.GraphGUID = req.GraphGUID.Value;
             req.Node = _LiteGraph.CreateNode(req.Node);
             return new ResponseContext(req, req.Node);
         }
@@ -457,6 +474,8 @@
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Node == null) throw new ArgumentNullException(nameof(req.Node));
             if (!_LiteGraph.ExistsGraph(req.TenantGUID.Value, req.GraphGUID.Value)) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+            req.Node.TenantGUID = req.TenantGUID.Value;
+            req.Node.GraphGUID = req.GraphGUID.Value;
             req.Node = _LiteGraph.UpdateNode(req.Node);
             if (req.Node != null) return new ResponseContext(req, req.Node);
             else return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
@@ -497,6 +516,8 @@
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Edge == null) throw new ArgumentNullException(nameof(req.Edge));
             if (!_LiteGraph.ExistsGraph(req.TenantGUID.Value, req.GraphGUID.Value)) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+            req.Edge.TenantGUID = req.TenantGUID.Value;
+            req.Edge.GraphGUID = req.GraphGUID.Value;
             req.Edge = _LiteGraph.CreateEdge(req.Edge);
             return new ResponseContext(req, req.Edge);
         }
@@ -580,6 +601,8 @@
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Edge == null) throw new ArgumentNullException(nameof(req.Edge));
             if (!_LiteGraph.ExistsGraph(req.TenantGUID.Value, req.GraphGUID.Value)) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+            req.Edge.TenantGUID = req.TenantGUID.Value;
+            req.Edge.GraphGUID = req.GraphGUID.Value;
             req.Edge = _LiteGraph.UpdateEdge(req.Edge);
             return new ResponseContext(req, req.Edge);
         }
