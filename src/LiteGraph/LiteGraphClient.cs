@@ -544,17 +544,18 @@
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
         /// <param name="name">Unique name.</param>
+        /// <param name="labels">Labels.</param>
         /// <param name="tags">Tags.</param>
         /// <param name="data">Data.</param>
         /// <returns>Graph.</returns>
-        public Graph CreateGraph(Guid tenantGuid, Guid guid, string name, NameValueCollection tags = null, object data = null)
+        public Graph CreateGraph(Guid tenantGuid, Guid guid, string name, List<string> labels = null, NameValueCollection tags = null, object data = null)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             Graph existing = _Repository.ReadGraph(tenantGuid, guid);
             if (existing != null) return existing;
 
-            Graph graph = _Repository.CreateGraph(tenantGuid, guid, name, data, tags);
+            Graph graph = _Repository.CreateGraph(tenantGuid, guid, name, data, labels, tags);
             Logging.Log(SeverityEnum.Info, "created graph name " + name + " GUID " + graph.GUID);
             return graph;
         }
@@ -563,6 +564,7 @@
         /// Read graphs.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="labels">Labels on which to filter results.</param>
         /// <param name="tags">Tags on which to filter results.</param>
         /// <param name="expr">
         /// Graph filter expression for Data JSON body.
@@ -572,6 +574,7 @@
         /// <returns>Graphs.</returns>
         public IEnumerable<Graph> ReadGraphs(
             Guid tenantGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr expr = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
@@ -582,7 +585,7 @@
 
             Logging.Log(SeverityEnum.Debug, "retrieving graphs");
 
-            foreach (Graph graph in _Repository.ReadGraphs(tenantGuid, tags, expr, order))
+            foreach (Graph graph in _Repository.ReadGraphs(tenantGuid, labels, tags, expr, order))
             {
                 yield return graph;
             }
@@ -712,15 +715,15 @@
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
-        /// <param name="edges">Nodes.</param>
+        /// <param name="nodes">Nodes.</param>
         /// <returns>Nodes.</returns>
-        public List<Node> CreateNodes(Guid tenantGuid, Guid graphGuid, List<Node> edges)
+        public List<Node> CreateNodes(Guid tenantGuid, Guid graphGuid, List<Node> nodes)
         {
-            if (edges == null) throw new ArgumentNullException(nameof(edges));
+            if (nodes == null) throw new ArgumentNullException(nameof(nodes));
 
             if (!_Repository.ExistsGraph(tenantGuid, graphGuid)) throw new ArgumentException("No graph with GUID '" + graphGuid + "' exists.");
 
-            List<Node> created = _Repository.CreateMultipleNodes(tenantGuid, graphGuid, edges);
+            List<Node> created = _Repository.CreateMultipleNodes(tenantGuid, graphGuid, nodes);
             Logging.Log(SeverityEnum.Debug, "created " + created.Count + " node(s) in graph " + graphGuid);
 
             return created;
@@ -731,6 +734,7 @@
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="labels">Labels on which to filter results.</param>
         /// <param name="tags">Tags on which to filter results.</param>
         /// <param name="expr">
         /// Node filter expression for Data JSON body.
@@ -742,6 +746,7 @@
         public IEnumerable<Node> ReadNodes(
             Guid tenantGuid,
             Guid graphGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr expr = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
@@ -751,7 +756,7 @@
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            foreach (Node node in _Repository.ReadNodes(tenantGuid, graphGuid, tags,expr, order, skip))
+            foreach (Node node in _Repository.ReadNodes(tenantGuid, graphGuid, labels, tags, expr, order, skip))
             {
                 yield return node;
             }
@@ -900,6 +905,7 @@
         /// <param name="toNode">To node.</param>
         /// <param name="name">Name.</param>
         /// <param name="cost">Cost.</param>
+        /// <param name="labels">Labels.</param>
         /// <param name="tags">Tags.</param>
         /// <param name="data">Data.</param>
         /// <returns>Edge.</returns>
@@ -910,6 +916,7 @@
             Node toNode,
             string name,
             int cost = 0,
+            List<string> labels = null,
             NameValueCollection tags = null,
             object data = null)
         {
@@ -925,6 +932,8 @@
                 Name = name,
                 To = toNode.GUID,
                 Cost = cost,
+                Labels = labels,
+                Tags = tags,
                 Data = data
             };
 
@@ -946,6 +955,7 @@
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="labels">Labels on which to filter results.</param>
         /// <param name="tags">Tags on which to filter results.</param>
         /// <param name="expr">
         /// Edge filter expression for Data JSON body.
@@ -957,12 +967,13 @@
         public IEnumerable<Edge> ReadEdges(
             Guid tenantGuid,
             Guid graphGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr expr = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
         {
-            foreach (Edge edge in _Repository.ReadEdges(tenantGuid, graphGuid, tags, expr, order, skip))
+            foreach (Edge edge in _Repository.ReadEdges(tenantGuid, graphGuid, labels, tags, expr, order, skip))
             {
                 yield return edge;
             }
@@ -1079,24 +1090,19 @@
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
-        /// <param name="edgeFilter">
-        /// Edge filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
         /// <param name="order">Enumeration order.</param>
         /// <returns>Nodes.</returns>
         public IEnumerable<Node> GetParents(
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
             if (order == EnumerationOrderEnum.CostAscending
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            foreach (Node node in _Repository.GetParents(tenantGuid, graphGuid, nodeGuid, edgeFilter, order))
+            foreach (Node node in _Repository.GetParents(tenantGuid, graphGuid, nodeGuid, order))
             {
                 yield return node;
             }
@@ -1108,24 +1114,19 @@
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
-        /// <param name="edgeFilter">
-        /// Edge filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
         /// <param name="order">Enumeration order.</param>
         /// <returns>Nodes.</returns>
         public IEnumerable<Node> GetChildren(
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
             if (order == EnumerationOrderEnum.CostAscending
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            foreach (Node node in _Repository.GetChildren(tenantGuid, graphGuid, nodeGuid, edgeFilter, order))
+            foreach (Node node in _Repository.GetChildren(tenantGuid, graphGuid, nodeGuid, order))
             {
                 yield return node;
             }
@@ -1137,29 +1138,19 @@
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="nodeGuid">Node GUID.</param>
-        /// <param name="edgeFilter">
-        /// Edge filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
-        /// <param name="nodeFilter">
-        /// Node filter expression for Data JSON body.
-        /// Expression left terms must follow the form of Sqlite JSON paths.
-        /// For example, to retrieve the 'Name' property, use '$.Name', OperatorEnum.Equals, '[name here]'.</param>
         /// <param name="order">Enumeration order.</param>
         /// <returns>Nodes.</returns>
         public IEnumerable<Node> GetNeighbors(
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Expr edgeFilter = null,
-            Expr nodeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
             if (order == EnumerationOrderEnum.CostAscending
                 || order == EnumerationOrderEnum.CostDescending)
                 throw new ArgumentException("Cost-based enumeration orders are only available to edge APIs.");
 
-            foreach (Node node in _Repository.GetNeighbors(tenantGuid, graphGuid, nodeGuid, edgeFilter, nodeFilter, order))
+            foreach (Node node in _Repository.GetNeighbors(tenantGuid, graphGuid, nodeGuid, order))
             {
                 yield return node;
             }
@@ -1210,6 +1201,7 @@
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="fromNodeGuid">From node GUID.</param>
+        /// <param name="labels">Labels on which to filter edges.</param>
         /// <param name="tags">Tags on which to filter edges.</param>
         /// <param name="edgeFilter">
         /// Edge filter expression for Data JSON body.
@@ -1221,11 +1213,12 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid fromNodeGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            foreach (Edge edge in _Repository.GetEdgesFrom(tenantGuid, graphGuid, fromNodeGuid, tags, edgeFilter, order))
+            foreach (Edge edge in _Repository.GetEdgesFrom(tenantGuid, graphGuid, fromNodeGuid, labels, tags, edgeFilter, order))
             {
                 yield return edge;
             }
@@ -1237,6 +1230,7 @@
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="toNodeGuid">To node GUID.</param>
+        /// <param name="labels">Labels on which to filter edges.</param>
         /// <param name="tags">Tags on which to filter edges.</param>
         /// <param name="edgeFilter">
         /// Edge filter expression for Data JSON body.
@@ -1248,11 +1242,12 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid toNodeGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            return _Repository.GetEdgesTo(tenantGuid, graphGuid, toNodeGuid, tags, edgeFilter, order);
+            return _Repository.GetEdgesTo(tenantGuid, graphGuid, toNodeGuid, labels, tags, edgeFilter, order);
         }
 
         /// <summary>
@@ -1262,6 +1257,7 @@
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="fromNodeGuid">From node GUID.</param>
         /// <param name="toNodeGuid">To node GUID.</param>
+        /// <param name="labels">Labels on which to filter edges.</param>
         /// <param name="tags">Tags on which to filter edges.</param>
         /// <param name="edgeFilter">
         /// Edge filter expression for Data JSON body.
@@ -1274,11 +1270,12 @@
             Guid graphGuid,
             Guid fromNodeGuid,
             Guid toNodeGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
-            foreach (Edge edge in _Repository.GetEdgesBetween(tenantGuid, graphGuid, fromNodeGuid, toNodeGuid, tags, edgeFilter, order))
+            foreach (Edge edge in _Repository.GetEdgesBetween(tenantGuid, graphGuid, fromNodeGuid, toNodeGuid, labels, tags, edgeFilter, order))
             {
                 yield return edge;
             }

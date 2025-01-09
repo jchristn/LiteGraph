@@ -114,6 +114,11 @@
             Timestamp from last update, in UTC.
             </summary>
         </member>
+        <member name="P:LiteGraph.Sdk.Edge.Labels">
+            <summary>
+            Labels.
+            </summary>
+        </member>
         <member name="P:LiteGraph.Sdk.Edge.Tags">
             <summary>
             Tags.
@@ -295,6 +300,11 @@
             Timestamp from last update, in UTC.
             </summary>
         </member>
+        <member name="P:LiteGraph.Sdk.Graph.Labels">
+            <summary>
+            Labels.
+            </summary>
+        </member>
         <member name="P:LiteGraph.Sdk.Graph.Tags">
             <summary>
             Tags.
@@ -308,6 +318,56 @@
         <member name="M:LiteGraph.Sdk.Graph.#ctor">
             <summary>
             Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Sdk.LabelMetadata">
+            <summary>
+            Label metadata.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.LabelMetadata.GUID">
+            <summary>
+            GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.LabelMetadata.TenantGUID">
+            <summary>
+            Tenant GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.LabelMetadata.GraphGUID">
+            <summary>
+            Graph GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.LabelMetadata.NodeGUID">
+            <summary>
+            Node GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.LabelMetadata.EdgeGUID">
+            <summary>
+            Edge GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.LabelMetadata.Label">
+            <summary>
+            Key.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.LabelMetadata.CreatedUtc">
+            <summary>
+            Creation timestamp, in UTC.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.LabelMetadata.LastUpdateUtc">
+            <summary>
+            Timestamp from last update, in UTC.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Sdk.LabelMetadata.#ctor">
+            <summary>
+            Instantiate.
             </summary>
         </member>
         <member name="T:LiteGraph.Sdk.LiteGraphSdk">
@@ -925,6 +985,11 @@
         <member name="P:LiteGraph.Sdk.Node.LastUpdateUtc">
             <summary>
             Timestamp from last update, in UTC.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.Node.Labels">
+            <summary>
+            Labels.
             </summary>
         </member>
         <member name="P:LiteGraph.Sdk.Node.Tags">
@@ -1653,6 +1718,71 @@
             </summary>
         </member>
         <member name="M:LiteGraph.Sdk.UserMaster.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Sdk.VectorMetadata">
+            <summary>
+            Vector metadata.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.GUID">
+            <summary>
+            GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.TenantGUID">
+            <summary>
+            Tenant GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.GraphGUID">
+            <summary>
+            Graph GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.NodeGUID">
+            <summary>
+            Node GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.EdgeGUID">
+            <summary>
+            Edge GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.Model">
+            <summary>
+            Model.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.Dimensionality">
+            <summary>
+            Dimensionality.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.Content">
+            <summary>
+            Content.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.Embeddings">
+            <summary>
+            Content.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.CreatedUtc">
+            <summary>
+            Creation timestamp, in UTC.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorMetadata.LastUpdateUtc">
+            <summary>
+            Timestamp from last update, in UTC.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Sdk.VectorMetadata.#ctor">
             <summary>
             Instantiate.
             </summary>

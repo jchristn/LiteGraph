@@ -4,13 +4,17 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Collections.Specialized;
+    using System.ComponentModel.DataAnnotations;
     using System.Data;
     using System.Linq;
+    using System.Reflection.Emit;
     using System.Threading.Tasks;
     using System.Xml.Linq;
     using Caching;
     using ExpressionTree;
     using LiteGraph;
+    using LiteGraph.GraphRepositories.Sqlite;
+    using LiteGraph.GraphRepositories.Sqlite.Queries;
     using LiteGraph.Serialization;
     using Microsoft.Data.Sqlite;
     using PrettyId;
@@ -89,11 +93,6 @@
             }
         }
 
-        /// <summary>
-        /// True to enable a full-text index over node and edge data properties.
-        /// </summary>
-        public bool IndexData { get; set; } = true;
-
         #endregion
 
         #region Private-Members
@@ -132,7 +131,8 @@
         /// <inheritdoc />
         public override void InitializeRepository()
         {
-            CreateTablesAndIndices();
+            foreach (string query in Setup.CreateTablesAndIndices())
+                Query(query);
         }
 
         #endregion
@@ -144,7 +144,7 @@
         {
             if (tenant == null) throw new ArgumentNullException(nameof(tenant));
 
-            string createQuery = InsertTenantQuery(tenant);
+            string createQuery = Tenants.InsertTenantQuery(tenant);
             DataTable createResult = null;
             TenantMetadata created = null;
 
@@ -153,7 +153,7 @@
                 createResult = Query(createQuery, true);
             }
 
-            created = TenantFromDataRow(createResult.Rows[0]);
+            created = Converters.TenantFromDataRow(createResult.Rows[0]);
             return created;
         }
 
@@ -162,7 +162,7 @@
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            string createQuery = InsertTenantQuery(new TenantMetadata
+            string createQuery = Tenants.InsertTenantQuery(new TenantMetadata
             {
                 Name = name,
                 CreatedUtc = DateTime.UtcNow
@@ -176,7 +176,7 @@
                 createResult = Query(createQuery, true);
             }
 
-            created = TenantFromDataRow(createResult.Rows[0]);
+            created = Converters.TenantFromDataRow(createResult.Rows[0]);
             return created;
         }
 
@@ -192,7 +192,7 @@
                     DeleteGraphs(tenant.GUID);
                 }
 
-                Query(DeleteTenantQuery(guid), true);
+                Query(Tenants.DeleteTenantQuery(guid), true);
             }
         }
 
@@ -206,8 +206,8 @@
         /// <inheritdoc />
         public override TenantMetadata ReadTenant(Guid guid)
         {
-            DataTable result = Query(SelectTenantQuery(guid));
-            if (result != null && result.Rows.Count == 1) return TenantFromDataRow(result.Rows[0]);
+            DataTable result = Query(Tenants.SelectTenantQuery(guid));
+            if (result != null && result.Rows.Count == 1) return Converters.TenantFromDataRow(result.Rows[0]);
             return null;
         }
 
@@ -218,14 +218,16 @@
 
             while (true)
             {
-                DataTable result = Query(SelectTenantsQuery(skip, order));
+                DataTable result = Query(Tenants.SelectTenantsQuery(SelectBatchSize, skip, order));
                 if (result == null || result.Rows.Count < 1) break;
 
                 for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    yield return TenantFromDataRow(result.Rows[i]);
+                    yield return Converters.TenantFromDataRow(result.Rows[i]);
                     skip++;
                 }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -233,7 +235,7 @@
         public override TenantMetadata UpdateTenant(TenantMetadata tenant)
         {
             if (tenant == null) throw new ArgumentNullException(nameof(tenant));
-            return TenantFromDataRow(Query(UpdateTenantQuery(tenant), true).Rows[0]);
+            return Converters.TenantFromDataRow(Query(Tenants.UpdateTenantQuery(tenant), true).Rows[0]);
         }
 
         #endregion
@@ -249,7 +251,7 @@
             TenantMetadata tenant = ReadTenant(user.TenantGUID);
             if (tenant == null) throw new KeyNotFoundException("The specified tenant could not be found.");
 
-            string createQuery = InsertUserQuery(user);
+            string createQuery = Users.InsertUserQuery(user);
             DataTable createResult = null;
             UserMaster created = null;
             UserMaster existing = null;
@@ -261,7 +263,7 @@
                 createResult = Query(createQuery, true);
             }
 
-            created = UserFromDataRow(createResult.Rows[0]);
+            created = Converters.UserFromDataRow(createResult.Rows[0]);
             return created;
         }
 
@@ -278,7 +280,7 @@
             TenantMetadata tenant = ReadTenant(tenantGuid);
             if (tenant == null) throw new KeyNotFoundException("The specified tenant could not be found.");
 
-            string createQuery = InsertUserQuery(new UserMaster
+            string createQuery = Users.InsertUserQuery(new UserMaster
             {
                 TenantGUID = tenantGuid,
                 FirstName = firstName,
@@ -299,7 +301,7 @@
                 createResult = Query(createQuery, true);
             }
 
-            created = UserFromDataRow(createResult.Rows[0]);
+            created = Converters.UserFromDataRow(createResult.Rows[0]);
             return created;
         }
 
@@ -309,8 +311,8 @@
             UserMaster user = ReadUser(tenantGuid, guid);
             if (user != null)
             {
-                DeleteCredentials(tenantGuid, guid);
-                Query(DeleteUserQuery(tenantGuid, guid), true);
+                DeleteUserCredentials(tenantGuid, guid);
+                Query(Users.DeleteUserQuery(tenantGuid, guid), true);
             }
         }
 
@@ -344,16 +346,16 @@
         /// <inheritdoc />
         public override UserMaster ReadUser(Guid tenantGuid, Guid guid)
         {
-            DataTable result = Query(SelectUserQuery(tenantGuid, guid));
-            if (result != null && result.Rows.Count == 1) return UserFromDataRow(result.Rows[0]);
+            DataTable result = Query(Users.SelectUserQuery(tenantGuid, guid));
+            if (result != null && result.Rows.Count == 1) return Converters.UserFromDataRow(result.Rows[0]);
             return null;
         }
 
         /// <inheritdoc />
         public override UserMaster ReadUserByEmail(Guid tenantGuid, string email)
         {
-            DataTable result = Query(SelectUserQuery(tenantGuid, email));
-            if (result != null && result.Rows.Count == 1) return UserFromDataRow(result.Rows[0]);
+            DataTable result = Query(Users.SelectUserQuery(tenantGuid, email));
+            if (result != null && result.Rows.Count == 1) return Converters.UserFromDataRow(result.Rows[0]);
             return null;
         }
 
@@ -368,14 +370,16 @@
 
             while (true)
             {
-                DataTable result = Query(SelectUsersQuery(tenantGuid, email, skip, order));
+                DataTable result = Query(Users.SelectUsersQuery(tenantGuid, email, SelectBatchSize, skip, order));
                 if (result == null || result.Rows.Count < 1) break;
 
                 for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    yield return UserFromDataRow(result.Rows[i]);
+                    yield return Converters.UserFromDataRow(result.Rows[i]);
                     skip++;
                 }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -384,7 +388,7 @@
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             ValidateTenantExists(user.TenantGUID);
-            return UserFromDataRow(Query(UpdateUserQuery(user), true).Rows[0]);
+            return Converters.UserFromDataRow(Query(Users.UpdateUserQuery(user), true).Rows[0]);
         }
 
         #endregion
@@ -405,7 +409,7 @@
             UserMaster user = ReadUser(cred.TenantGUID, cred.UserGUID);
             if (user == null) throw new KeyNotFoundException("The specified user could not be found.");
 
-            string createQuery = InsertCredentialQuery(cred);
+            string createQuery = Credentials.InsertCredentialQuery(cred);
             DataTable createResult = null;
             Credential created = null;
 
@@ -414,7 +418,7 @@
                 createResult = Query(createQuery, true);
             }
 
-            created = CredentialFromDataRow(createResult.Rows[0]);
+            created = Converters.CredentialFromDataRow(createResult.Rows[0]);
             return created;
         }
 
@@ -435,7 +439,7 @@
             UserMaster user = ReadUser(tenantGuid, userGuid);
             if (user == null) throw new KeyNotFoundException("The specified user could not be found.");
 
-            string createQuery = InsertCredentialQuery(new Credential
+            string createQuery = Credentials.InsertCredentialQuery(new Credential
             {
                 TenantGUID = tenantGuid,
                 UserGUID = userGuid,
@@ -452,7 +456,7 @@
                 createResult = Query(createQuery, true);
             }
 
-            created = CredentialFromDataRow(createResult.Rows[0]);
+            created = Converters.CredentialFromDataRow(createResult.Rows[0]);
             return created;
         }
 
@@ -462,12 +466,12 @@
             Credential cred = ReadCredential(tenantGuid, guid);
             if (cred != null)
             {
-                Query(DeleteCredentialQuery(tenantGuid, guid), true);
+                Query(Credentials.DeleteCredentialQuery(tenantGuid, guid), true);
             }
         }
 
         /// <inheritdoc />
-        public override void DeleteCredentials(Guid tenantGuid, Guid userGuid)
+        public override void DeleteUserCredentials(Guid tenantGuid, Guid userGuid)
         {
             List<Credential> creds = ReadCredentials(tenantGuid, userGuid, null).ToList();
             if (creds != null && creds.Count > 0)
@@ -486,16 +490,16 @@
         /// <inheritdoc />
         public override Credential ReadCredential(Guid tenantGuid, Guid guid)
         {
-            DataTable result = Query(SelectCredentialQuery(tenantGuid, guid));
-            if (result != null && result.Rows.Count == 1) return CredentialFromDataRow(result.Rows[0]);
+            DataTable result = Query(Credentials.SelectCredentialQuery(tenantGuid, guid));
+            if (result != null && result.Rows.Count == 1) return Converters.CredentialFromDataRow(result.Rows[0]);
             return null;
         }
 
         /// <inheritdoc />
         public override Credential ReadCredentialByBearerToken(string bearerToken)
         {
-            DataTable result = Query(SelectCredentialQuery(bearerToken));
-            if (result != null && result.Rows.Count == 1) return CredentialFromDataRow(result.Rows[0]);
+            DataTable result = Query(Credentials.SelectCredentialQuery(bearerToken));
+            if (result != null && result.Rows.Count == 1) return Converters.CredentialFromDataRow(result.Rows[0]);
             return null;
         }
 
@@ -511,14 +515,16 @@
 
             while (true)
             {
-                DataTable result = Query(SelectCredentialsQuery(tenantGuid, userGuid, bearerToken, skip, order));
+                DataTable result = Query(Credentials.SelectCredentialsQuery(tenantGuid, userGuid, bearerToken, SelectBatchSize, skip, order));
                 if (result == null || result.Rows.Count < 1) break;
 
                 for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    yield return CredentialFromDataRow(result.Rows[i]);
+                    yield return Converters.CredentialFromDataRow(result.Rows[i]);
                     skip++;
                 }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -528,7 +534,164 @@
             if (cred == null) throw new ArgumentNullException(nameof(cred));
             ValidateTenantExists(cred.TenantGUID);
             ValidateUserExists(cred.TenantGUID, cred.UserGUID);
-            return CredentialFromDataRow(Query(UpdateCredentialQuery(cred), true).Rows[0]);
+            return Converters.CredentialFromDataRow(Query(Credentials.UpdateCredentialQuery(cred), true).Rows[0]);
+        }
+
+        #endregion
+
+        #region Labels
+
+        /// <inheritdoc />
+        public override LabelMetadata CreateLabel(LabelMetadata label)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+
+            ValidateTenantExists(label.TenantGUID);
+            ValidateGraphExists(label.TenantGUID, label.GraphGUID);
+            if (label.NodeGUID != null) ValidateNodeExists(label.TenantGUID, label.GraphGUID, label.NodeGUID.Value);
+            if (label.EdgeGUID != null) ValidateEdgeExists(label.TenantGUID, label.GraphGUID, label.EdgeGUID.Value);
+
+            string createQuery = Labels.InsertLabelQuery(label);
+
+            DataTable createResult = null;
+            LabelMetadata created = null;
+
+            lock (_CreateLock)
+            {
+                createResult = Query(createQuery, true);
+            }
+
+            created = Converters.LabelFromDataRow(createResult.Rows[0]);
+            return created;
+        }
+
+        /// <inheritdoc />
+        public override LabelMetadata CreateLabel(Guid tenantGuid, Guid graphGuid, Guid? nodeGuid, Guid? edgeGuid, string label)
+        {
+            if (String.IsNullOrEmpty(label)) throw new ArgumentNullException(nameof(label));
+            return CreateLabel(new LabelMetadata { GUID = Guid.NewGuid(), TenantGUID = tenantGuid, GraphGUID = graphGuid, NodeGUID = nodeGuid, EdgeGUID = edgeGuid, Label = label });
+        }
+
+        /// <inheritdoc />
+        public override List<LabelMetadata> CreateMultipleLabels(Guid tenantGuid, Guid graphGuid, List<LabelMetadata> labels)
+        {
+            if (labels == null || labels.Count < 1) return null;
+            ValidateTenantExists(tenantGuid);
+            ValidateGraphExists(tenantGuid, graphGuid);
+
+            foreach (LabelMetadata label in labels)
+            {
+                label.TenantGUID = tenantGuid;
+                label.GraphGUID = graphGuid;
+                if (label.NodeGUID != null) ValidateNodeExists(label.TenantGUID, label.GraphGUID, label.NodeGUID.Value);
+                if (label.EdgeGUID != null) ValidateEdgeExists(label.TenantGUID, label.GraphGUID, label.EdgeGUID.Value);
+            }
+
+            string createQuery = Labels.InsertMultipleLabelsQuery(tenantGuid, graphGuid, labels);
+            string retrieveQuery = Labels.SelectMultipleLabelsQuery(tenantGuid, labels.Select(n => n.GUID).ToList());
+            DataTable createResult = null;
+            DataTable retrieveResult = null;
+
+            lock (_CreateLock)
+            {
+                createResult = Query(createQuery, true);
+                retrieveResult = Query(retrieveQuery, true);
+            }
+
+            return Converters.LabelsFromDataTable(retrieveResult);
+        }
+
+        /// <inheritdoc />
+        public override void DeleteLabel(Guid tenantGuid, Guid guid)
+        {
+            LabelMetadata label = ReadLabel(tenantGuid, guid);
+            if (label != null)
+            {
+                Query(Labels.DeleteLabelQuery(tenantGuid, guid), true);
+            }
+        }
+
+        /// <inheritdoc />
+        public override void DeleteLabels(Guid tenantGuid, Guid? graphGuid, List<Guid> nodeGuids, List<Guid> edgeGuids)
+        {
+            Query(Labels.DeleteLabelsQuery(tenantGuid, graphGuid, nodeGuids, edgeGuids));
+        }
+
+        /// <inheritdoc />
+        public override bool ExistsLabel(Guid tenantGuid, Guid guid)
+        {
+            if (ReadLabel(tenantGuid, guid) != null) return true;
+            return false;
+        }
+
+        /// <inheritdoc />
+        public override LabelMetadata ReadLabel(Guid tenantGuid, Guid guid)
+        {
+            DataTable result = Query(Labels.SelectLabelQuery(tenantGuid, guid));
+            if (result != null && result.Rows.Count == 1) return Converters.LabelFromDataRow(result.Rows[0]);
+            return null;
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<LabelMetadata> ReadLabels(
+            Guid tenantGuid,
+            Guid? graphGuid,
+            Guid? nodeGuid,
+            Guid? edgeGuid,
+            string label,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
+            int skip = 0)
+        {
+            if (skip < 0) throw new ArgumentOutOfRangeException(nameof(skip));
+
+            while (true)
+            {
+                string query = null;
+                if (graphGuid == null)
+                {
+                    query = Labels.SelectTenantLabelsQuery(tenantGuid, label, SelectBatchSize, skip, order);
+                }
+                else
+                {
+                    if (edgeGuid != null) query = Labels.SelectEdgeLabelsQuery(tenantGuid, graphGuid.Value, edgeGuid.Value, label, SelectBatchSize, skip, order);
+                    else if (nodeGuid != null) query = Labels.SelectNodeLabelsQuery(tenantGuid, graphGuid.Value, nodeGuid.Value, label, SelectBatchSize, skip, order);
+                    else query = Labels.SelectGraphLabelsQuery(tenantGuid, graphGuid.Value, label, SelectBatchSize, skip, order);
+                }
+
+                DataTable result = Query(query);
+                if (result == null || result.Rows.Count < 1) break;
+
+                for (int i = 0; i < result.Rows.Count; i++)
+                {
+                    yield return Converters.LabelFromDataRow(result.Rows[i]);
+                    skip++;
+                }
+
+                if (result.Rows.Count < SelectBatchSize) break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override LabelMetadata UpdateLabel(LabelMetadata label)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+
+            ValidateTenantExists(label.TenantGUID);
+            ValidateGraphExists(label.TenantGUID, label.GraphGUID);
+            if (label.NodeGUID != null) ValidateNodeExists(label.TenantGUID, label.GraphGUID, label.NodeGUID.Value);
+            if (label.EdgeGUID != null) ValidateEdgeExists(label.TenantGUID, label.GraphGUID, label.EdgeGUID.Value);
+
+            string updateQuery = Labels.UpdateLabelQuery(label);
+            DataTable updateResult = null;
+            LabelMetadata updated = null;
+
+            lock (_CreateLock)
+            {
+                updateResult = Query(updateQuery, true);
+            }
+
+            updated = Converters.LabelFromDataRow(updateResult.Rows[0]);
+            return updated;
         }
 
         #endregion
@@ -545,7 +708,7 @@
             if (tag.NodeGUID != null) ValidateNodeExists(tag.TenantGUID, tag.GraphGUID, tag.NodeGUID.Value);
             if (tag.EdgeGUID != null) ValidateEdgeExists(tag.TenantGUID, tag.GraphGUID, tag.EdgeGUID.Value);
 
-            string createQuery = InsertTagQuery(tag);
+            string createQuery = Tags.InsertTagQuery(tag);
 
             DataTable createResult = null;
             TagMetadata created = null;
@@ -555,7 +718,7 @@
                 createResult = Query(createQuery, true);
             }
 
-            created = TagFromDataRow(createResult.Rows[0]);
+            created = Converters.TagFromDataRow(createResult.Rows[0]);
             return created;
         }
 
@@ -579,8 +742,8 @@
                 tag.GraphGUID = graphGuid;
             }
 
-            string createQuery = InsertMultipleTagsQuery(tenantGuid, graphGuid, tags);
-            string retrieveQuery = SelectMultipleNodesQuery(tenantGuid, tags.Select(n => n.GUID).ToList());
+            string createQuery = Tags.InsertMultipleTagsQuery(tenantGuid, graphGuid, tags);
+            string retrieveQuery = Tags.SelectMultipleTagsQuery(tenantGuid, tags.Select(n => n.GUID).ToList());
             DataTable createResult = null;
             DataTable retrieveResult = null;
 
@@ -590,7 +753,7 @@
                 retrieveResult = Query(retrieveQuery, true);
             }
 
-            return TagsFromDataTable(retrieveResult);
+            return Converters.TagsFromDataTable(retrieveResult);
         }
 
         /// <inheritdoc />
@@ -599,14 +762,14 @@
             TagMetadata tag = ReadTag(tenantGuid, guid);
             if (tag != null)
             {
-                Query(DeleteTagQuery(tenantGuid, guid), true);
+                Query(Tags.DeleteTagQuery(tenantGuid, guid), true);
             }
         }
 
         /// <inheritdoc />
         public override void DeleteTags(Guid tenantGuid, Guid? graphGuid, List<Guid> nodeGuids, List<Guid> edgeGuids)
         {
-            Query(DeleteTagsQuery(tenantGuid, graphGuid, nodeGuids, edgeGuids));
+            Query(Tags.DeleteTagsQuery(tenantGuid, graphGuid, nodeGuids, edgeGuids));
         }
 
         /// <inheritdoc />
@@ -619,8 +782,8 @@
         /// <inheritdoc />
         public override TagMetadata ReadTag(Guid tenantGuid, Guid guid)
         {
-            DataTable result = Query(SelectTagQuery(tenantGuid, guid));
-            if (result != null && result.Rows.Count == 1) return TagFromDataRow(result.Rows[0]);
+            DataTable result = Query(Tags.SelectTagQuery(tenantGuid, guid));
+            if (result != null && result.Rows.Count == 1) return Converters.TagFromDataRow(result.Rows[0]);
             return null;
         }
 
@@ -639,14 +802,28 @@
 
             while (true)
             {
-                DataTable result = Query(SelectTagsQuery(tenantGuid, graphGuid, nodeGuid, edgeGuid, key, val, skip, order));
+                string query = null;
+                if (graphGuid == null)
+                {
+                    query = Tags.SelectTenantTagsQuery(tenantGuid, key, val, SelectBatchSize, skip, order);
+                }
+                else
+                {
+                    if (edgeGuid != null) query = Tags.SelectEdgeTagsQuery(tenantGuid, graphGuid.Value, edgeGuid.Value, key, val, SelectBatchSize, skip, order);
+                    else if (nodeGuid != null) query = Tags.SelectNodeTagsQuery(tenantGuid, graphGuid.Value, nodeGuid.Value, key, val, SelectBatchSize, skip, order);
+                    else query = Tags.SelectGraphTagsQuery(tenantGuid, graphGuid.Value, key, val, SelectBatchSize, skip, order);
+                }
+
+                DataTable result = Query(query);
                 if (result == null || result.Rows.Count < 1) break;
 
                 for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    yield return TagFromDataRow(result.Rows[i]);
+                    yield return Converters.TagFromDataRow(result.Rows[i]);
                     skip++;
                 }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -660,7 +837,7 @@
             if (tag.NodeGUID != null) ValidateNodeExists(tag.TenantGUID, tag.GraphGUID, tag.NodeGUID.Value);
             if (tag.EdgeGUID != null) ValidateEdgeExists(tag.TenantGUID, tag.GraphGUID, tag.EdgeGUID.Value);
 
-            string updateQuery = UpdateTagQuery(tag);
+            string updateQuery = Tags.UpdateTagQuery(tag);
             DataTable updateResult = null;
             TagMetadata updated = null;
 
@@ -669,8 +846,225 @@
                 updateResult = Query(updateQuery, true);
             }
 
-            updated = TagFromDataRow(updateResult.Rows[0]);
+            updated = Converters.TagFromDataRow(updateResult.Rows[0]);
             return updated;
+        }
+
+        #endregion
+
+        #region Vectors
+
+        /// <inheritdoc />
+        public override VectorMetadata CreateVector(VectorMetadata vector)
+        {
+            if (vector == null) throw new ArgumentNullException(nameof(vector));
+
+            ValidateTenantExists(vector.TenantGUID);
+            ValidateGraphExists(vector.TenantGUID, vector.GraphGUID);
+            if (vector.NodeGUID != null) ValidateNodeExists(vector.TenantGUID, vector.GraphGUID, vector.NodeGUID.Value);
+            if (vector.EdgeGUID != null) ValidateEdgeExists(vector.TenantGUID, vector.GraphGUID, vector.EdgeGUID.Value);
+
+            string createQuery = Vectors.InsertVectorQuery(vector);
+
+            DataTable createResult = null;
+            VectorMetadata created = null;
+
+            lock (_CreateLock)
+            {
+                createResult = Query(createQuery, true);
+            }
+
+            created = Converters.VectorFromDataRow(createResult.Rows[0]);
+            return created;
+        }
+
+        /// <inheritdoc />
+        public override VectorMetadata CreateVector(
+            Guid tenantGuid,
+            Guid graphGuid,
+            Guid? nodeGuid,
+            Guid? edgeGuid,
+            string model,
+            int dimensionality,
+            string content,
+            List<float> embeddings)
+        {
+            if (String.IsNullOrEmpty(model)) throw new ArgumentNullException(nameof(model));
+            if (dimensionality < 0) throw new ArgumentOutOfRangeException(nameof(dimensionality));
+            if (String.IsNullOrEmpty(content)) throw new ArgumentNullException(nameof(content));
+            if (embeddings == null || embeddings.Count < 1) throw new ArgumentNullException(nameof(embeddings));
+            return CreateVector(new VectorMetadata { 
+                GUID = Guid.NewGuid(), 
+                TenantGUID = tenantGuid, 
+                GraphGUID = graphGuid, 
+                NodeGUID = nodeGuid, 
+                EdgeGUID = edgeGuid, 
+                Model = model,
+                Dimensionality = dimensionality,
+                Content = content,
+                Embeddings = embeddings
+            });
+        }
+
+        /// <inheritdoc />
+        public override List<VectorMetadata> CreateMultipleVectors(Guid tenantGuid, Guid graphGuid, List<VectorMetadata> vectors)
+        {
+            if (vectors == null || vectors.Count < 1) return null;
+            ValidateTenantExists(tenantGuid);
+            ValidateGraphExists(tenantGuid, graphGuid);
+
+            foreach (VectorMetadata vector in vectors)
+            {
+                vector.TenantGUID = tenantGuid;
+                vector.GraphGUID = graphGuid;
+                if (vector.NodeGUID != null) ValidateNodeExists(vector.TenantGUID, vector.GraphGUID, vector.NodeGUID.Value);
+                if (vector.EdgeGUID != null) ValidateEdgeExists(vector.TenantGUID, vector.GraphGUID, vector.EdgeGUID.Value);
+            }
+
+            string createQuery = Vectors.InsertMultipleVectorsQuery(tenantGuid, graphGuid, vectors);
+            string retrieveQuery = Vectors.SelectMultipleVectorsQuery(tenantGuid, vectors.Select(n => n.GUID).ToList());
+            DataTable createResult = null;
+            DataTable retrieveResult = null;
+
+            lock (_CreateLock)
+            {
+                createResult = Query(createQuery, true);
+                retrieveResult = Query(retrieveQuery, true);
+            }
+
+            return Converters.VectorsFromDataTable(retrieveResult);
+        }
+
+        /// <inheritdoc />
+        public override void DeleteVector(Guid tenantGuid, Guid guid)
+        {
+            VectorMetadata vector = ReadVector(tenantGuid, guid);
+            if (vector != null)
+            {
+                Query(Vectors.DeleteVectorQuery(tenantGuid, guid), true);
+            }
+        }
+
+        /// <inheritdoc />
+        public override void DeleteVectors(Guid tenantGuid, Guid? graphGuid, List<Guid> nodeGuids, List<Guid> edgeGuids)
+        {
+            Query(Vectors.DeleteVectorsQuery(tenantGuid, graphGuid, nodeGuids, edgeGuids));
+        }
+
+        /// <inheritdoc />
+        public override bool ExistsVector(Guid tenantGuid, Guid guid)
+        {
+            if (ReadVector(tenantGuid, guid) != null) return true;
+            return false;
+        }
+
+        /// <inheritdoc />
+        public override VectorMetadata ReadVector(Guid tenantGuid, Guid guid)
+        {
+            DataTable result = Query(Vectors.SelectVectorQuery(tenantGuid, guid));
+            if (result != null && result.Rows.Count == 1) return Converters.VectorFromDataRow(result.Rows[0]);
+            return null;
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<VectorMetadata> ReadVectors(
+            Guid tenantGuid,
+            Guid? graphGuid,
+            Guid? nodeGuid,
+            Guid? edgeGuid,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
+            int skip = 0)
+        {
+            if (skip < 0) throw new ArgumentOutOfRangeException(nameof(skip));
+
+            while (true)
+            {
+                string query = null;
+                if (graphGuid == null)
+                {
+                    query = Vectors.SelectTenantVectorsQuery(tenantGuid, SelectBatchSize, skip, order);
+                }
+                else
+                {
+                    if (edgeGuid != null) query = Vectors.SelectEdgeVectorsQuery(tenantGuid, graphGuid.Value, edgeGuid.Value, SelectBatchSize, skip, order);
+                    else if (nodeGuid != null) query = Vectors.SelectNodeVectorsQuery(tenantGuid, graphGuid.Value, nodeGuid.Value, SelectBatchSize, skip, order);
+                    else query = Vectors.SelectGraphVectorsQuery(tenantGuid, graphGuid.Value, SelectBatchSize, skip, order);
+                }
+
+                DataTable result = Query(query);
+                if (result == null || result.Rows.Count < 1) break;
+
+                for (int i = 0; i < result.Rows.Count; i++)
+                {
+                    yield return Converters.VectorFromDataRow(result.Rows[i]);
+                    skip++;
+                }
+
+                if (result.Rows.Count < SelectBatchSize) break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override VectorMetadata UpdateVector(VectorMetadata vector)
+        {
+            if (vector == null) throw new ArgumentNullException(nameof(vector));
+
+            ValidateTenantExists(vector.TenantGUID);
+            ValidateGraphExists(vector.TenantGUID, vector.GraphGUID);
+            if (vector.NodeGUID != null) ValidateNodeExists(vector.TenantGUID, vector.GraphGUID, vector.NodeGUID.Value);
+            if (vector.EdgeGUID != null) ValidateEdgeExists(vector.TenantGUID, vector.GraphGUID, vector.EdgeGUID.Value);
+
+            string updateQuery = Vectors.UpdateVectorQuery(vector);
+            DataTable updateResult = null;
+            VectorMetadata updated = null;
+
+            lock (_CreateLock)
+            {
+                updateResult = Query(updateQuery, true);
+            }
+
+            updated = Converters.VectorFromDataRow(updateResult.Rows[0]);
+            return updated;
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<Edge> SearchEdgeVectors(
+            VectorSearchTypeEnum searchType,
+            List<float> vectors,
+            Guid tenantGuid,
+            Guid graphGuid,
+            List<string> labels = null,
+            NameValueCollection tags = null,
+            Expr filter = null,
+            float? minimumScore = null,
+            float? maximumScore = null)
+        {
+            foreach (Edge edge in ReadEdges(tenantGuid, graphGuid, labels, tags, filter))
+            {
+
+            }
+
+            yield break;
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<Node> SearchNodeVectors(
+            VectorSearchTypeEnum searchType,
+            List<float> vectors,
+            Guid tenantGuid,
+            Guid graphGuid,
+            List<string> labels = null,
+            NameValueCollection tags = null,
+            Expr filter = null,
+            float? minimumScore = null,
+            float? maximumScore = null)
+        {
+            foreach (Node node in ReadNodes(tenantGuid, graphGuid, labels, tags, filter))
+            {
+                
+            }
+
+            yield break;
         }
 
         #endregion
@@ -681,10 +1075,11 @@
         public override Graph CreateGraph(Graph graph)
         {
             if (graph == null) throw new ArgumentNullException(nameof(graph));
+            ValidateLabels(graph.Labels);
             ValidateTags(graph.Tags);
             ValidateTenantExists(graph.TenantGUID);
 
-            string createQuery = InsertGraphQuery(graph);
+            string createQuery = Graphs.InsertGraphQuery(graph);
             DataTable createResult = null;
             Graph created = null;
             Graph existing = null;
@@ -696,7 +1091,23 @@
                 createResult = Query(createQuery, true);
             }
 
-            created = GraphFromDataRow(createResult.Rows[0]);
+            created = Converters.GraphFromDataRow(createResult.Rows[0]);
+
+            if (graph.Labels != null && graph.Labels.Count > 0)
+            {
+                List<LabelMetadata> labels = new List<LabelMetadata>();
+                foreach (string label in graph.Labels)
+                {
+                    labels.Add(new LabelMetadata
+                    {
+                        TenantGUID = graph.TenantGUID,
+                        GraphGUID = graph.GUID,
+                        Label = label
+                    });
+                }
+
+                CreateMultipleLabels(graph.TenantGUID, graph.GUID, labels);
+            }
 
             if (graph.Tags != null && graph.Tags is NameValueCollection nvc)
             {
@@ -720,7 +1131,13 @@
         }
 
         /// <inheritdoc />
-        public override Graph CreateGraph(Guid tenantGuid, Guid guid, string name, object data = null, NameValueCollection tags = null)
+        public override Graph CreateGraph(
+            Guid tenantGuid,
+            Guid guid,
+            string name,
+            object data = null,
+            List<string> labels = null,
+            NameValueCollection tags = null)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
@@ -729,6 +1146,7 @@
                 GUID = guid,
                 TenantGUID = tenantGuid,
                 Name = name,
+                Labels = labels,
                 Tags = tags,
                 Data = data
             });
@@ -737,6 +1155,7 @@
         /// <inheritdoc />
         public override IEnumerable<Graph> ReadGraphs(
             Guid tenantGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr graphFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
@@ -746,29 +1165,41 @@
 
             while (true)
             {
-                DataTable result = Query(SelectGraphsQuery(tenantGuid, tags, graphFilter, skip, order));
+                DataTable result = Query(Graphs.SelectGraphsQuery(tenantGuid, labels, tags, graphFilter, SelectBatchSize, skip, order));
                 if (result == null || result.Rows.Count < 1) break;
 
                 for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    Graph graph = GraphFromDataRow(result.Rows[i]);
+                    Graph graph = Converters.GraphFromDataRow(result.Rows[i]);
+
+                    List<LabelMetadata> allLabels = ReadLabels(tenantGuid, graph.GUID, null, null, null).ToList();
+                    if (allLabels != null) graph.Labels = LabelMetadata.ToListString(allLabels);
+
                     List<TagMetadata> allTags = ReadTags(tenantGuid, graph.GUID, null, null, null, null).ToList();
                     if (allTags != null) graph.Tags = TagMetadata.ToNameValueCollection(allTags);
+
                     yield return graph;
                     skip++;
                 }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
         /// <inheritdoc />
         public override Graph ReadGraph(Guid tenantGuid, Guid guid)
         {
-            DataTable result = Query(SelectGraphQuery(tenantGuid, guid));
+            DataTable result = Query(Graphs.SelectGraphQuery(tenantGuid, guid));
             if (result != null && result.Rows.Count == 1)
             {
-                Graph graph = GraphFromDataRow(result.Rows[0]);
-                List<TagMetadata> tags = ReadTags(tenantGuid, guid, null, null, null, null).ToList();
-                if (tags != null) graph.Tags = TagMetadata.ToNameValueCollection(tags);
+                Graph graph = Converters.GraphFromDataRow(result.Rows[0]);
+
+                List<LabelMetadata> allLabels = ReadLabels(tenantGuid, graph.GUID, null, null, null).ToList();
+                if (allLabels != null) graph.Labels = LabelMetadata.ToListString(allLabels);
+
+                List<TagMetadata> allTags = ReadTags(tenantGuid, guid, null, null, null, null).ToList();
+                if (allTags != null) graph.Tags = TagMetadata.ToNameValueCollection(allTags);
+
                 return graph;
             }
             return null;
@@ -781,13 +1212,14 @@
             ValidateTags(graph.Tags);
             ValidateTenantExists(graph.TenantGUID);
             ValidateGraphExists(graph.TenantGUID, graph.GUID);
-            Graph updated = GraphFromDataRow(Query(UpdateGraphQuery(graph), true).Rows[0]);
+            Graph updated = Converters.GraphFromDataRow(Query(Graphs.UpdateGraphQuery(graph), true).Rows[0]);
+            DeleteGraphLabels(graph.TenantGUID, graph.GUID);
             DeleteGraphTags(graph.TenantGUID, graph.GUID);
             if (graph.Tags != null)
             {
                 CreateMultipleTags(
-                    graph.TenantGUID, 
-                    graph.GUID, 
+                    graph.TenantGUID,
+                    graph.GUID,
                     TagMetadata.FromNameValueCollection(
                         graph.TenantGUID,
                         graph.GUID,
@@ -805,16 +1237,19 @@
             Graph graph = ReadGraph(tenantGuid, graphGuid);
             if (graph != null)
             {
-                if (force)
-                {
-                    DeleteNodes(tenantGuid, graphGuid);
-                }
+                int nodeCount = ReadNodes(tenantGuid, graphGuid).Count();
+                if (nodeCount > 0 && !force)
+                    throw new InvalidOperationException("Unable to delete graph '" + graphGuid + "' as it contains nodes.  If you wish to force deletion, set 'force' to true.");
 
-                Query(DeleteGraphQuery(tenantGuid, graphGuid), true);
-                DeleteTags(tenantGuid, graphGuid, null, null);
+                DeleteNodes(tenantGuid, graphGuid);
+                DeleteEdges(tenantGuid, graphGuid);
+                DeleteAllGraphLabels(tenantGuid, graphGuid);
+                DeleteAllGraphTags(tenantGuid, graphGuid);
+                DeleteAllGraphVectors(tenantGuid, graphGuid);
+                Query(Graphs.DeleteGraphQuery(tenantGuid, graphGuid), true);
             }
         }
-
+        
         /// <inheritdoc />
         public override void DeleteGraphs(Guid tenantGuid)
         {
@@ -826,14 +1261,42 @@
                     DeleteGraph(graph.TenantGUID, graph.GUID, true);
                 }
             }
+        }
 
-            DeleteTags(tenantGuid, null, null, null);
+        /// <inheritdoc />
+        public override void DeleteAllGraphLabels(Guid tenantGuid, Guid graphGuid)
+        {
+            Query(Labels.DeleteAllGraphLabelsQuery(tenantGuid, graphGuid));
+        }
+
+        /// <inheritdoc />
+        public override void DeleteGraphLabels(Guid tenantGuid, Guid graphGuid)
+        {
+            Query(Labels.DeleteGraphLabelsQuery(tenantGuid, graphGuid));
+        }
+
+        /// <inheritdoc />
+        public override void DeleteAllGraphTags(Guid tenantGuid, Guid graphGuid)
+        {
+            Query(Tags.DeleteAllGraphTagsQuery(tenantGuid, graphGuid));
         }
 
         /// <inheritdoc />
         public override void DeleteGraphTags(Guid tenantGuid, Guid graphGuid)
         {
-            Query(DeleteTagsForGraphOnlyQuery(tenantGuid, graphGuid));
+            Query(Tags.DeleteGraphTagsQuery(tenantGuid, graphGuid));
+        }
+
+        /// <inheritdoc />
+        public override void DeleteAllGraphVectors(Guid tenantGuid, Guid graphGuid)
+        {
+            Query(Vectors.DeleteAllGraphVectors(tenantGuid, graphGuid));
+        }
+
+        /// <inheritdoc />
+        public override void DeleteGraphVectors(Guid tenantGuid, Guid graphGuid)
+        {
+            Query(Vectors.DeleteGraphVectors(tenantGuid, graphGuid));
         }
 
         /// <inheritdoc />
@@ -855,7 +1318,7 @@
             ValidateTenantExists(node.TenantGUID);
             ValidateGraphExists(node.TenantGUID, node.GraphGUID);
 
-            string createQuery = InsertNodeQuery(node);
+            string createQuery = Nodes.InsertNodeQuery(node);
             DataTable createResult = null;
             Node created = null;
             Node existing = null;
@@ -867,7 +1330,24 @@
                 createResult = Query(createQuery, true);
             }
 
-            created = NodeFromDataRow(createResult.Rows[0]);
+            created = Converters.NodeFromDataRow(createResult.Rows[0]);
+
+            if (node.Labels != null)
+            {
+                List<LabelMetadata> labels = new List<LabelMetadata>();
+                foreach (string label in node.Labels)
+                {
+                    labels.Add(new LabelMetadata
+                    {
+                        TenantGUID = node.TenantGUID,
+                        GraphGUID = node.GraphGUID,
+                        NodeGUID = node.GUID,
+                        Label = label
+                    });
+                }
+
+                if (labels.Count > 0) CreateMultipleLabels(node.TenantGUID, node.GraphGUID, labels);
+            }
 
             if (node.Tags != null)
             {
@@ -887,12 +1367,20 @@
                 if (tags.Count > 0) CreateMultipleTags(node.TenantGUID, node.GraphGUID, tags);
             }
 
+            created.Labels = node.Labels;
             created.Tags = node.Tags;
             return created;
         }
 
         /// <inheritdoc />
-        public override Node CreateNode(Guid tenantGuid, Guid graphGuid, Guid guid, string name, object data = null, NameValueCollection tags = null)
+        public override Node CreateNode(
+            Guid tenantGuid,
+            Guid graphGuid,
+            Guid guid,
+            string name,
+            object data = null,
+            List<string> labels = null,
+            NameValueCollection tags = null)
         {
             return CreateNode(new Node
             {
@@ -900,6 +1388,7 @@
                 TenantGUID = tenantGuid,
                 GraphGUID = graphGuid,
                 Name = name,
+                Labels = labels,
                 Data = data,
                 Tags = tags
             });
@@ -925,7 +1414,8 @@
         public override IEnumerable<Node> ReadNodes(
             Guid tenantGuid,
             Guid graphGuid,
-            NameValueCollection tags,
+            List<string> labels = null,
+            NameValueCollection tags = null,
             Expr nodeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
@@ -935,17 +1425,24 @@
 
             while (true)
             {
-                DataTable result = Query(SelectNodesQuery(tenantGuid, graphGuid, tags, nodeFilter, skip, order));
+                DataTable result = Query(Nodes.SelectNodesQuery(tenantGuid, graphGuid, labels, tags, nodeFilter, SelectBatchSize, skip, order));
                 if (result == null || result.Rows.Count < 1) break;
 
                 for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    Node node = NodeFromDataRow(result.Rows[i]);
+                    Node node = Converters.NodeFromDataRow(result.Rows[i]);
+
+                    List<LabelMetadata> allLabels = ReadLabels(tenantGuid, graphGuid, node.GUID, null, null).ToList();
+                    if (allLabels != null) node.Labels = LabelMetadata.ToListString(allLabels);
+
                     List<TagMetadata> allTags = ReadTags(tenantGuid, graphGuid, node.GUID, null, null, null).ToList();
                     if (allTags != null) node.Tags = TagMetadata.ToNameValueCollection(allTags);
+
                     yield return node;
                     skip++;
                 }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -953,12 +1450,17 @@
         public override Node ReadNode(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
         {
             ValidateGraphExists(tenantGuid, graphGuid);
-            DataTable result = Query(SelectNodeQuery(tenantGuid, graphGuid, nodeGuid));
+            DataTable result = Query(Nodes.SelectNodeQuery(tenantGuid, graphGuid, nodeGuid));
             if (result != null && result.Rows.Count == 1)
             {
-                Node node = NodeFromDataRow(result.Rows[0]);
-                List<TagMetadata> tags = ReadTags(tenantGuid, graphGuid, nodeGuid, null, null, null).ToList();
-                if (tags != null) node.Tags = TagMetadata.ToNameValueCollection(tags);
+                Node node = Converters.NodeFromDataRow(result.Rows[0]);
+
+                List<LabelMetadata> allLabels = ReadLabels(tenantGuid, graphGuid, nodeGuid, null, null).ToList();
+                if (allLabels != null) node.Labels = LabelMetadata.ToListString(allLabels);
+
+                List<TagMetadata> allTags = ReadTags(tenantGuid, graphGuid, nodeGuid, null, null, null).ToList();
+                if (allTags != null) node.Tags = TagMetadata.ToNameValueCollection(allTags);
+
                 return node;
             }
             return null;
@@ -971,7 +1473,18 @@
             ValidateTags(node.Tags);
             ValidateTenantExists(node.TenantGUID);
             ValidateGraphExists(node.TenantGUID, node.GraphGUID);
-            Node updated = NodeFromDataRow(Query(UpdateNodeQuery(node), true).Rows[0]);
+            Node updated = Converters.NodeFromDataRow(Query(Nodes.UpdateNodeQuery(node), true).Rows[0]);
+            
+            DeleteNodeLabels(node.TenantGUID, node.GraphGUID, node.GUID);
+            if (node.Labels != null)
+            {
+                CreateMultipleLabels(
+                    node.TenantGUID,
+                    node.GraphGUID,
+                    LabelMetadata.FromListString(node.TenantGUID, node.GraphGUID, node.GUID, null, node.Labels));
+                updated.Labels = node.Labels;
+            }
+
             DeleteNodeTags(node.TenantGUID, node.GraphGUID, node.GUID);
             if (node.Tags != null)
             {
@@ -980,12 +1493,13 @@
                     node.GraphGUID,
                     TagMetadata.FromNameValueCollection(
                         node.TenantGUID,
-                        node.GraphGUID, 
+                        node.GraphGUID,
                         node.GUID,
                         null,
-                        node.Tags as NameValueCollection));
+                        node.Tags));
                 updated.Tags = node.Tags;
             }
+
             return updated;
         }
 
@@ -993,17 +1507,22 @@
         public override void DeleteNode(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
         {
             ValidateGraphExists(tenantGuid, graphGuid);
-            Query(DeleteNodeQuery(tenantGuid, graphGuid, nodeGuid), true);
+            Query(Nodes.DeleteNodeQuery(tenantGuid, graphGuid, nodeGuid), true);
+            DeleteNodeEdges(tenantGuid, graphGuid, nodeGuid);
+            DeleteLabels(tenantGuid, graphGuid, new List<Guid> { nodeGuid }, null);
             DeleteTags(tenantGuid, graphGuid, new List<Guid> { nodeGuid }, null);
+            DeleteVectors(tenantGuid, graphGuid, new List<Guid> { nodeGuid }, null);
         }
 
         /// <inheritdoc />
         public override void DeleteNodes(Guid tenantGuid, Guid graphGuid)
         {
             ValidateGraphExists(tenantGuid, graphGuid);
-            Query(DeleteNodesQuery(tenantGuid, graphGuid), true);
+            Query(Nodes.DeleteNodesQuery(tenantGuid, graphGuid), true);
             DeleteEdges(tenantGuid, graphGuid);
+            DeleteLabels(tenantGuid, graphGuid, null, null);
             DeleteTags(tenantGuid, graphGuid, null, null);
+            DeleteVectors(tenantGuid, graphGuid, null, null);
         }
 
         /// <inheritdoc />
@@ -1011,8 +1530,9 @@
         {
             if (nodeGuids == null || nodeGuids.Count < 1) return;
             ValidateGraphExists(tenantGuid, graphGuid);
-            Query(DeleteNodesQuery(tenantGuid, graphGuid, nodeGuids), true);
+            Query(Nodes.DeleteNodesQuery(tenantGuid, graphGuid, nodeGuids), true);
             DeleteNodeEdges(tenantGuid, graphGuid, nodeGuids);
+            DeleteLabels(tenantGuid, graphGuid, nodeGuids, null);
             DeleteTags(tenantGuid, graphGuid, nodeGuids, null);
         }
 
@@ -1028,7 +1548,7 @@
         {
             if (nodeGuids == null || nodeGuids.Count < 1) return;
             ValidateGraphExists(tenantGuid, graphGuid);
-            string query = DeleteNodeEdgesQuery(tenantGuid, graphGuid, nodeGuids);
+            string query = Nodes.DeleteNodeEdgesQuery(tenantGuid, graphGuid, nodeGuids);
 
             List<Edge> edges = new List<Edge>();
             foreach (Guid nodeGuid in nodeGuids)
@@ -1040,7 +1560,14 @@
             lock (_CreateLock)
                 Query(query);
 
+            DeleteLabels(tenantGuid, graphGuid, null, edges.Select(e => e.GUID).ToList());
             DeleteTags(tenantGuid, graphGuid, null, edges.Select(e => e.GUID).ToList());
+        }
+
+        /// <inheritdoc />
+        public override void DeleteNodeLabels(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
+        {
+            DeleteLabels(tenantGuid, graphGuid, new List<Guid> { nodeGuid }, null);
         }
 
         /// <inheritdoc />
@@ -1062,7 +1589,6 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
         {
@@ -1071,12 +1597,12 @@
 
             while (true)
             {
-                DataTable allEdges = Query(SelectConnectedEdgesQuery(tenantGuid, graphGuid, nodeGuid, null, edgeFilter, skip, order));
-                if (allEdges == null || allEdges.Rows.Count < 1) break;
+                DataTable result = Query(Edges.SelectConnectedEdgesQuery(tenantGuid, graphGuid, nodeGuid, null, null, null, SelectBatchSize, skip, order));
+                if (result == null || result.Rows.Count < 1) break;
 
-                for (int i = 0; i < allEdges.Rows.Count; i++)
+                for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    Edge edge = EdgeFromDataRow(allEdges.Rows[i]);
+                    Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
                     if (edge.To.Equals(nodeGuid))
                     {
                         Node parent = ReadNode(tenantGuid, graphGuid, edge.From);
@@ -1086,6 +1612,8 @@
 
                     skip++;
                 }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -1094,7 +1622,6 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
         {
@@ -1103,12 +1630,12 @@
 
             while (true)
             {
-                DataTable allEdges = Query(SelectConnectedEdgesQuery(tenantGuid, graphGuid, nodeGuid, null, edgeFilter, skip, order));
-                if (allEdges == null || allEdges.Rows.Count < 1) break;
+                DataTable result = Query(Edges.SelectConnectedEdgesQuery(tenantGuid, graphGuid, nodeGuid, null, null, null, SelectBatchSize, skip, order));
+                if (result == null || result.Rows.Count < 1) break;
 
-                for (int i = 0; i < allEdges.Rows.Count; i++)
+                for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    Edge edge = EdgeFromDataRow(allEdges.Rows[i]);
+                    Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
                     if (edge.From.Equals(nodeGuid))
                     {
                         Node child = ReadNode(tenantGuid, graphGuid, edge.To);
@@ -1118,6 +1645,8 @@
 
                     skip++;
                 }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -1126,8 +1655,6 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
-            Expr edgeFilter = null,
-            Expr nodeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
             int skip = 0)
         {
@@ -1138,12 +1665,12 @@
 
             while (true)
             {
-                DataTable allEdges = Query(SelectConnectedEdgesQuery(tenantGuid, graphGuid, nodeGuid, null, edgeFilter, skip, order));
-                if (allEdges == null || allEdges.Rows.Count < 1) break;
+                DataTable result = Query(Edges.SelectConnectedEdgesQuery(tenantGuid, graphGuid, nodeGuid, null, null, null, SelectBatchSize, skip, order));
+                if (result == null || result.Rows.Count < 1) break;
 
-                for (int i = 0; i < allEdges.Rows.Count; i++)
+                for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    Edge edge = EdgeFromDataRow(allEdges.Rows[i]);
+                    Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
                     if (edge.From.Equals(nodeGuid))
                     {
                         if (visited.Contains(edge.To))
@@ -1183,6 +1710,8 @@
                         }
                     }
                 }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -1261,7 +1790,7 @@
                 resp.ExistingNodes = new List<Guid>();
                 resp.MissingNodes = new List<Guid>();
 
-                string nodesQuery = BatchExistsNodesQuery(tenantGuid, graphGuid, req.Nodes);
+                string nodesQuery = Nodes.BatchExistsNodesQuery(tenantGuid, graphGuid, req.Nodes);
                 DataTable nodesResult = Query(nodesQuery);
                 if (nodesResult != null && nodesResult.Rows != null && nodesResult.Rows.Count > 0)
                 {
@@ -1288,7 +1817,7 @@
                 resp.ExistingEdges = new List<Guid>();
                 resp.MissingEdges = new List<Guid>();
 
-                string edgesQuery = BatchExistsEdgesQuery(tenantGuid, graphGuid, req.Edges);
+                string edgesQuery = Edges.BatchExistsEdgesQuery(tenantGuid, graphGuid, req.Edges);
                 DataTable edgesResult = Query(edgesQuery);
                 if (edgesResult != null && edgesResult.Rows != null && edgesResult.Rows.Count > 0)
                 {
@@ -1315,7 +1844,7 @@
                 resp.ExistingEdgesBetween = new List<EdgeBetween>();
                 resp.MissingEdgesBetween = new List<EdgeBetween>();
 
-                string betweenQuery = BatchExistsEdgesBetweenQuery(tenantGuid, graphGuid, req.EdgesBetween);
+                string betweenQuery = Edges.BatchExistsEdgesBetweenQuery(tenantGuid, graphGuid, req.EdgesBetween);
                 DataTable betweenResult = Query(betweenQuery);
                 if (betweenResult != null && betweenResult.Rows != null && betweenResult.Rows.Count > 0)
                 {
@@ -1355,6 +1884,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
@@ -1365,21 +1895,19 @@
 
             while (true)
             {
-                DataTable result = Query(SelectConnectedEdgesQuery(tenantGuid, graphGuid, nodeGuid, tags, edgeFilter, skip, order));
-                if (result != null && result.Rows.Count > 0)
+                DataTable result = Query(Edges.SelectConnectedEdgesQuery(tenantGuid, graphGuid, nodeGuid, labels, tags, edgeFilter, SelectBatchSize, skip, order));
+                if (result == null || result.Rows.Count < 1) break;
+
+                for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    for (int i = 0; i < result.Rows.Count; i++)
-                    {
-                        Edge edge = EdgeFromDataRow(result.Rows[i]);
-                        edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
-                        yield return edge;
-                        skip++;
-                    }
+                    Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
+                    edge.Labels = LabelMetadata.ToListString(ReadLabels(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null).ToList());
+                    edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                    yield return edge;
+                    skip++;
                 }
-                else
-                {
-                    break;
-                }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -1388,6 +1916,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
@@ -1398,21 +1927,19 @@
 
             while (true)
             {
-                DataTable result = Query(SelectEdgesFromQuery(tenantGuid, graphGuid, nodeGuid, tags, edgeFilter, skip, order));
-                if (result != null && result.Rows.Count > 0)
+                DataTable result = Query(Edges.SelectEdgesFromQuery(tenantGuid, graphGuid, nodeGuid, labels, tags, edgeFilter, SelectBatchSize, skip, order));
+                if (result == null || result.Rows.Count < 1) break;
+
+                for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    for (int i = 0; i < result.Rows.Count; i++)
-                    {
-                        Edge edge = EdgeFromDataRow(result.Rows[i]);
-                        edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
-                        yield return edge;
-                        skip++;
-                    }
+                    Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
+                    edge.Labels = LabelMetadata.ToListString(ReadLabels(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null).ToList());
+                    edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                    yield return edge;
+                    skip++;
                 }
-                else
-                {
-                    break;
-                }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -1421,6 +1948,7 @@
             Guid tenantGuid,
             Guid graphGuid,
             Guid nodeGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
@@ -1431,21 +1959,19 @@
 
             while (true)
             {
-                DataTable result = Query(SelectEdgesToQuery(tenantGuid, graphGuid, nodeGuid, tags, edgeFilter, skip, order));
-                if (result != null && result.Rows.Count > 0)
+                DataTable result = Query(Edges.SelectEdgesToQuery(tenantGuid, graphGuid, nodeGuid, labels, tags, edgeFilter, SelectBatchSize, skip, order));
+                if (result == null || result.Rows.Count < 1) break;
+
+                for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    for (int i = 0; i < result.Rows.Count; i++)
-                    {
-                        Edge edge = EdgeFromDataRow(result.Rows[i]);
-                        edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
-                        yield return edge;
-                        skip++;
-                    }
+                    Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
+                    edge.Labels = LabelMetadata.ToListString(ReadLabels(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null).ToList());
+                    edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                    yield return edge;
+                    skip++;
                 }
-                else
-                {
-                    break;
-                }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -1455,6 +1981,7 @@
             Guid graphGuid,
             Guid fromNodeGuid,
             Guid toNodeGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
@@ -1465,21 +1992,19 @@
 
             while (true)
             {
-                DataTable result = Query(SelectEdgesBetweenQuery(tenantGuid, graphGuid, fromNodeGuid, toNodeGuid, tags, edgeFilter, skip, order));
-                if (result != null && result.Rows.Count > 0)
+                DataTable result = Query(Edges.SelectEdgesBetweenQuery(tenantGuid, graphGuid, fromNodeGuid, toNodeGuid, labels, tags, edgeFilter, SelectBatchSize, skip, order));
+                if (result == null || result.Rows.Count < 1) break;
+
+                for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    for (int i = 0; i < result.Rows.Count; i++)
-                    {
-                        Edge edge = EdgeFromDataRow(result.Rows[i]);
-                        edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
-                        yield return edge;
-                        skip++;
-                    }
+                    Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
+                    edge.Labels = LabelMetadata.ToListString(ReadLabels(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null).ToList());
+                    edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                    yield return edge;
+                    skip++;
                 }
-                else
-                {
-                    break;
-                }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -1491,7 +2016,7 @@
             ValidateTenantExists(edge.TenantGUID);
             ValidateGraphExists(edge.TenantGUID, edge.GraphGUID);
 
-            string insertQuery = InsertEdgeQuery(edge);
+            string insertQuery = Edges.InsertEdgeQuery(edge);
             DataTable createResult = null;
             Edge created = null;
             Edge existing = null;
@@ -1503,7 +2028,13 @@
                 createResult = Query(insertQuery, true);
             }
 
-            created = EdgeFromDataRow(createResult.Rows[0]);
+            created = Converters.EdgeFromDataRow(createResult.Rows[0]);
+
+            if (edge.Labels != null)
+            {
+                List<LabelMetadata> labels = LabelMetadata.FromListString(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, edge.Labels);
+                if (labels.Count > 0) CreateMultipleLabels(edge.TenantGUID, edge.GraphGUID, labels);
+            }
 
             if (edge.Tags != null)
             {
@@ -1516,7 +2047,17 @@
         }
 
         /// <inheritdoc />
-        public override Edge CreateEdge(Guid tenantGuid, Guid graphGuid, Guid guid, Guid fromGuid, Guid toGuid, string name, int cost = 0, object data = null, NameValueCollection tags = null)
+        public override Edge CreateEdge(
+            Guid tenantGuid,
+            Guid graphGuid,
+            Guid guid,
+            Guid fromGuid,
+            Guid toGuid,
+            string name,
+            int cost = 0,
+            object data = null,
+            List<string> labels = null,
+            NameValueCollection tags = null)
         {
             return CreateEdge(new Edge
             {
@@ -1528,6 +2069,7 @@
                 Name = name,
                 Cost = cost,
                 Data = data,
+                Labels = labels,
                 Tags = tags
             });
         }
@@ -1552,6 +2094,7 @@
         public override IEnumerable<Edge> ReadEdges(
             Guid tenantGuid,
             Guid graphGuid,
+            List<string> labels = null,
             NameValueCollection tags = null,
             Expr edgeFilter = null,
             EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending,
@@ -1562,17 +2105,24 @@
 
             while (true)
             {
-                DataTable result = Query(SelectEdgesQuery(tenantGuid, graphGuid, tags, edgeFilter, skip, order));
+                DataTable result = Query(Edges.SelectEdgesQuery(tenantGuid, graphGuid, labels, tags, edgeFilter, SelectBatchSize, skip, order));
                 if (result == null || result.Rows.Count < 1) break;
 
                 for (int i = 0; i < result.Rows.Count; i++)
                 {
-                    Edge edge = EdgeFromDataRow(result.Rows[i]);
+                    Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
+
+                    List<LabelMetadata> allLabels = ReadLabels(tenantGuid, graphGuid, null, edge.GUID, null).ToList();
+                    if (allLabels != null) edge.Labels = LabelMetadata.ToListString(allLabels);
+
                     List<TagMetadata> allTags = ReadTags(tenantGuid, graphGuid, null, edge.GUID, null, null).ToList();
                     if (allTags != null) edge.Tags = TagMetadata.ToNameValueCollection(allTags);
+
                     yield return edge;
                     skip++;
                 }
+
+                if (result.Rows.Count < SelectBatchSize) break;
             }
         }
 
@@ -1580,12 +2130,17 @@
         public override Edge ReadEdge(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
         {
             ValidateGraphExists(tenantGuid, graphGuid);
-            DataTable result = Query(SelectEdgeQuery(tenantGuid, graphGuid, edgeGuid));
+            DataTable result = Query(Edges.SelectEdgeQuery(tenantGuid, graphGuid, edgeGuid));
             if (result != null && result.Rows.Count == 1)
             {
-                Edge edge = EdgeFromDataRow(result.Rows[0]);
-                List<TagMetadata> tags = ReadTags(tenantGuid, graphGuid, null, edgeGuid, null, null).ToList();
-                if (tags != null) edge.Tags = TagMetadata.ToNameValueCollection(tags);
+                Edge edge = Converters.EdgeFromDataRow(result.Rows[0]);
+
+                List<LabelMetadata> allLabels = ReadLabels(tenantGuid, graphGuid, null, edgeGuid, null).ToList();
+                if (allLabels != null) edge.Labels = LabelMetadata.ToListString(allLabels);
+
+                List<TagMetadata> allTags = ReadTags(tenantGuid, graphGuid, null, edgeGuid, null, null).ToList();
+                if (allTags != null) edge.Tags = TagMetadata.ToNameValueCollection(allTags);
+
                 return edge;
             }
             return null;
@@ -1598,8 +2153,24 @@
             ValidateTags(edge.Tags);
             ValidateTenantExists(edge.TenantGUID);
             ValidateGraphExists(edge.TenantGUID, edge.GraphGUID);
-            Edge updated = EdgeFromDataRow(Query(UpdateEdgeQuery(edge), true).Rows[0]);
+            Edge updated = Converters.EdgeFromDataRow(Query(Edges.UpdateEdgeQuery(edge), true).Rows[0]);
+            DeleteEdgeLabels(edge.TenantGUID, edge.GraphGUID, edge.GUID);
             DeleteEdgeTags(edge.TenantGUID, edge.GraphGUID, edge.GUID);
+
+            if (edge.Labels != null)
+            {
+                CreateMultipleLabels(
+                    edge.TenantGUID,
+                    edge.GraphGUID,
+                    LabelMetadata.FromListString(
+                        edge.TenantGUID,
+                        edge.GraphGUID,
+                        null,
+                        edge.GUID,
+                        edge.Labels));
+                updated.Labels = edge.Labels;
+            }
+
             if (edge.Tags != null)
             {
                 CreateMultipleTags(
@@ -1613,6 +2184,7 @@
                         edge.Tags));
                 updated.Tags = edge.Tags;
             }
+
             return updated;
         }
 
@@ -1620,8 +2192,10 @@
         public override void DeleteEdge(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
         {
             ValidateGraphExists(tenantGuid, graphGuid);
-            Query(DeleteEdgeQuery(tenantGuid, graphGuid, edgeGuid), true);
+            Query(Edges.DeleteEdgeQuery(tenantGuid, graphGuid, edgeGuid), true);
+            DeleteLabels(tenantGuid, graphGuid, null, new List<Guid> { edgeGuid });
             DeleteTags(tenantGuid, graphGuid, null, new List<Guid> { edgeGuid });
+            DeleteVectors(tenantGuid, graphGuid, null, new List<Guid> { edgeGuid });
         }
 
         /// <inheritdoc />
@@ -1629,8 +2203,16 @@
         {
             ValidateGraphExists(tenantGuid, graphGuid);
             List<Edge> edges = ReadEdges(tenantGuid, graphGuid).ToList();
-            Query(DeleteEdgesQuery(tenantGuid, graphGuid), true);
-            if (edges != null && edges.Count > 0) DeleteTags(tenantGuid, graphGuid, null, edges.Select(e => e.GUID).ToList());
+            if (edges != null && edges.Count > 0)
+            {
+                Query(Edges.DeleteEdgesQuery(tenantGuid, graphGuid), true);
+                if (edges != null && edges.Count > 0)
+                {
+                    DeleteLabels(tenantGuid, graphGuid, null, edges.Select(e => e.GUID).ToList());
+                    DeleteTags(tenantGuid, graphGuid, null, edges.Select(e => e.GUID).ToList());
+                    DeleteVectors(tenantGuid, graphGuid, null, edges.Select(e => e.GUID).ToList());
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -1638,8 +2220,16 @@
         {
             if (edgeGuids == null || edgeGuids.Count < 1) return;
             ValidateGraphExists(tenantGuid, graphGuid);
-            Query(DeleteEdgesQuery(tenantGuid, graphGuid, edgeGuids), true);
+            Query(Edges.DeleteEdgesQuery(tenantGuid, graphGuid, edgeGuids), true);
+            DeleteLabels(tenantGuid, graphGuid, null, edgeGuids);
             DeleteTags(tenantGuid, graphGuid, null, edgeGuids);
+            DeleteVectors(tenantGuid, graphGuid, null, edgeGuids);
+        }
+
+        /// <inheritdoc />
+        public override void DeleteEdgeLabels(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
+        {
+            DeleteLabels(tenantGuid, graphGuid, null, new List<Guid> { edgeGuid });
         }
 
         /// <inheritdoc />
@@ -1662,84 +2252,6 @@
         #region Private-Methods
 
         #region General
-
-        private string Sanitize(string val)
-        {
-            if (String.IsNullOrEmpty(val)) return val;
-
-            string ret = "";
-
-            //
-            // null, below ASCII range, above ASCII range
-            //
-            for (int i = 0; i < val.Length; i++)
-            {
-                if (((int)(val[i]) == 10) ||      // Preserve carriage return
-                    ((int)(val[i]) == 13))        // and line feed
-                {
-                    ret += val[i];
-                }
-                else if ((int)(val[i]) < 32)
-                {
-                    continue;
-                }
-                else
-                {
-                    ret += val[i];
-                }
-            }
-
-            //
-            // double dash
-            //
-            int doubleDash = 0;
-            while (true)
-            {
-                doubleDash = ret.IndexOf("--");
-                if (doubleDash < 0)
-                {
-                    break;
-                }
-                else
-                {
-                    ret = ret.Remove(doubleDash, 2);
-                }
-            }
-
-            //
-            // open comment
-            // 
-            int openComment = 0;
-            while (true)
-            {
-                openComment = ret.IndexOf("/*");
-                if (openComment < 0) break;
-                else
-                {
-                    ret = ret.Remove(openComment, 2);
-                }
-            }
-
-            //
-            // close comment
-            //
-            int closeComment = 0;
-            while (true)
-            {
-                closeComment = ret.IndexOf("*/");
-                if (closeComment < 0) break;
-                else
-                {
-                    ret = ret.Remove(closeComment, 2);
-                }
-            }
-
-            //
-            // in-string replacement
-            //
-            ret = ret.Replace("'", "''");
-            return ret;
-        }
 
         private DataTable Query(string query, bool isTransaction = false)
         {
@@ -1793,1971 +2305,6 @@
             return result;
         }
 
-        private void CreateTablesAndIndices()
-        {
-            List<string> queries = new List<string>();
-
-            #region Tenants
-
-            queries.Add(
-                "CREATE TABLE IF NOT EXISTS 'tenants' ("
-                + "guid VARCHAR(64) NOT NULL UNIQUE, "
-                + "name VARCHAR(128), "
-                + "active INT, "
-                + "createdutc VARCHAR(64), "
-                + "lastupdateutc VARCHAR(64) "
-                + ");");
-
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tenants_guid' ON 'tenants' (guid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tenants_name' ON 'tenants' (name ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tenants_createdutc' ON 'tenants' ('createdutc' ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tenants_lastupdateutc' ON 'tenants' ('lastupdateutc' ASC);");
-
-            #endregion
-
-            #region Users
-
-            queries.Add(
-                "CREATE TABLE IF NOT EXISTS 'users' ("
-                + "guid VARCHAR(64) NOT NULL UNIQUE, "
-                + "tenantguid VARCHAR(64) NOT NULL, "
-                + "firstname VARCHAR(64), "
-                + "lastname VARCHAR(64), "
-                + "email VARCHAR(128), "
-                + "password VARCHAR(128), "
-                + "active INT, "
-                + "createdutc VARCHAR(64), "
-                + "lastupdateutc VARCHAR(64) "
-                + ");");
-
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_users_guid' ON 'users' (guid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_users_tenantguid' ON 'users' (tenantguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_users_email' ON 'users' (email ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_users_password' ON 'users' (password ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_users_createdutc' ON 'users' ('createdutc' ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_users_lastupdateutc' ON 'users' ('lastupdateutc' ASC);");
-
-            #endregion
-
-            #region Credentials
-
-            queries.Add(
-                "CREATE TABLE IF NOT EXISTS 'creds' ("
-                + "guid VARCHAR(64) NOT NULL UNIQUE, "
-                + "tenantguid VARCHAR(64) NOT NULL, "
-                + "userguid VARCHAR(64) NOT NULL, "
-                + "name VARCHAR(64), "
-                + "bearertoken VARCHAR(64), "
-                + "active INT, "
-                + "createdutc VARCHAR(64), "
-                + "lastupdateutc VARCHAR(64) "
-                + ");");
-
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_creds_guid' ON 'creds' (guid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_creds_tenantguid' ON 'creds' (tenantguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_creds_userguid' ON 'creds' (userguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_creds_bearertoken' ON 'creds' (bearertoken ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_creds_createdutc' ON 'creds' ('createdutc' ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_creds_lastupdateutc' ON 'creds' ('lastupdateutc' ASC);");
-
-            #endregion
-
-            #region Tags
-
-            queries.Add(
-                "CREATE TABLE IF NOT EXISTS 'tags' ("
-                + "guid VARCHAR(64) NOT NULL UNIQUE, "
-                + "tenantguid VARCHAR(64) NOT NULL, "
-                + "graphguid VARCHAR(64), "
-                + "nodeguid VARCHAR(64), "
-                + "edgeguid VARCHAR(64), "
-                + "tagkey VARCHAR(256), "
-                + "tagvalue TEXT, "
-                + "createdutc VARCHAR(64), "
-                + "lastupdateutc VARCHAR(64) "
-                + ");");
-
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tags_guid' ON 'tags' (guid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tags_tenantguid' ON 'tags' (tenantguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tags_graphguid' ON 'tags' (graphguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tags_nodeguid' ON 'tags' (nodeguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tags_edgeguid' ON 'tags' (edgeguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tags_tagkey' ON 'tags' (tagkey ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tags_tagvalue' ON 'tags' (tagvalue ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tags_createdutc' ON 'tags' ('createdutc' ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_tags_lastupdateutc' ON 'tags' ('lastupdateutc' ASC);");
-
-            #endregion
-
-            #region Graphs
-
-            queries.Add(
-                "CREATE TABLE IF NOT EXISTS 'graphs' ("
-                + "guid VARCHAR(64) NOT NULL UNIQUE, "
-                + "tenantguid VARCHAR(64) NOT NULL, "
-                + "name VARCHAR(128), "
-                + "data TEXT, "
-                + "createdutc VARCHAR(64), "
-                + "lastupdateutc VARCHAR(64) "
-                + ");");
-
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_guid' ON 'graphs' (guid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_tenantguid' ON 'graphs' (tenantguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_name' ON 'graphs' (name ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_createdutc' ON 'graphs' ('createdutc' ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_lastupdateutc' ON 'graphs' ('lastupdateutc' ASC);");
-
-            if (IndexData)
-                queries.Add("CREATE INDEX IF NOT EXISTS 'idx_graphs_data' ON 'graphs' ('data' ASC);");
-
-            #endregion
-
-            #region Nodes
-
-            queries.Add(
-                "CREATE TABLE IF NOT EXISTS 'nodes' ("
-                + "guid VARCHAR(64) NOT NULL UNIQUE, "
-                + "tenantguid VARCHAR(64) NOT NULL, "
-                + "graphguid VARCHAR(64) NOT NULL, "
-                + "name VARCHAR(128), "
-                + "data TEXT, "
-                + "createdutc VARCHAR(64), "
-                + "lastupdateutc VARCHAR(64) "
-                + ");");
-
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_nodes_guid' ON 'nodes' (guid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_nodes_tenantguid' ON 'nodes' (tenantguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_nodes_graphguid' ON 'nodes' (graphguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_nodes_name' ON 'nodes' (name ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_nodes_createdutc' ON 'nodes' ('createdutc' ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_nodes_lastupdateutc' ON 'nodes' ('lastupdateutc' ASC);");
-
-            if (IndexData)
-                queries.Add("CREATE INDEX IF NOT EXISTS 'idx_nodes_data' ON 'nodes' (data ASC);");
-
-            #endregion
-
-            #region Edges
-
-            queries.Add(
-                "CREATE TABLE IF NOT EXISTS 'edges' ("
-                + "guid VARCHAR(64) NOT NULL UNIQUE, "
-                + "tenantguid VARCHAR(64) NOT NULL, "
-                + "graphguid VARCHAR(64) NOT NULL, "
-                + "name VARCHAR(128), "
-                + "fromguid VARCHAR(64) NOT NULL, "
-                + "toguid VARCHAR(64) NOT NULL, "
-                + "cost INT NOT NULL, "
-                + "data TEXT, "
-                + "createdutc VARCHAR(64), "
-                + "lastupdateutc VARCHAR(64) "
-                + ");");
-
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_edges_guid' ON 'edges' (guid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_edges_tenantguid' ON 'edges' (tenantguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_edges_graphguid' ON 'edges' (graphguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_edges_name' ON 'edges' (name ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_edges_fromguid' ON 'edges' (fromguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_edges_toguid' ON 'edges' (toguid ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_edges_createdutc' ON 'edges' ('createdutc' ASC);");
-            queries.Add("CREATE INDEX IF NOT EXISTS 'idx_edges_lastupdateutc' ON 'edges' ('lastupdateutc' ASC);");
-
-            if (IndexData)
-                queries.Add("CREATE INDEX IF NOT EXISTS 'idx_edges_data' ON 'edges' (data ASC);");
-
-            #endregion
-
-            #region Run-Queries
-
-            foreach (string query in queries)
-                Query(query);
-
-            #endregion
-        }
-
-        private string GetDataRowStringValue(DataRow row, string column)
-        {
-            if (row[column] != null
-                && row[column] != DBNull.Value)
-            {
-                return row[column].ToString();
-            }
-            return null;
-        }
-
-        private object GetDataRowJsonValue(DataRow row, string column)
-        {
-            if (row[column] != null
-                && row[column] != DBNull.Value)
-            {
-                return Serializer.DeserializeJson<object>(row[column].ToString());
-            }
-            return null;
-        }
-
-        private bool IsList(object o)
-        {
-            if (o == null) return false;
-            return o is IList &&
-                   o.GetType().IsGenericType &&
-                   o.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(List<>));
-        }
-
-        private List<object> ObjectToList(object obj)
-        {
-            if (obj == null) return null;
-            List<object> ret = new List<object>();
-            var enumerator = ((IEnumerable)obj).GetEnumerator();
-            while (enumerator.MoveNext())
-            {
-                ret.Add(enumerator.Current);
-            }
-            return ret;
-        }
-
-        private string EnumerationOrderToClause(EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            switch (order)
-            {
-                case EnumerationOrderEnum.CostAscending:
-                    return "cost ASC";
-                case EnumerationOrderEnum.CostDescending:
-                    return "cost DESC";
-                case EnumerationOrderEnum.CreatedAscending:
-                    return "createdutc ASC";
-                case EnumerationOrderEnum.CreatedDescending:
-                    return "createdutc DESC";
-                case EnumerationOrderEnum.GuidAscending:
-                    return "id ASC";
-                case EnumerationOrderEnum.GuidDescending:
-                    return "id DESC";
-                case EnumerationOrderEnum.NameAscending:
-                    return "name ASC";
-                case EnumerationOrderEnum.NameDescending:
-                    return "name DESC";
-                default:
-                    throw new ArgumentException("Unsupported enumeration order '" + order.ToString() + "'.");
-            }
-        }
-
-        private string ExpressionToWhereClause(string table, Expr expr)
-        {
-            if (expr == null) return null;
-            if (expr.Left == null) return null;
-
-            string clause = "";
-
-            if (expr.Left is Expr)
-            {
-                clause += ExpressionToWhereClause(table, (Expr)expr.Left) + " ";
-            }
-            else
-            {
-                if (!(expr.Left is string))
-                {
-                    throw new ArgumentException("Left term must be of type Expression or String");
-                }
-
-                clause += "json_extract(" + table + ".data, '$." + Sanitize(expr.Left.ToString()) + "') ";
-            }
-
-            switch (expr.Operator)
-            {
-                #region Process-By-Operators
-
-                case OperatorEnum.And:
-                    #region And
-
-                    if (expr.Right == null) return null;
-                    clause += "AND ";
-
-                    if (expr.Right is Expr)
-                    {
-                        clause += ExpressionToWhereClause(table, (Expr)expr.Right);
-                    }
-                    else
-                    {
-                        if (expr.Right is DateTime || expr.Right is DateTime?)
-                        {
-                            clause += "'" + Convert.ToDateTime(expr.Right).ToString(TimestampFormat) + "'";
-                        }
-                        else if (expr.Right is int || expr.Right is long || expr.Right is decimal)
-                        {
-                            clause += expr.Right.ToString();
-                        }
-                        else
-                        {
-                            clause += "'" + Sanitize(expr.Right.ToString()) + "'";
-                        }
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.Or:
-                    #region Or
-
-                    if (expr.Right == null) return null;
-                    clause += "OR ";
-                    if (expr.Right is Expr)
-                    {
-                        clause += ExpressionToWhereClause(table, (Expr)expr.Right);
-                    }
-                    else
-                    {
-                        if (expr.Right is DateTime || expr.Right is DateTime?)
-                        {
-                            clause += "'" + Convert.ToDateTime(expr.Right).ToString(TimestampFormat) + "'";
-                        }
-                        else if (expr.Right is int || expr.Right is long || expr.Right is decimal)
-                        {
-                            clause += expr.Right.ToString();
-                        }
-                        else
-                        {
-                            clause += "'" + Sanitize(expr.Right.ToString()) + "'";
-                        }
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.Equals:
-                    #region Equals
-
-                    if (expr.Right == null) return null;
-                    clause += "= ";
-                    if (expr.Right is Expr)
-                    {
-                        clause += ExpressionToWhereClause(table, (Expr)expr.Right);
-                    }
-                    else
-                    {
-                        if (expr.Right is DateTime || expr.Right is DateTime?)
-                        {
-                            clause += "'" + Convert.ToDateTime(expr.Right).ToString(TimestampFormat) + "'";
-                        }
-                        else if (expr.Right is int || expr.Right is long || expr.Right is decimal)
-                        {
-                            clause += expr.Right.ToString();
-                        }
-                        else
-                        {
-                            clause += "'" + Sanitize(expr.Right.ToString()) + "'";
-                        }
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.NotEquals:
-                    #region NotEquals
-
-                    if (expr.Right == null) return null;
-                    clause += "<> ";
-                    if (expr.Right is Expr)
-                    {
-                        clause += ExpressionToWhereClause(table, (Expr)expr.Right);
-                    }
-                    else
-                    {
-                        if (expr.Right is DateTime || expr.Right is DateTime?)
-                        {
-                            clause += "'" + Convert.ToDateTime(expr.Right).ToString(TimestampFormat) + "'";
-                        }
-                        else if (expr.Right is int || expr.Right is long || expr.Right is decimal)
-                        {
-                            clause += expr.Right.ToString();
-                        }
-                        else
-                        {
-                            clause += "'" + Sanitize(expr.Right.ToString()) + "'";
-                        }
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.In:
-                    #region In
-
-                    if (expr.Right == null) return null;
-                    int inAdded = 0;
-                    if (!IsList(expr.Right)) return null;
-                    List<object> inTempList = ObjectToList(expr.Right);
-                    clause += " IN (";
-                    foreach (object currObj in inTempList)
-                    {
-                        if (currObj == null) continue;
-                        if (inAdded > 0) clause += ",";
-                        if (currObj is DateTime || currObj is DateTime?)
-                        {
-                            clause += "'" + Convert.ToDateTime(currObj).ToString(TimestampFormat) + "'";
-                        }
-                        else if (currObj is int || currObj is long || currObj is decimal)
-                        {
-                            clause += currObj.ToString();
-                        }
-                        else
-                        {
-                            clause += "'" + Sanitize(currObj.ToString()) + "'";
-                        }
-                        inAdded++;
-                    }
-                    clause += ")";
-                    break;
-
-                #endregion
-
-                case OperatorEnum.NotIn:
-                    #region NotIn
-
-                    if (expr.Right == null) return null;
-                    int notInAdded = 0;
-                    if (!IsList(expr.Right)) return null;
-                    List<object> notInTempList = ObjectToList(expr.Right);
-                    clause += " NOT IN (";
-                    foreach (object currObj in notInTempList)
-                    {
-                        if (currObj == null) continue;
-                        if (notInAdded > 0) clause += ",";
-                        if (currObj is DateTime || currObj is DateTime?)
-                        {
-                            clause += "'" + Convert.ToDateTime(currObj).ToString(TimestampFormat) + "'";
-                        }
-                        else if (currObj is int || currObj is long || currObj is decimal)
-                        {
-                            clause += currObj.ToString();
-                        }
-                        else
-                        {
-                            clause += "'" + Sanitize(currObj.ToString()) + "'";
-                        }
-                        notInAdded++;
-                    }
-                    clause += ")";
-                    break;
-
-                #endregion
-
-                case OperatorEnum.Contains:
-                    #region Contains
-
-                    if (expr.Right == null) return null;
-                    if (expr.Right is string)
-                    {
-                        clause +=
-                            "(" +
-                            "'$." + Sanitize(expr.Left.ToString()) + "' LIKE ('%" + Sanitize(expr.Right.ToString()) + "') " +
-                            "OR '$." + Sanitize(expr.Left.ToString()) + "' LIKE ('%" + Sanitize(expr.Right.ToString()) + "%') " +
-                            "OR '$." + Sanitize(expr.Left.ToString()) + "' LIKE ('" + Sanitize(expr.Right.ToString()) + "%')" +
-                            ")";
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.ContainsNot:
-                    #region ContainsNot
-
-                    if (expr.Right == null) return null;
-                    if (expr.Right is string)
-                    {
-                        clause +=
-                            "(" +
-                            "'$." + Sanitize(expr.Left.ToString()) + "' NOT LIKE '%" + Sanitize(expr.Right.ToString()) + "' " +
-                            "AND '$." + Sanitize(expr.Left.ToString()) + "' NOT LIKE '%" + Sanitize(expr.Right.ToString()) + "%' " +
-                            "AND '$." + Sanitize(expr.Left.ToString()) + "' NOT LIKE '" + Sanitize(expr.Right.ToString()) + "%'" +
-                            ")";
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.StartsWith:
-                    #region StartsWith
-
-                    if (expr.Right == null) return null;
-                    if (expr.Right is string)
-                    {
-                        clause += "('$." + Sanitize(expr.Left.ToString()) + "' LIKE '" + Sanitize(expr.Right.ToString()) + "%')";
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.StartsWithNot:
-                    #region StartsWithNot
-
-                    if (expr.Right == null) return null;
-                    if (expr.Right is string)
-                    {
-                        clause += "('$." + Sanitize(expr.Left.ToString()) + "' NOT LIKE '" + Sanitize(expr.Right.ToString()) + "%'";
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.EndsWith:
-                    #region EndsWith
-
-                    if (expr.Right == null) return null;
-                    if (expr.Right is string)
-                    {
-                        clause += "('$." + Sanitize(expr.Left.ToString()) + " LIKE '%" + Sanitize(expr.Right.ToString()) + "')";
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.EndsWithNot:
-                    #region EndsWith
-
-                    if (expr.Right == null) return null;
-                    if (expr.Right is string)
-                    {
-                        clause += "('$." + Sanitize(expr.Left.ToString()) + " NOT LIKE '%" + Sanitize(expr.Right.ToString()) + "')";
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.GreaterThan:
-                    #region GreaterThan
-
-                    if (expr.Right == null) return null;
-                    clause += "> ";
-                    if (expr.Right is Expr)
-                    {
-                        clause += ExpressionToWhereClause(table, (Expr)expr.Right);
-                    }
-                    else
-                    {
-                        if (expr.Right is DateTime || expr.Right is DateTime?)
-                        {
-                            clause += "'$." + Convert.ToDateTime(expr.Right).ToString(TimestampFormat) + "'";
-                        }
-                        else if (expr.Right is int || expr.Right is long || expr.Right is decimal)
-                        {
-                            clause += expr.Right.ToString();
-                        }
-                        else
-                        {
-                            clause += "'" + Sanitize(expr.Right.ToString()) + "'";
-                        }
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.GreaterThanOrEqualTo:
-                    #region GreaterThanOrEqualTo
-
-                    if (expr.Right == null) return null;
-                    clause += ">= ";
-                    if (expr.Right is Expr)
-                    {
-                        clause += ExpressionToWhereClause(table, (Expr)expr.Right);
-                    }
-                    else
-                    {
-                        if (expr.Right is DateTime || expr.Right is DateTime?)
-                        {
-                            clause += "'" + Convert.ToDateTime(expr.Right).ToString(TimestampFormat) + "'";
-                        }
-                        else if (expr.Right is int || expr.Right is long || expr.Right is decimal)
-                        {
-                            clause += expr.Right.ToString();
-                        }
-                        else
-                        {
-                            clause += "'" + Sanitize(expr.Right.ToString()) + "'";
-                        }
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.LessThan:
-                    #region LessThan
-
-                    if (expr.Right == null) return null;
-                    clause += "< ";
-                    if (expr.Right is Expr)
-                    {
-                        clause += ExpressionToWhereClause(table, (Expr)expr.Right);
-                    }
-                    else
-                    {
-                        if (expr.Right is DateTime || expr.Right is DateTime?)
-                        {
-                            clause += "'" + Convert.ToDateTime(expr.Right).ToString(TimestampFormat) + "'";
-                        }
-                        else if (expr.Right is int || expr.Right is long || expr.Right is decimal)
-                        {
-                            clause += expr.Right.ToString();
-                        }
-                        else
-                        {
-                            clause += "'" + Sanitize(expr.Right.ToString()) + "'";
-                        }
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.LessThanOrEqualTo:
-                    #region LessThanOrEqualTo
-
-                    if (expr.Right == null) return null;
-                    clause += "<= ";
-                    if (expr.Right is Expr)
-                    {
-                        clause += ExpressionToWhereClause(table,(Expr)expr.Right);
-                    }
-                    else
-                    {
-                        if (expr.Right is DateTime || expr.Right is DateTime?)
-                        {
-                            clause += "'" + Convert.ToDateTime(expr.Right).ToString(TimestampFormat) + "'";
-                        }
-                        else if (expr.Right is int || expr.Right is long || expr.Right is decimal)
-                        {
-                            clause += expr.Right.ToString();
-                        }
-                        else
-                        {
-                            clause += "'" + Sanitize(expr.Right.ToString()) + "'";
-                        }
-                    }
-                    break;
-
-                #endregion
-
-                case OperatorEnum.IsNull:
-                    #region IsNull
-
-                    clause += " IS NULL";
-                    break;
-
-                #endregion
-
-                case OperatorEnum.IsNotNull:
-                    #region IsNotNull
-
-                    clause += " IS NOT NULL";
-                    break;
-
-                    #endregion
-
-                    #endregion
-            }
-
-            clause += " ";
-
-            return clause;
-        }
-
-        private void ValidateTags(NameValueCollection tags)
-        {
-            if (tags == null) return;
-            foreach (string key in tags.AllKeys)
-                if (String.IsNullOrEmpty(key)) throw new ArgumentException("The supplied tags contains a null or empty key.");
-        }
-
-        private void ValidateTenantExists(Guid tenantGuid)
-        {
-            if (!ExistsTenant(tenantGuid))
-                throw new ArgumentException("No tenant with GUID '" + tenantGuid + "' exists.");
-        }
-
-        private void ValidateUserExists(Guid tenantGuid, Guid userGuid)
-        {
-            if (!ExistsUser(tenantGuid, userGuid))
-                throw new ArgumentException("No user with GUID '" + userGuid + "' exists.");
-        }
-
-        private void ValidateGraphExists(Guid tenantGuid, Guid? graphGuid)
-        {
-            if (graphGuid == null) return;
-            if (!ExistsGraph(tenantGuid, graphGuid.Value))
-                throw new ArgumentException("No graph with GUID '" + graphGuid.Value + "' exists.");
-        }
-
-        private void ValidateNodeExists(Guid tenantGuid, Guid? graphGuid, Guid? nodeGuid)
-        {
-            if (graphGuid == null) return;
-            if (nodeGuid == null) return;
-            if (!ExistsNode(tenantGuid, graphGuid.Value, nodeGuid.Value))
-                throw new ArgumentException("No node with GUID '" + nodeGuid.Value + "' exists.");
-        }
-
-        private void ValidateEdgeExists(Guid tenantGuid, Guid? graphGuid, Guid? edgeGuid)
-        {
-            if (graphGuid == null) return;
-            if (edgeGuid == null) return;
-            if (!ExistsEdge(tenantGuid, graphGuid.Value, edgeGuid.Value))
-                throw new ArgumentException("No edge with GUID '" + edgeGuid.Value + "' exists.");
-        }
-
-        #endregion
-
-        #region Tenants
-
-        private string InsertTenantQuery(TenantMetadata tenant)
-        {
-            string ret =
-                "INSERT INTO 'tenants' "
-                + "VALUES ("
-                + "'" + tenant.GUID + "',"
-                + "'" + Sanitize(tenant.Name) + "',"
-                + (tenant.Active ? "1" : "0") + ","
-                + "'" + Sanitize(tenant.CreatedUtc.ToString(TimestampFormat)) + "',"
-                + "'" + Sanitize(tenant.LastUpdateUtc.ToString(TimestampFormat)) + "'"
-                + ") "
-                + "RETURNING *;";
-
-            return ret;
-        }
-
-        private string SelectTenantQuery(string name)
-        {
-            return "SELECT * FROM 'tenants' WHERE name = '" + Sanitize(name) + "';";
-        }
-
-        private string SelectTenantQuery(Guid guid)
-        {
-            return "SELECT * FROM 'tenants' WHERE guid = '" + guid.ToString() + "';";
-        }
-
-        private string SelectTenantsQuery(
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret =
-                "SELECT * FROM 'tenants' WHERE guid IS NOT NULL "
-                + "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string UpdateTenantQuery(TenantMetadata tenant)
-        {
-            return
-                "UPDATE 'tenants' SET "
-                + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
-                + "name = '" + Sanitize(tenant.Name) + "',"
-                + "active = " + (tenant.Active ? "1" : "0") + " "
-                + "WHERE guid = '" + tenant.GUID + "' "
-                + "RETURNING *;";
-        }
-
-        private string DeleteTenantQuery(Guid guid)
-        {
-            return "DELETE FROM 'tenants' WHERE guid = '" + guid + "';";
-        }
-
-        private string DeleteTenantUsersQuery(Guid guid)
-        {
-            return "DELETE FROM 'users' WHERE tenantguid = '" + guid + "';";
-        }
-
-        private string DeleteTenantCredentialsQuery(Guid guid)
-        {
-            return "DELETE FROM 'creds' WHERE tenantguid = '" + guid + "';";
-        }
-
-        private TenantMetadata TenantFromDataRow(DataRow row)
-        {
-            if (row == null) return null;
-
-            return new TenantMetadata
-            {
-                GUID = Guid.Parse(row["guid"].ToString()),
-                Name = GetDataRowStringValue(row, "name"),
-                Active = (Convert.ToInt32(GetDataRowStringValue(row, "active")) > 0 ? true : false),
-                CreatedUtc = DateTime.Parse(row["createdutc"].ToString()),
-                LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString())
-            };
-        }
-
-        #endregion
-
-        #region Users
-
-        private string InsertUserQuery(UserMaster user)
-        {
-            string ret =
-                "INSERT INTO 'users' "
-                + "VALUES ("
-                + "'" + user.GUID + "',"
-                + "'" + user.TenantGUID + "',"
-                + "'" + Sanitize(user.FirstName) + "',"
-                + "'" + Sanitize(user.LastName) + "',"
-                + "'" + Sanitize(user.Email) + "',"
-                + "'" + Sanitize(user.Password) + "',"
-                + (user.Active ? "1" : "0") + ","
-                + "'" + Sanitize(user.CreatedUtc.ToString(TimestampFormat)) + "',"
-                + "'" + Sanitize(user.LastUpdateUtc.ToString(TimestampFormat)) + "'"
-                + ") "
-                + "RETURNING *;";
-
-            return ret;
-        }
-
-        private string SelectUserQuery(Guid tenantGuid, string email)
-        {
-            return "SELECT * FROM 'users' WHERE tenantguid = '" + tenantGuid + "' AND email = '" + Sanitize(email) + "';";
-        }
-
-        private string SelectUserQuery(Guid tenantGuid, Guid guid)
-        {
-            return "SELECT * FROM 'users' WHERE tenantguid = '" + tenantGuid + "' AND guid = '" + guid + "';";
-        }
-
-        private string SelectUsersQuery(
-            Guid? tenantGuid,
-            string email,
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret =
-                "SELECT * FROM 'users' WHERE guid IS NOT NULL ";
-
-            if (tenantGuid != null)
-                ret += "AND tenantguid = '" + tenantGuid.Value.ToString() + "' ";
-
-            if (!String.IsNullOrEmpty(email))
-                ret += "AND email = '" + Sanitize(email) + "' ";
-
-            ret +=
-                "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string UpdateUserQuery(UserMaster user)
-        {
-            return
-                "UPDATE 'users' SET "
-                + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
-                + "firstname = '" + Sanitize(user.FirstName) + "',"
-                + "lastname = '" + Sanitize(user.LastName) + "',"
-                + "email = '" + Sanitize(user.Email) + "',"
-                + "password = '" + Sanitize(user.Password) + "',"
-                + "active = " + (user.Active ? "1" : "0") + " "
-                + "WHERE guid = '" + user.GUID + "' "
-                + "RETURNING *;";
-        }
-
-        private string DeleteUserQuery(string name)
-        {
-            return "DELETE FROM 'users' WHERE name = '" + Sanitize(name) + "';";
-        }
-
-        private string DeleteUserQuery(Guid tenantGuid, Guid guid)
-        {
-            return "DELETE FROM 'users' WHERE tenantguid = '" + tenantGuid + "' AND guid = '" + guid + "';";
-        }
-
-        private string DeleteUserCredentialsQuery(Guid guid)
-        {
-            return "DELETE FROM 'creds' WHERE userguid = '" + guid + "';";
-        }
-
-        private UserMaster UserFromDataRow(DataRow row)
-        {
-            if (row == null) return null;
-
-            return new UserMaster
-            {
-                GUID = Guid.Parse(row["guid"].ToString()),
-                TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
-                FirstName = GetDataRowStringValue(row, "firstname"),
-                LastName = GetDataRowStringValue(row, "lastname"),
-                Email = GetDataRowStringValue(row, "email"),
-                Password = GetDataRowStringValue(row, "password"),
-                Active = (Convert.ToInt32(GetDataRowStringValue(row, "active")) > 0 ? true : false),
-                CreatedUtc = DateTime.Parse(row["createdutc"].ToString()),
-                LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString())
-            };
-        }
-
-        #endregion
-
-        #region Credentials
-
-        private string InsertCredentialQuery(Credential cred)
-        {
-            string ret =
-                "INSERT INTO 'creds' "
-                + "VALUES ("
-                + "'" + cred.GUID + "',"
-                + "'" + cred.TenantGUID + "',"
-                + "'" + cred.UserGUID + "',"
-                + "'" + Sanitize(cred.Name) + "',"
-                + "'" + Sanitize(cred.BearerToken) + "',"
-                + (cred.Active ? "1" : "0") + ","
-                + "'" + Sanitize(cred.CreatedUtc.ToString(TimestampFormat)) + "',"
-                + "'" + Sanitize(cred.LastUpdateUtc.ToString(TimestampFormat)) + "'"
-                + ") "
-                + "RETURNING *;";
-
-            return ret;
-        }
-
-        private string SelectCredentialQuery(string bearerToken)
-        {
-            return "SELECT * FROM 'creds' WHERE bearertoken = '" + Sanitize(bearerToken) + "';";
-        }
-
-        private string SelectCredentialQuery(Guid tenantGuid, Guid guid)
-        {
-            return "SELECT * FROM 'creds' WHERE tenantguid = '" + tenantGuid + "' AND guid = '" + guid + "';";
-        }
-
-        private string SelectCredentialsQuery(
-            Guid? tenantGuid,
-            Guid? userGuid,
-            string bearerToken,
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret =
-                "SELECT * FROM 'creds' WHERE guid IS NOT NULL ";
-
-            if (tenantGuid != null)
-                ret += "AND tenantguid = '" + tenantGuid.Value.ToString() + "' ";
-
-            if (userGuid != null)
-                ret += "AND userGuid = '" + userGuid.Value.ToString() + "' ";
-
-            if (!String.IsNullOrEmpty(bearerToken))
-                ret += "AND bearertoken = '" + Sanitize(bearerToken) + "' ";
-
-            ret +=
-                "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string UpdateCredentialQuery(Credential cred)
-        {
-            return
-                "UPDATE 'creds' SET "
-                + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
-                + "name = '" + Sanitize(cred.Name) + "',"
-                + "active = " + (cred.Active ? "1" : "0") + " "
-                + "WHERE guid = '" + cred.GUID + "' "
-                + "RETURNING *;";
-        }
-
-        private string DeleteCredentialQuery(Guid tenantGuid, Guid guid)
-        {
-            return "DELETE FROM 'creds' WHERE tenantguid = '" + tenantGuid + "' AND guid = '" + guid + "';";
-        }
-
-        private Credential CredentialFromDataRow(DataRow row)
-        {
-            if (row == null) return null;
-
-            return new Credential
-            {
-                GUID = Guid.Parse(row["guid"].ToString()),
-                TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
-                UserGUID = Guid.Parse(row["userguid"].ToString()),
-                Name = GetDataRowStringValue(row, "name"),
-                BearerToken = GetDataRowStringValue(row, "bearertoken"),
-                Active = (Convert.ToInt32(GetDataRowStringValue(row, "active")) > 0 ? true : false),
-                CreatedUtc = DateTime.Parse(row["createdutc"].ToString()),
-                LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString())
-            };
-        }
-
-        #endregion
-
-        #region Tags
-
-        private string InsertTagQuery(TagMetadata tag)
-        {
-            string ret =
-                "INSERT INTO 'tags' "
-                + "VALUES ("
-                + "'" + tag.GUID + "',"
-                + "'" + tag.TenantGUID + "',"
-                + (tag.GraphGUID != null ? "'" + tag.GraphGUID.Value + "'" : "NULL") + ","
-                + (tag.NodeGUID != null ? "'" + tag.NodeGUID.Value + "'" : "NULL") + ","
-                + (tag.EdgeGUID != null ? "'" + tag.EdgeGUID.Value + "'" : "NULL") + ","
-                + "'" + Sanitize(tag.Key) + "',"
-                + (!String.IsNullOrEmpty(tag.Value) ? ("'" + Sanitize(tag.Value) + "'") : "NULL") + ","
-                + "'" + Sanitize(tag.CreatedUtc.ToString(TimestampFormat)) + "',"
-                + "'" + Sanitize(tag.LastUpdateUtc.ToString(TimestampFormat)) + "'"
-                + ") "
-                + "RETURNING *;";
-
-            return ret;
-        }
-
-        private string InsertMultipleTagsQuery(Guid tenantGuid, Guid graphGuid, List<TagMetadata> tags)
-        {
-            string ret =
-                "INSERT INTO 'tags' "
-                + "VALUES ";
-
-            for (int i = 0; i < tags.Count; i++)
-            {
-                if (i > 0) ret += ",";
-                ret += "(";
-                ret += "'" + tags[i].GUID + "',"
-                    + "'" + tenantGuid + "',"
-                    + "'" + tags[i].GraphGUID + "',"
-                    + (tags[i].NodeGUID != null ? "'" + tags[i].NodeGUID.Value + "'," : "NULL,")
-                    + (tags[i].EdgeGUID != null ? "'" + tags[i].EdgeGUID.Value + "'," : "NULL,")
-                    + "'" + Sanitize(tags[i].Key) + "',"
-                    + (!String.IsNullOrEmpty(tags[i].Value) ? "'" + Sanitize(tags[i].Value) + "'," : "NULL,")
-                    + "'" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
-                    + "'" + DateTime.UtcNow.ToString(TimestampFormat) + "'";
-                ret += ")";
-            }
-
-            ret += ";";
-            return ret;
-        }
-
-        private string SelectMultipleTagsQuery(Guid tenantGuid, List<Guid> guids)
-        {
-            string ret = "SELECT * FROM 'tags' WHERE tenantguid = '" + tenantGuid + "' AND guid IN (";
-
-            for (int i = 0; i < guids.Count; i++)
-            {
-                if (i > 0) ret += ",";
-                ret += "'" + Sanitize(guids[i].ToString()) + "'";
-            }
-
-            ret += ");";
-            return ret;
-        }
-
-        private string SelectTagQuery(Guid tenantGuid, Guid guid)
-        {
-            return "SELECT * FROM 'tags' WHERE tenantguid = '" + tenantGuid + "' AND guid = '" + guid + "';";
-        }
-
-        private string SelectTagsQuery(
-            Guid? tenantGuid,
-            Guid? graphGuid,
-            Guid? nodeGuid,
-            Guid? edgeGuid,
-            string key,
-            string val,
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret =
-                "SELECT * FROM 'tags' WHERE guid IS NOT NULL ";
-
-            if (tenantGuid != null)
-                ret += "AND tenantguid = '" + tenantGuid.Value.ToString() + "' ";
-
-            if (graphGuid != null)
-                ret += "AND graphguid = '" + graphGuid.Value.ToString() + "' ";
-
-            if (nodeGuid != null)
-                ret += "AND nodeguid = '" + nodeGuid.Value.ToString() + "' ";
-
-            if (edgeGuid != null)
-                ret += "AND edgeguid = '" + edgeGuid.Value.ToString() + "' ";
-
-            if (!String.IsNullOrEmpty(key))
-                ret += "AND tagkey = '" + Sanitize(key) + "' ";
-
-            if (!String.IsNullOrEmpty(val))
-                ret += "AND tagvalue = '" + Sanitize(val) + "' ";
-
-            ret +=
-                "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string UpdateTagQuery(TagMetadata tag)
-        {
-            return
-                "UPDATE 'tags' SET "
-                + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
-                + "nodeguid = " + (tag.NodeGUID != null ? ("'" + tag.NodeGUID.Value + "'") : "NULL") + ","
-                + "edgeguid = " + (tag.EdgeGUID != null ? ("'" + tag.EdgeGUID.Value + "'") : "NULL") + ","
-                + "tagkey = '" + Sanitize(tag.Key) + "',"
-                + "tagvalue = " + (!String.IsNullOrEmpty(tag.Value) ? ("'" + Sanitize(tag.Value) + "'") : "NULL") + " "
-                + "WHERE guid = '" + tag.GUID + "' "
-                + "RETURNING *;";
-        }
-
-        private string DeleteTagQuery(Guid tenantGuid, Guid guid)
-        {
-            return "DELETE FROM 'tags' WHERE tenantguid = '" + tenantGuid + "' AND guid = '" + guid + "';";
-        }
-
-        private string DeleteTagsQuery(Guid tenantGuid, Guid? graphGuid, List<Guid> nodeGuids, List<Guid> edgeGuids)
-        {
-            string ret = "DELETE FROM 'tags' WHERE tenantguid = '" + tenantGuid + "' ";
-            
-            if (graphGuid != null) ret += "AND graphguid = '" + graphGuid + "' ";
-
-            if (nodeGuids != null && nodeGuids.Count > 0)
-            {
-                string nodeGuidsStr = string.Join(",", nodeGuids.Select(g => $"'{g}'"));
-                ret += "AND nodeguid IN (" + nodeGuidsStr + ") ";
-            }
-
-            if (edgeGuids != null && edgeGuids.Count > 0)
-            {
-                string edgeGuidsStr = string.Join(",", edgeGuids.Select(g => $"'{g}'"));
-                ret += "AND edgeguid IN (" + edgeGuidsStr + ") ";
-            }
-
-            return ret;
-        }
-
-        private string DeleteTagsForGraphOnlyQuery(Guid tenantGuid, Guid graphGuid)
-        {
-            string ret = "DELETE FROM 'tags' WHERE tenantguid = '" + tenantGuid + "' AND graphguid = '" + graphGuid + "' "
-                + "AND nodeguid IS NULL AND edgeguid IS NULL;";
-            return ret;
-        }
-
-        private TagMetadata TagFromDataRow(DataRow row)
-        {
-            if (row == null) return null;
-
-            return new TagMetadata
-            {
-                GUID = Guid.Parse(row["guid"].ToString()),
-                TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
-                GraphGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "graphguid")) ? Guid.Parse(row["graphguid"].ToString()) : null),
-                NodeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "nodeguid")) ? Guid.Parse(row["nodeguid"].ToString()) : null),
-                EdgeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "edgeguid")) ? Guid.Parse(row["edgeguid"].ToString()) : null),
-                Key = GetDataRowStringValue(row, "tagkey"),
-                Value = GetDataRowStringValue(row, "tagvalue"),
-                CreatedUtc = DateTime.Parse(row["createdutc"].ToString()),
-                LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString())
-            };
-        }
-
-        private List<TagMetadata> TagsFromDataTable(DataTable table)
-        {
-            if (table == null || table.Rows == null || table.Rows.Count < 1) return null;
-
-            List<TagMetadata> ret = new List<TagMetadata>();
-
-            foreach (DataRow row in table.Rows)
-                ret.Add(TagFromDataRow(row));
-
-            return ret;
-        }
-
-        #endregion
-
-        #region Graphs
-
-        private string InsertGraphQuery(Graph graph)
-        {
-            string ret =
-                "INSERT INTO 'graphs' "
-                + "VALUES ("
-                + "'" + graph.GUID + "',"
-                + "'" + graph.TenantGUID + "',"
-                + "'" + Sanitize(graph.Name) + "',";
-
-            if (graph.Data == null) ret += "null,";
-            else ret += "'" + Sanitize(Serializer.SerializeJson(graph.Data, false)) + "',";
-
-            ret +=
-                "'" + Sanitize(graph.CreatedUtc.ToString(TimestampFormat)) + "',"
-                + "'" + Sanitize(graph.LastUpdateUtc.ToString(TimestampFormat)) + "'"
-                + ") "
-                + "RETURNING *;";
-
-            return ret;
-        }
-
-        private string SelectGraphQuery(Guid tenantGuid, Guid guid)
-        {
-            return "SELECT * FROM 'graphs' WHERE tenantguid = '" + tenantGuid + "' AND guid = '" + guid + "';";
-        }
-
-        private string SelectGraphsQuery(
-            Guid tenantGuid,
-            NameValueCollection tags,
-            Expr graphFilter = null,
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret = "SELECT * FROM 'graphs' ";
-
-            if (tags != null && tags.Count > 0)
-                ret += "INNER JOIN 'tags' "
-                    + "ON graphs.guid = tags.graphguid "
-                    + "AND graphs.tenantguid = tags.tenantguid ";
-
-            ret += "WHERE "
-                + "graphs.tenantguid = '" + tenantGuid + "' ";
-
-            if (tags != null && tags.Count > 0)
-            {
-                foreach (string key in tags.AllKeys)
-                {
-                    string val = tags.Get(key);
-                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
-                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
-                    else ret += "AND tags.tagvalue IS NULL ";
-                }
-            }
-
-            if (graphFilter != null) ret += "AND " + ExpressionToWhereClause("graphs", graphFilter);
-
-            ret +=
-                "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string UpdateGraphQuery(Graph graph)
-        {
-            string ret =
-                "UPDATE 'graphs' SET "
-                + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
-                + "name = '" + Sanitize(graph.Name) + "',";
-                
-            if (graph.Data == null) ret += "data = null ";
-            else ret += "data = '" + Sanitize(Serializer.SerializeJson(graph.Data, false)) + "' ";
-
-            ret += 
-                "WHERE guid = '" + graph.GUID + "' "
-                + "AND tenantguid = '" + graph.TenantGUID + "' "
-                + "RETURNING *;";
-
-            return ret;
-        }
-
-        private string DeleteGraphQuery(Guid tenantGuid, string name)
-        {
-            return "DELETE FROM 'graphs' WHERE tenantguid = '" + tenantGuid + "' AND name = '" + Sanitize(name) + "';";
-        }
-
-        private string DeleteGraphQuery(Guid tenantGuid, Guid guid)
-        {
-            return "DELETE FROM 'graphs' WHERE tenantguid = '" + tenantGuid + "' AND guid = '" + guid + "';";
-        }
-
-        private string DeleteGraphEdgesQuery(Guid tenantGuid, Guid guid)
-        {
-            return "DELETE FROM 'edges' WHERE tenantguid = '" + tenantGuid + "' AND graphguid = '" + guid + "';";
-        }
-
-        private string DeleteGraphNodesQuery(Guid tenantGuid, Guid guid)
-        {
-            return "DELETE FROM 'nodes' WHERE tenantguid = '" + tenantGuid + "' AND graphguid = '" + guid + "';";
-        }
-
-        private Graph GraphFromDataRow(DataRow row)
-        {
-            if (row == null) return null;
-
-            return new Graph
-            {
-                TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
-                GUID = Guid.Parse(row["guid"].ToString()),
-                Name = GetDataRowStringValue(row, "name"),
-                Data = GetDataRowJsonValue(row, "data"),
-                CreatedUtc = DateTime.Parse(row["createdutc"].ToString()),
-                LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString())
-            };
-        }
-
-        #endregion
-
-        #region Nodes
-
-        private string InsertNodeQuery(Node node)
-        {
-            string ret =
-                "INSERT INTO 'nodes' "
-                + "VALUES ("
-                + "'" + node.GUID + "',"
-                + "'" + node.TenantGUID + "',"
-                + "'" + node.GraphGUID + "',"
-                + "'" + Sanitize(node.Name) + "',";
-
-            if (node.Data == null) ret += "null,";
-            else ret += "'" + Sanitize(Serializer.SerializeJson(node.Data, false)) + "',";
-
-            ret +=
-                "'" + Sanitize(node.CreatedUtc.ToString(TimestampFormat)) + "',"
-                + "'" + Sanitize(node.LastUpdateUtc.ToString(TimestampFormat)) + "'"
-                + ") "
-                + "RETURNING *;";
-
-            return ret;
-        }
-
-        private string InsertMultipleNodesQuery(Guid tenantGuid, List<Node> nodes)
-        {
-            string ret =
-                "INSERT INTO 'nodes' "
-                + "VALUES ";
-
-            for (int i = 0; i < nodes.Count; i++)
-            {
-                if (i > 0) ret += ",";
-                ret += "(";
-                ret += "'" + nodes[i].GUID + "',"
-                    + "'" + tenantGuid + "',"
-                    + "'" + nodes[i].GraphGUID + "',"
-                    + "'" + Sanitize(nodes[i].Name) + "',";
-
-                if (nodes[i].Data == null) ret += "null,";
-                else ret += "'" + Sanitize(Serializer.SerializeJson(nodes[i].Data, false)) + "',";
-                ret += 
-                    "'" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
-                    + "'" + DateTime.UtcNow.ToString(TimestampFormat) + "'"
-                    + ")";
-            }
-
-            ret += ";";
-            return ret;
-        }
-
-        private string SelectMultipleNodesQuery(Guid tenantGuid, List<Guid> guids)
-        {
-            string ret = "SELECT * FROM 'nodes' WHERE tenantguid = '" + tenantGuid + "' AND guid IN (";
-
-            for (int i = 0; i < guids.Count; i++)
-            {
-                if (i > 0) ret += ",";
-                ret += "'" + Sanitize(guids[i].ToString()) + "'";
-            }
-
-            ret += ");";
-            return ret;
-        }
-
-        private string SelectNodeQuery(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
-        {
-            return "SELECT * FROM 'nodes' WHERE "
-                + "guid = '" + nodeGuid + "' "
-                + "AND tenantguid = '" + tenantGuid + "' "
-                + "AND graphguid = '" + graphGuid + "';";
-        }
-
-        private string SelectNodesQuery(
-            Guid tenantGuid,
-            Guid graphGuid,
-            NameValueCollection tags,
-            Expr nodeFilter = null,
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret = "SELECT * FROM 'nodes' ";
-
-            if (tags != null && tags.Count > 0)
-                ret += "INNER JOIN 'tags' "
-                    + "ON nodes.guid = tags.nodeguid "
-                    + "AND nodes.graphguid = tags.graphguid "
-                    + "AND nodes.tenantguid = tags.tenantguid ";
-
-            ret += "WHERE "
-                + "nodes.tenantguid = '" + tenantGuid + "' "
-                + "AND nodes.graphguid = '" + graphGuid + "' ";
-
-            if (tags != null && tags.Count > 0)
-            {
-                foreach (string key in tags)
-                {
-                    string val = tags.Get(key);
-                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
-                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
-                    else ret += "AND tags.tagvalue IS NULL ";
-                }
-            }
-
-            if (nodeFilter != null) ret += "AND " + ExpressionToWhereClause("nodes", nodeFilter);
-
-            ret +=
-                "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string UpdateNodeQuery(Node node)
-        {
-            string ret =
-                "UPDATE 'nodes' SET "
-                + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
-                + "name = '" + Sanitize(node.Name) + "',";
-
-            if (node.Data == null) ret += "data = null ";
-            else ret += "data = '" + Sanitize(Serializer.SerializeJson(node.Data, false)) + "' ";
-
-            ret +=
-                "WHERE guid = '" + node.GUID + "' "
-                + "RETURNING *;";
-
-            return ret;
-        }
-
-        private string DeleteNodeQuery(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
-        {
-            return
-                "DELETE FROM 'nodes' WHERE "
-                + "guid = '" + nodeGuid + "' "
-                + "AND tenantguid = '" + tenantGuid + "' "
-                + "AND graphguid = '" + graphGuid + "';";
-        }
-
-        private string DeleteNodesQuery(Guid tenantGuid, Guid graphGuid)
-        {
-            return
-                "DELETE FROM 'nodes' WHERE tenantguid = '" + tenantGuid + "' AND graphguid = '" + graphGuid + "';";
-        }
-
-        private string DeleteNodesQuery(Guid tenantGuid, Guid graphGuid, List<Guid> nodeGuids)
-        {
-            string ret =
-                "DELETE FROM 'nodes' WHERE graphguid = '" + graphGuid + "' "
-                + "AND tenantguid = '" + tenantGuid + "' "
-                + "AND guid IN (";
-
-            for (int i = 0; i < nodeGuids.Count; i++)
-            {
-                if (i > 0) ret += ",";
-                ret += "'" + Sanitize(nodeGuids[i].ToString()) + "'";
-            }
-
-            ret += ");";
-            return ret;
-        }
-
-        private string DeleteNodeEdgesQuery(Guid tenantGuid, Guid graphGuid, List<Guid> nodeGuids)
-        {
-            string ret =
-                "DELETE FROM 'edges' WHERE graphguid = '" + graphGuid + "' "
-                + "AND tenantguid = '" + tenantGuid + "' "
-                + "AND (";
-
-            for (int i = 0; i < nodeGuids.Count; i++)
-            {
-                if (i > 0) ret += "OR ";
-                ret += "(fromguid = '" + Sanitize(nodeGuids[i].ToString()) + "' OR toguid = '" + Sanitize(nodeGuids[i].ToString()) + "')";
-            }
-
-            ret += ")";
-            return ret;
-        }
-
-        private string BatchExistsNodesQuery(Guid tenantGuid, Guid graphGuid, List<Guid> nodeGuids)
-        {
-            string query = "WITH temp(guid) AS (VALUES ";
-
-            for (int i = 0; i < nodeGuids.Count; i++)
-            {
-                if (i > 0) query += ",";
-                query += "('" + nodeGuids[i].ToString() + "')";
-            }
-
-            query +=
-                ") "
-                + "SELECT temp.guid, CASE WHEN nodes.guid IS NOT NULL THEN 1 ELSE 0 END as \"exists\" "
-                + "FROM temp "
-                + "LEFT JOIN nodes ON temp.guid = nodes.guid "
-                + "AND nodes.graphguid = '" + graphGuid + "' "
-                + "AND nodes.tenantguid = '" + tenantGuid + "';";
-
-            return query;
-        }
-
-        private string BatchExistsEdgesQuery(Guid tenantGuid, Guid graphGuid, List<Guid> edgeGuids)
-        {
-            string query = "WITH temp(guid) AS (VALUES ";
-
-            for (int i = 0; i < edgeGuids.Count; i++)
-            {
-                if (i > 0) query += ",";
-                query += "('" + edgeGuids[i].ToString() + "')";
-            }
-
-            query +=
-                ") "
-                + "SELECT temp.guid, CASE WHEN edges.guid IS NOT NULL THEN 1 ELSE 0 END as \"exists\" "
-                + "FROM temp "
-                + "LEFT JOIN edges ON temp.guid = edges.guid "
-                + "AND edges.graphguid = '" + graphGuid + "' "
-                + "AND edges.tenantguid = '" + tenantGuid + "';";
-
-            return query;
-        }
-
-        private string BatchExistsEdgesBetweenQuery(Guid tenantGuid, Guid graphGuid, List<EdgeBetween> edgesBetween)
-        {
-            string query = "WITH temp(fromguid, toguid) AS (VALUES ";
-
-            for (int i = 0; i < edgesBetween.Count; i++)
-            {
-                EdgeBetween curr = edgesBetween[i];
-                if (i > 0) query += ",";
-                query += "('" + curr.From.ToString() + "','" + curr.To.ToString() + "')";
-            }
-
-            query +=
-                ") "
-                + "SELECT temp.fromguid, temp.toguid, CASE WHEN edges.fromguid IS NOT NULL THEN 1 ELSE 0 END AS \"exists\" "
-                + "FROM temp "
-                + "LEFT JOIN edges ON temp.fromguid = edges.fromguid "
-                + "AND temp.toguid = edges.toguid "
-                + "AND edges.graphguid = '" + graphGuid + "' "
-                + "AND edges.tenantguid = '" + tenantGuid + "';";
-
-            return query;
-        }
-
-        private Node NodeFromDataRow(DataRow row)
-        {
-            if (row == null) return null;
-
-            return new Node
-            {
-                GUID = Guid.Parse(row["guid"].ToString()),
-                TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
-                GraphGUID = Guid.Parse(row["graphguid"].ToString()),
-                Name = GetDataRowStringValue(row, "name"),
-                Data = GetDataRowJsonValue(row, "data"),
-                CreatedUtc = DateTime.Parse(row["createdutc"].ToString()),
-                LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString())
-            };
-        }
-
-        private List<Node> NodesFromDataTable(DataTable table)
-        {
-            if (table == null || table.Rows == null || table.Rows.Count < 1) return null;
-
-            List<Node> ret = new List<Node>();
-
-            foreach (DataRow row in table.Rows)
-                ret.Add(NodeFromDataRow(row));
-
-            return ret;
-        }
-
-        #endregion
-
-        #region Edges
-
-        private string InsertEdgeQuery(Edge edge)
-        {
-            string ret =
-                "INSERT INTO 'edges' "
-                + "VALUES ("
-                + "'" + edge.GUID + "',"
-                + "'" + edge.TenantGUID + "',"
-                + "'" + edge.GraphGUID + "',"
-                + "'" + Sanitize(edge.Name) + "',"
-                + "'" + edge.From.ToString() + "',"
-                + "'" + edge.To.ToString() + "',"
-                + "'" + edge.Cost.ToString() + "',";
-
-            if (edge.Data == null) ret += "null,";
-            else ret += "'" + Sanitize(Serializer.SerializeJson(edge.Data, false)) + "',";
-
-            ret +=
-                "'" + Sanitize(edge.CreatedUtc.ToString(TimestampFormat)) + "',"
-                + "'" + Sanitize(edge.LastUpdateUtc.ToString(TimestampFormat)) + "'"
-                + ") "
-                + "RETURNING *;";
-
-            return ret;
-        }
-
-        private string InsertMultipleEdgesQuery(Guid tenantGuid, List<Edge> edges)
-        {
-            string ret =
-                "INSERT INTO 'edges' "
-                + "VALUES ";
-
-            for (int i = 0; i < edges.Count; i++)
-            {
-                if (i > 0) ret += ",";
-                ret += "("
-                    + "'" + edges[i].GUID + "',"
-                    + "'" + tenantGuid + ","
-                    + "'" + edges[i].GraphGUID + "',"
-                    + "'" + Sanitize(edges[i].Name) + "',"
-                    + "'" + edges[i].From.ToString() + "',"
-                    + "'" + edges[i].To.ToString() + "',"
-                    + "'" + edges[i].Cost.ToString() + "',";
-
-                if (edges[i].Data == null) ret += "null,";
-                else ret += "'" + Sanitize(Serializer.SerializeJson(edges[i].Data, false)) + "',";
-
-                ret +=
-                    "'" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
-                    + "'" + DateTime.UtcNow.ToString(TimestampFormat) + "'"
-                    + ")";
-            }
-
-            ret += ";";
-            return ret;
-        }
-
-        private string SelectMultipleEdgesQuery(Guid tenantGuid, List<Guid> guids)
-        {
-            string ret = "SELECT * FROM 'edges' WHERE tenantguid = '" + tenantGuid + "' AND guid IN (";
-
-            for (int i = 0; i < guids.Count; i++)
-            {
-                if (i > 0) ret += ",";
-                ret += "'" + Sanitize(guids[i].ToString()) + "'";
-            }
-
-            ret += ");";
-            return ret;
-        }
-
-        private string SelectEdgeQuery(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
-        {
-            return
-                "SELECT * FROM 'edges' WHERE "
-                + "graphguid = '" + graphGuid + "' "
-                + "AND tenantguid = '" + tenantGuid + "' "
-                + "AND guid = '" + edgeGuid + "';";
-        }
-
-        private string SelectEdgesQuery(
-            Guid tenantGuid,
-            Guid graphGuid,
-            NameValueCollection tags,
-            Expr edgeFilter = null,
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret =
-                "SELECT * FROM 'edges' ";
-
-            if (tags != null && tags.Count > 0)
-                ret += "INNER JOIN 'tags' "
-                    + "ON edges.guid = tags.edgeguid "
-                    + "AND edges.graphguid = tags.graphguid "
-                    + "AND edges.tenantguid = tags.tenantguid ";
-
-            ret += "WHERE "
-                + "edges.graphguid = '" + graphGuid + "' "
-                + "AND edges.tenantguid = '" + tenantGuid + "' ";
-
-            if (tags != null && tags.Count > 0)
-            {
-                foreach (string key in tags.AllKeys)
-                {
-                    string val = tags.Get(key);
-                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
-                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
-                    else ret += "AND tags.tagvalue IS NULL ";
-                }
-            }
-
-            if (edgeFilter != null) ret += "AND " + ExpressionToWhereClause("edges", edgeFilter);
-
-            ret +=
-                "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string SelectConnectedEdgesQuery(
-            Guid tenantGuid,
-            Guid graphGuid,
-            Guid nodeGuid,
-            NameValueCollection tags,
-            Expr edgeFilter = null,
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret = "SELECT * FROM 'edges' ";
-
-            if (tags != null && tags.Count > 0)
-                ret += "INNER JOIN 'tags' "
-                    + "ON edges.guid = tags.edgeguid "
-                    + "AND edges.graphguid = tags.graphguid "
-                    + "AND edges.tenantguid = tags.tenantguid ";
-
-            ret += "WHERE "
-                + "edges.tenantguid = '" + tenantGuid + "' AND "
-                + "edges.graphguid = '" + graphGuid + "' AND "
-                + "("
-                + "edges.fromguid = '" + nodeGuid + "' "
-                + "OR edges.toguid = '" + nodeGuid + "'"
-                + ") ";
-
-            if (tags != null && tags.Count > 0)
-            {
-                foreach (string key in tags.AllKeys)
-                {
-                    string val = tags.Get(key);
-                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
-                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
-                    else ret += "AND tags.tagvalue IS NULL ";
-                }
-            }
-
-            if (edgeFilter != null) ret += "AND " + ExpressionToWhereClause("edges", edgeFilter);
-
-            ret +=
-                "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string SelectEdgesFromQuery(
-            Guid tenantGuid,
-            Guid graphGuid,
-            Guid nodeGuid,
-            NameValueCollection tags,
-            Expr edgeFilter = null,
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret =
-                "SELECT * FROM 'edges' ";
-
-            if (tags != null && tags.Count > 0)
-                ret += "INNER JOIN 'tags' "
-                    + "ON edges.guid = tags.edgeguid "
-                    + "AND edges.graphguid = tags.graphguid "
-                    + "AND edges.tenantguid = tags.tenantguid ";
-
-            ret += "WHERE "
-                + "edges.graphguid = '" + graphGuid + "' "
-                + "AND edges.tenantguid = '" + tenantGuid + "' "
-                + "AND edges.fromguid = '" + nodeGuid + "' ";
-
-            if (tags != null && tags.Count > 0)
-            {
-                foreach (string key in tags.AllKeys)
-                {
-                    string val = tags.Get(key);
-                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
-                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
-                    else ret += "AND tags.tagvalue IS NULL ";
-                }
-            }
-
-            if (edgeFilter != null) ret += "AND " + ExpressionToWhereClause("edges", edgeFilter) + " ";
-
-            ret +=
-                "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string SelectEdgesToQuery(
-            Guid tenantGuid,
-            Guid graphGuid,
-            Guid nodeGuid,
-            NameValueCollection tags,
-            Expr edgeFilter = null,
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret =
-                "SELECT * FROM 'edges' ";
-
-            if (tags != null && tags.Count > 0)
-                ret += "INNER JOIN 'tags' "
-                    + "ON edges.guid = tags.edgeguid "
-                    + "AND edges.graphguid = tags.graphguid "
-                    + "AND edges.tenantguid = tags.tenantguid ";
-
-            ret += "WHERE "
-                + "edges.graphguid = '" + graphGuid + "' "
-                + "AND edges.tenantguid = '" + tenantGuid + "' "
-                + "AND edges.toguid = '" + nodeGuid + "' ";
-
-            if (tags != null && tags.Count > 0)
-            {
-                foreach (string key in tags)
-                {
-                    string val = tags.Get(key);
-                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
-                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
-                    else ret += "AND tags.tagvalue IS NULL ";
-                }
-            }
-
-            if (edgeFilter != null) ret += "AND " + ExpressionToWhereClause("edges", edgeFilter) + " ";
-
-            ret +=
-                "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string SelectEdgesBetweenQuery(
-            Guid tenantGuid,
-            Guid graphGuid,
-            Guid from,
-            Guid to,
-            NameValueCollection tags,
-            Expr edgeFilter = null,
-            int skip = 0,
-            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
-        {
-            string ret =
-                "SELECT * FROM 'edges' ";
-
-            if (tags != null && tags.Count > 0)
-                ret += "INNER JOIN 'tags' "
-                    + "ON edges.guid = tags.edgeguid "
-                    + "AND edges.graphguid = tags.graphguid "
-                    + "AND edges.tenantguid = tags.tenantguid ";
-
-            ret += "WHERE "
-                + "edges.graphguid = '" + graphGuid + "' "
-                + "AND edges.tenantguid = '" + tenantGuid + "' "
-                + "AND edges.fromguid = '" + from + "' "
-                + "AND edges.toguid = '" + to + "' ";
-
-            if (tags != null && tags.Count > 0)
-            {
-                foreach (string key in tags)
-                {
-                    string val = tags.Get(key);
-                    ret += "AND tags.tagkey = '" + Sanitize(key) + "' ";
-                    if (!String.IsNullOrEmpty(val)) ret += "AND tags.tagvalue = '" + Sanitize(val) + "' ";
-                    else ret += "AND tags.tagvalue IS NULL ";
-                }
-            }
-
-            if (edgeFilter != null) ret += "AND " + ExpressionToWhereClause("edges", edgeFilter) + " ";
-
-            ret +=
-                "ORDER BY " + EnumerationOrderToClause(order) + " "
-                + "LIMIT " + SelectBatchSize + " OFFSET " + skip + ";";
-
-            return ret;
-        }
-
-        private string UpdateEdgeQuery(Edge edge)
-        {
-            string ret =
-                "UPDATE 'edges' SET "
-                + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
-                + "name = '" + Sanitize(edge.Name) + "',"
-                + "cost = '" + edge.Cost.ToString() + "',";
-
-            if (edge.Data == null) ret += "data = null ";
-            else ret += "data = '" + Sanitize(Serializer.SerializeJson(edge.Data, false)) + "' ";
-
-            ret +=
-                "WHERE guid = '" + edge.GUID + "' "
-                + "RETURNING *;";
-
-            return ret;
-        }
-
-        private string DeleteEdgeQuery(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
-        {
-            return
-                "DELETE FROM 'edges' WHERE "
-                + "graphguid = '" + graphGuid + "' "
-                + "AND tenantguid = '" + tenantGuid + "' "
-                + "AND guid = '" + edgeGuid + "';";
-        }
-
-        private string DeleteEdgesQuery(Guid tenantGuid, Guid graphGuid)
-        {
-            return
-                "DELETE FROM 'edges' WHERE tenantguid = '" + tenantGuid + "' AND graphguid = '" + graphGuid + "';";
-        }
-
-        private string DeleteEdgesQuery(Guid tenantGuid, Guid graphGuid, List<Guid> edgeGuids)
-        {
-            string ret =
-                "DELETE FROM 'edges' WHERE tenantguid = '" + tenantGuid + "' AND graphguid = '" + graphGuid + "' "
-                + "AND guid IN (";
-
-            for (int i = 0; i < edgeGuids.Count; i++)
-            {
-                if (i > 0) ret += ",";
-                ret += "'" + Sanitize(edgeGuids[i].ToString()) + "'";
-            }
-
-            ret += ");";
-            return ret;
-        }
-
-        private List<Edge> EdgesFromDataTable(DataTable table)
-        {
-            if (table == null || table.Rows == null || table.Rows.Count < 1) return null;
-
-            List<Edge> ret = new List<Edge>();
-
-            foreach (DataRow row in table.Rows)
-                ret.Add(EdgeFromDataRow(row));
-
-            return ret;
-        }
-
-        private Edge EdgeFromDataRow(DataRow row)
-        {
-            if (row == null) return null;
-
-            return new Edge
-            {
-                GUID = Guid.Parse(row["guid"].ToString()),
-                TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
-                GraphGUID = Guid.Parse(row["graphguid"].ToString()),
-                Name = GetDataRowStringValue(row, "name"),
-                From = Guid.Parse(row["fromguid"].ToString()),
-                To = Guid.Parse(row["toguid"].ToString()),
-                Cost = Convert.ToInt32(row["cost"].ToString()),
-                Data = GetDataRowJsonValue(row, "data"),
-                CreatedUtc = DateTime.Parse(row["createdutc"].ToString()),
-                LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString())
-            };
-        }
-
         #endregion
 
         #region Traversal-and-Routing
@@ -3770,11 +2317,11 @@
             Expr edgeFilter,
             Expr nodeFilter,
             List<Node> visitedNodes,
-            List<Edge> visitedEdges)
+            List<Edge> visitedEdges) 
         {
             #region Get-Edges
 
-            List<Edge> edges = GetEdgesFrom(tenantGuid, graph.GUID, start.GUID, null, edgeFilter, EnumerationOrderEnum.CreatedDescending).ToList();
+            List<Edge> edges = GetEdgesFrom(tenantGuid, graph.GUID, start.GUID, null, null, edgeFilter, EnumerationOrderEnum.CreatedDescending).ToList();
 
             #endregion
 
@@ -3835,6 +2382,59 @@
             }
 
             #endregion
+        }
+
+        #endregion
+
+        #region Validators
+
+        private void ValidateLabels(List<string> labels)
+        {
+            if (labels == null) return;
+            foreach (string label in labels)
+                if (String.IsNullOrEmpty(label)) throw new ArgumentException("The supplied labels contains a null or empty label.");
+        }
+
+        private void ValidateTags(NameValueCollection tags)
+        {
+            if (tags == null) return;
+            foreach (string key in tags.AllKeys)
+                if (String.IsNullOrEmpty(key)) throw new ArgumentException("The supplied tags contains a null or empty key.");
+        }
+
+        private void ValidateTenantExists(Guid tenantGuid)
+        {
+            if (!ExistsTenant(tenantGuid))
+                throw new ArgumentException("No tenant with GUID '" + tenantGuid + "' exists.");
+        }
+
+        private void ValidateUserExists(Guid tenantGuid, Guid userGuid)
+        {
+            if (!ExistsUser(tenantGuid, userGuid))
+                throw new ArgumentException("No user with GUID '" + userGuid + "' exists.");
+        }
+
+        private void ValidateGraphExists(Guid tenantGuid, Guid? graphGuid)  
+        {
+            if (graphGuid == null) return;
+            if (!ExistsGraph(tenantGuid, graphGuid.Value))
+                throw new ArgumentException("No graph with GUID '" + graphGuid.Value + "' exists.");
+        }
+
+        private void ValidateNodeExists(Guid tenantGuid, Guid? graphGuid, Guid? nodeGuid)
+        {
+            if (graphGuid == null) return;
+            if (nodeGuid == null) return;
+            if (!ExistsNode(tenantGuid, graphGuid.Value, nodeGuid.Value))
+                throw new ArgumentException("No node with GUID '" + nodeGuid.Value + "' exists.");
+        }
+
+        private void ValidateEdgeExists(Guid tenantGuid, Guid? graphGuid, Guid? edgeGuid)
+        {
+            if (graphGuid == null) return;
+            if (edgeGuid == null) return;
+            if (!ExistsEdge(tenantGuid, graphGuid.Value, edgeGuid.Value))
+                throw new ArgumentException("No edge with GUID '" + edgeGuid.Value + "' exists.");
         }
 
         #endregion

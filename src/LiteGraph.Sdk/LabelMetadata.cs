@@ -3,13 +3,21 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.Specialized;
+    using System.Linq;
+    using System.Security.Cryptography;
+    using System.Text.Json.Serialization;
 
     /// <summary>
-    /// Node in the graph.
+    /// Label metadata.
     /// </summary>
-    public class Node
+    public class LabelMetadata
     {
         #region Public-Members
+
+        /// <summary>
+        /// GUID.
+        /// </summary>
+        public Guid GUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Tenant GUID.
@@ -17,22 +25,27 @@
         public Guid TenantGUID { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// Globally-unique identifier.
+        /// Graph GUID.
         /// </summary>
-        public Guid GUID { get; set; } = Guid.NewGuid();
+        public Guid? GraphGUID { get; set; } = null;
 
         /// <summary>
-        /// Globally-unique identifier for the graph.
+        /// Node GUID.
         /// </summary>
-        public Guid GraphGUID { get; set; } = Guid.NewGuid();
+        public Guid? NodeGUID { get; set; } = null;
 
         /// <summary>
-        /// Name.
+        /// Edge GUID.
         /// </summary>
-        public string Name { get; set; } = null;
+        public Guid? EdgeGUID { get; set; } = null;
 
         /// <summary>
-        /// Timestamp from creation, in UTC.
+        /// Key.
+        /// </summary>
+        public string Label { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Creation timestamp, in UTC.
         /// </summary>
         public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
 
@@ -40,21 +53,6 @@
         /// Timestamp from last update, in UTC.
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Labels.
-        /// </summary>
-        public List<LabelMetadata> Labels { get; set; } = null;
-
-        /// <summary>
-        /// Tags.
-        /// </summary>
-        public NameValueCollection Tags { get; set; } = null;
-
-        /// <summary>
-        /// Object data.
-        /// </summary>
-        public object Data { get; set; } = null;
 
         #endregion
 
@@ -65,9 +63,9 @@
         #region Constructors-and-Factories
 
         /// <summary>
-        /// Instantiate the object.
+        /// Instantiate.
         /// </summary>
-        public Node()
+        public LabelMetadata()
         {
 
         }
