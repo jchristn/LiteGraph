@@ -2,25 +2,28 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.ComponentModel.Design;
     using System.Linq;
     using ExpressionTree;
     using GetSomeInput;
     using LiteGraph;
+    using LiteGraph.Helpers;
 
     class Program
     {
         static bool _RunForever = true;
+        static bool _Debug = false;
         static LiteGraphClient _Client = new LiteGraphClient();
         static Guid _TenantGuid = Guid.Parse("00000000-0000-0000-0000-000000000000");
-        static Guid _GraphGuid  = Guid.Parse("00000000-0000-0000-0000-000000000000");
+        static Guid _GraphGuid = Guid.Parse("00000000-0000-0000-0000-000000000000");
 
         static void Main(string[] args)
         {
             _Client.Logging.MinimumSeverity = 0;
             _Client.Logging.Logger = Logger;
-            _Client.Logging.LogQueries = true;
-            _Client.Logging.LogResults = true;
+            _Client.Logging.LogQueries = _Debug;
+            _Client.Logging.LogResults = _Debug;
 
             _Client.InitializeRepository();
 
@@ -31,10 +34,16 @@
                 if (userInput.Equals("?")) Menu();
                 else if (userInput.Equals("q")) _RunForever = false;
                 else if (userInput.Equals("cls")) Console.Clear();
+                else if (userInput.Equals("debug")) ToggleDebug();
+                else if (userInput.Equals("tenant")) SetTenant();
+                else if (userInput.Equals("graph")) SetGraph();
                 else if (userInput.Equals("load1")) LoadGraph1();
                 else if (userInput.Equals("load2")) LoadGraph2();
                 else if (userInput.Equals("route")) FindRoutes();
-                else if (userInput.Equals("test2")) Test2();
+                else if (userInput.Equals("test1-1")) Test1_1();
+                else if (userInput.Equals("test1-2")) Test1_2();
+                else if (userInput.Equals("test1-3")) Test1_3();
+                else if (userInput.Equals("test2-1")) Test2_1();
                 else
                 {
                     string[] parts = userInput.Split(new char[] { ' ' });
@@ -76,11 +85,18 @@
             Console.WriteLine("  ?               help, this menu");
             Console.WriteLine("  q               quit");
             Console.WriteLine("  cls             clear the screen");
+            Console.WriteLine("  debug           enable or disable debug (enabled: " + _Debug + ")");
             Console.WriteLine("");
+            Console.WriteLine("  tenant          set the tenant GUID (currently " + _TenantGuid + ")");
+            Console.WriteLine("  graph           set the graph GUID (currently " + _GraphGuid + ")");
             Console.WriteLine("  load1           load sample graph 1");
             Console.WriteLine("  load2           load sample graph 2");
             Console.WriteLine("  route           find routes between two nodes");
-            Console.WriteLine("  test2           validate node retrieval by properties");
+            Console.WriteLine("");
+            Console.WriteLine("  test1-1         using sample graph 1, validate node retrieval by labels");
+            Console.WriteLine("  test1-2         using sample graph 1, validate node retrieval by tags");
+            Console.WriteLine("  test1-3         using sample graph 1, validate node retrieval by labels and tags");
+            Console.WriteLine("  test2-1         using sample graph 2, validate node retrieval by properties");
             Console.WriteLine("");
             Console.WriteLine("  [type] [cmd]    execute a command against a given type");
             Console.WriteLine("  where:");
@@ -101,31 +117,24 @@
             }
         }
 
-        static void Test2()
+        static void ToggleDebug()
         {
-            Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-            Guid graphGuid =  Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-            Expr e1 = new Expr("$.Name", OperatorEnum.Equals, "Joel");
-            Expr e2 = new Expr("$.Age", OperatorEnum.GreaterThan, 38);
-
-            Console.WriteLine("");
-            Console.WriteLine("Retrieving nodes where Name = 'Joel'");
-            foreach (Node node in _Client.ReadNodes(tenantGuid, graphGuid, null, e1))
-            {
-                // Console.WriteLine(node.Data.ToString());
-                Console.WriteLine(_Client.ConvertData<Person>(node.Data).ToString());
-            }
-
-            Console.WriteLine("");
-            Console.WriteLine("Retrieve nodes where Age >= 38"); 
-            foreach (Node node in _Client.ReadNodes(tenantGuid, graphGuid, null, e2))
-            {
-                // Console.WriteLine(node.Data.ToString());
-                Console.WriteLine(_Client.ConvertData<Person>(node.Data).ToString());
-            }
-
-            Console.WriteLine("");
+            _Debug = !_Debug;
+            _Client.Logging.LogQueries = _Debug;
+            _Client.Logging.LogResults = _Debug;
         }
+
+        static void SetTenant()
+        {
+            _TenantGuid = Inputty.GetGuid("Tenant GUID:", _TenantGuid);
+        }
+
+        static void SetGraph()
+        {
+            _GraphGuid = Inputty.GetGuid("Graph GUID:", _GraphGuid);
+        }
+
+        #region Graph-1
 
         static void LoadGraph1()
         {
@@ -135,42 +144,404 @@
 
             #endregion
 
+            #region Labels
+
+            List<string> labelsGraph = new List<string>
+            {
+                "graph"
+            };
+
+            List<string> labelsOdd = new List<string>
+            {
+                "odd"
+            };
+
+            List<string> labelsEven = new List<string>
+            {
+                "even"
+            };
+
+            List<string> labelsNode = new List<string>
+            {
+                "node"
+            };
+
+            List<string> labelsEdge = new List<string>
+            {
+                "edge"
+            };
+
+            #endregion
+
+            #region Tags
+
+            NameValueCollection tagsGraph = new NameValueCollection();
+            tagsGraph.Add("type", "graph");
+
+            NameValueCollection tagsNode = new NameValueCollection();
+            tagsNode.Add("type", "node");
+
+            NameValueCollection tagsEdge = new NameValueCollection();
+            tagsEdge.Add("type", "edge");
+
+            NameValueCollection tagsEven = new NameValueCollection();
+            tagsEven.Add("isEven", "true");
+
+            NameValueCollection tagsOdd = new NameValueCollection();
+            tagsOdd.Add("isEven", "false");
+
+            #endregion
+
             #region Graph
 
-            Graph graph = _Client.CreateGraph(tenant.GUID, Guid.NewGuid(), "Sample Graph 1", null, new GraphMetadata { Description = "This is my sample graph #2" });
+            Graph graph = _Client.CreateGraph(
+                tenant.GUID,
+                Guid.NewGuid(),
+                "Sample Graph 1",
+                labelsGraph,
+                tagsGraph,
+                new GraphMetadata { Description = "This is my sample graph #2" });
 
             #endregion
 
             #region Nodes
 
-            Node n1 = _Client.CreateNode(new Node { TenantGUID = tenant.GUID, GraphGUID = graph.GUID, Name = "1" });
-            Node n2 = _Client.CreateNode(new Node { TenantGUID = tenant.GUID, GraphGUID = graph.GUID, Name = "2" });
-            Node n3 = _Client.CreateNode(new Node { TenantGUID = tenant.GUID, GraphGUID = graph.GUID, Name = "3" });
-            Node n4 = _Client.CreateNode(new Node { TenantGUID = tenant.GUID, GraphGUID = graph.GUID, Name = "4" });
-            Node n5 = _Client.CreateNode(new Node { TenantGUID = tenant.GUID, GraphGUID = graph.GUID, Name = "5" });
-            Node n6 = _Client.CreateNode(new Node { TenantGUID = tenant.GUID, GraphGUID = graph.GUID, Name = "6" });
-            Node n7 = _Client.CreateNode(new Node { TenantGUID = tenant.GUID, GraphGUID = graph.GUID, Name = "7" });
-            Node n8 = _Client.CreateNode(new Node { TenantGUID = tenant.GUID, GraphGUID = graph.GUID, Name = "8" });
+            Node n1 = _Client.CreateNode(new Node
+            {
+                TenantGUID = tenant.GUID,
+                GraphGUID = graph.GUID,
+                Name = "1",
+                Labels = StringHelpers.Combine(labelsOdd, labelsNode),
+                Tags = NvcHelpers.Combine(tagsOdd, tagsNode)
+            });
+
+            Node n2 = _Client.CreateNode(new Node
+            {
+                TenantGUID = tenant.GUID,
+                GraphGUID = graph.GUID,
+                Name = "2",
+                Labels = StringHelpers.Combine(labelsEven, labelsNode),
+                Tags = NvcHelpers.Combine(tagsEven, tagsNode)
+            });
+
+            Node n3 = _Client.CreateNode(new Node
+            {
+                TenantGUID = tenant.GUID,
+                GraphGUID = graph.GUID,
+                Name = "3",
+                Labels = StringHelpers.Combine(labelsOdd, labelsNode),
+                Tags = NvcHelpers.Combine(tagsOdd, tagsNode)
+            });
+
+            Node n4 = _Client.CreateNode(new Node
+            {
+                TenantGUID = tenant.GUID,
+                GraphGUID = graph.GUID,
+                Name = "4",
+                Labels = StringHelpers.Combine(labelsEven, labelsNode),
+                Tags = NvcHelpers.Combine(tagsEven, tagsNode)
+            });
+
+            Node n5 = _Client.CreateNode(new Node
+            {
+                TenantGUID = tenant.GUID,
+                GraphGUID = graph.GUID,
+                Name = "5",
+                Labels = StringHelpers.Combine(labelsOdd, labelsNode),
+                Tags = NvcHelpers.Combine(tagsOdd, tagsNode)
+            });
+
+            Node n6 = _Client.CreateNode(new Node
+            {
+                TenantGUID = tenant.GUID,
+                GraphGUID = graph.GUID,
+                Name = "6",
+                Labels = StringHelpers.Combine(labelsEven, labelsNode),
+                Tags = NvcHelpers.Combine(tagsEven, tagsNode)
+            });
+
+            Node n7 = _Client.CreateNode(new Node
+            {
+                TenantGUID = tenant.GUID,
+                GraphGUID = graph.GUID,
+                Name = "7",
+                Labels = StringHelpers.Combine(labelsOdd, labelsNode),
+                Tags = NvcHelpers.Combine(tagsOdd, tagsNode)
+            });
+
+            Node n8 = _Client.CreateNode(new Node
+            {
+                TenantGUID = tenant.GUID,
+                GraphGUID = graph.GUID,
+                Name = "8",
+                Labels = StringHelpers.Combine(labelsEven, labelsNode),
+                Tags = NvcHelpers.Combine(tagsEven, tagsNode)
+            });
 
             #endregion
 
             #region Edges
 
-            Edge e1 = _Client.CreateEdge(tenant.GUID, graph.GUID, n1, n4, "1 to 4");
-            Edge e2 = _Client.CreateEdge(tenant.GUID, graph.GUID, n1, n5, "1 to 5");
-            Edge e3 = _Client.CreateEdge(tenant.GUID, graph.GUID, n2, n4, "2 to 4");
-            Edge e4 = _Client.CreateEdge(tenant.GUID, graph.GUID, n2, n5, "2 to 5");
-            Edge e5 = _Client.CreateEdge(tenant.GUID, graph.GUID, n3, n4, "3 to 4");
-            Edge e6 = _Client.CreateEdge(tenant.GUID, graph.GUID, n3, n5, "3 to 5");
-            Edge e7 = _Client.CreateEdge(tenant.GUID, graph.GUID, n4, n6, "4 to 6");
-            Edge e8 = _Client.CreateEdge(tenant.GUID, graph.GUID, n4, n7, "4 to 7");
-            Edge e9 = _Client.CreateEdge(tenant.GUID, graph.GUID, n4, n8, "4 to 8");
-            Edge e10 = _Client.CreateEdge(tenant.GUID, graph.GUID, n5, n6, "5 to 6");
-            Edge e11 = _Client.CreateEdge(tenant.GUID, graph.GUID, n5, n7, "5 to 7");
-            Edge e12 = _Client.CreateEdge(tenant.GUID, graph.GUID, n5, n8, "5 to 8");
+            Edge e1 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n1,
+                n4,
+                "1 to 4",
+                1,
+                StringHelpers.Combine(labelsOdd, labelsEdge),
+                NvcHelpers.Combine(tagsOdd, tagsEdge));
+
+            Edge e2 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n1,
+                n5,
+                "1 to 5",
+                2,
+                StringHelpers.Combine(labelsEven, labelsEdge),
+                NvcHelpers.Combine(tagsEven, tagsEdge));
+
+            Edge e3 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n2,
+                n4,
+                "2 to 4",
+                3,
+                StringHelpers.Combine(labelsOdd, labelsEdge),
+                NvcHelpers.Combine(tagsOdd, tagsEdge));
+
+            Edge e4 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n2,
+                n5,
+                "2 to 5",
+                4,
+                StringHelpers.Combine(labelsEven, labelsEdge),
+                NvcHelpers.Combine(tagsEven, tagsEdge));
+
+            Edge e5 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n3,
+                n4,
+                "3 to 4",
+                5,
+                StringHelpers.Combine(labelsOdd, labelsEdge),
+                NvcHelpers.Combine(tagsOdd, tagsEdge));
+
+            Edge e6 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n3,
+                n5,
+                "3 to 5",
+                6,
+                StringHelpers.Combine(labelsEven, labelsEdge),
+                NvcHelpers.Combine(tagsEven, tagsEdge));
+
+            Edge e7 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n4,
+                n6,
+                "4 to 6",
+                7,
+                StringHelpers.Combine(labelsOdd, labelsEdge),
+                NvcHelpers.Combine(tagsOdd, tagsEdge));
+
+            Edge e8 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n4,
+                n7,
+                "4 to 7",
+                8,
+                StringHelpers.Combine(labelsEven, labelsEdge),
+                NvcHelpers.Combine(tagsEven, tagsEdge));
+
+            Edge e9 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n4,
+                n8,
+                "4 to 8",
+                9,
+                StringHelpers.Combine(labelsOdd, labelsEdge),
+                NvcHelpers.Combine(tagsOdd, tagsEdge));
+
+            Edge e10 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n5,
+                n6,
+                "5 to 6",
+                10,
+                StringHelpers.Combine(labelsEven, labelsEdge),
+                NvcHelpers.Combine(tagsEven, tagsEdge));
+
+            Edge e11 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n5,
+                n7,
+                "5 to 7",
+                11,
+                StringHelpers.Combine(labelsOdd, labelsEdge),
+                NvcHelpers.Combine(tagsOdd, tagsEdge));
+
+            Edge e12 = _Client.CreateEdge(
+                tenant.GUID,
+                graph.GUID,
+                n5,
+                n8,
+                "5 to 8",
+                12,
+                StringHelpers.Combine(labelsEven, labelsEdge),
+                NvcHelpers.Combine(tagsEven, tagsEdge));
 
             #endregion
         }
+
+        static void Test1_1()
+        {
+            Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving graphs where label = 'graph'");
+
+            List<string> labelGraph = new List<string>
+            {
+                "graph"
+            };
+
+            foreach (Graph graph in _Client.ReadGraphs(tenantGuid, labelGraph))
+                Console.WriteLine("| " + graph.GUID + ": " + graph.Name);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving nodes with labels 'node' and 'even'");
+
+            List<string> labelEvenNodes = new List<string>
+            {
+                "node",
+                "even"
+            };
+
+            foreach (Node node in _Client.ReadNodes(tenantGuid, graphGuid, labelEvenNodes))
+                Console.WriteLine("| " + node.GUID + ": " + node.Name);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving edges with labels 'edge' and 'odd'");
+
+            List<string> labelOddEdges = new List<string>
+            {
+                "edge",
+                "odd"
+            };
+
+            foreach (Edge edge in _Client.ReadEdges(tenantGuid, graphGuid, labelOddEdges))
+                Console.WriteLine("| " + edge.GUID + ": " + edge.Name);
+
+            Console.WriteLine("");
+        }
+
+        static void Test1_2()
+        {
+            Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving graphs where tag 'type' = 'graph'");
+
+            NameValueCollection tagsGraph = new NameValueCollection();
+            tagsGraph.Add("type", "graph");
+
+            foreach (Graph graph in _Client.ReadGraphs(tenantGuid, null, tagsGraph))
+                Console.WriteLine("| " + graph.GUID + ": " + graph.Name);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving nodes where tag 'type' = 'node' and 'isEven' = 'true'");
+
+            NameValueCollection tagsEvenNodes = new NameValueCollection();
+            tagsEvenNodes.Add("type", "node");
+            tagsEvenNodes.Add("isEven", "true");
+
+            foreach (Node node in _Client.ReadNodes(tenantGuid, graphGuid, null, tagsEvenNodes))
+                Console.WriteLine("| " + node.GUID + ": " + node.Name);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving edges where tag 'type' = 'edge' and 'isEven' = 'false'");
+
+            NameValueCollection tagsOddEdges = new NameValueCollection();
+            tagsOddEdges.Add("type", "edge");
+            tagsOddEdges.Add("isEven", "false");
+
+            foreach (Edge edge in _Client.ReadEdges(tenantGuid, graphGuid, null, tagsOddEdges))
+                Console.WriteLine("| " + edge.GUID + ": " + edge.Name);
+
+            Console.WriteLine("");
+        }
+
+        static void Test1_3()
+        {
+            Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving graphs where label = 'graph', and tag 'type' = 'graph'");
+
+            List<string> labelGraph = new List<string>
+            {
+                "graph"
+            };
+
+            NameValueCollection tagsGraph = new NameValueCollection();
+            tagsGraph.Add("type", "graph");
+
+            foreach (Graph graph in _Client.ReadGraphs(tenantGuid, labelGraph, tagsGraph))
+                Console.WriteLine("| " + graph.GUID + ": " + graph.Name);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving nodes where labels 'node' and 'even' are present, and tag 'type' = 'node' and 'isEven' = 'true'");
+
+            List<string> labelEvenNodes = new List<string>
+            {
+                "node",
+                "even"
+            };
+
+            NameValueCollection tagsEvenNodes = new NameValueCollection();
+            tagsEvenNodes.Add("type", "node");
+            tagsEvenNodes.Add("isEven", "true");
+
+            foreach (Node node in _Client.ReadNodes(tenantGuid, graphGuid, labelEvenNodes, tagsEvenNodes))
+                Console.WriteLine("| " + node.GUID + ": " + node.Name);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving edges where labels 'edge' and 'odd' are present, and tag 'type' = 'edge' and 'isEven' = 'false'");
+
+            List<string> labelOddEdges = new List<string>
+            {
+                "edge",
+                "odd"
+            };
+
+            NameValueCollection tagsOddEdges = new NameValueCollection();
+            tagsOddEdges.Add("type", "edge");
+            tagsOddEdges.Add("isEven", "false");
+
+            foreach (Edge edge in _Client.ReadEdges(tenantGuid, graphGuid, labelOddEdges, tagsOddEdges))
+                Console.WriteLine("| " + edge.GUID + ": " + edge.Name);
+
+            Console.WriteLine("");
+        }
+
+        #endregion
+
+        #region Graph-2
 
         static void LoadGraph2()
         {
@@ -182,7 +553,7 @@
 
             #region Graph
 
-            Graph graph = _Client.CreateGraph(tenant.GUID, Guid.NewGuid(), "Sample Graph 2", null, new GraphMetadata { Description = "This is my sample graph #2" });
+            Graph graph = _Client.CreateGraph(tenant.GUID, Guid.NewGuid(), "Sample Graph 2", null, null, new GraphMetadata { Description = "This is my sample graph #2" });
 
             #endregion
 
@@ -272,12 +643,42 @@
             #endregion
         }
 
+        static void Test2_1()
+        {
+            Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+            Expr e1 = new Expr("$.Name", OperatorEnum.Equals, "Joel");
+            Expr e2 = new Expr("$.Age", OperatorEnum.GreaterThan, 38);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving nodes where Name = 'Joel'");
+            foreach (Node node in _Client.ReadNodes(tenantGuid, graphGuid, null, null, e1))
+            {
+                // Console.WriteLine(node.Data.ToString());
+                Console.WriteLine(_Client.ConvertData<Person>(node.Data).ToString());
+            }
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieve nodes where Age >= 38");
+            foreach (Node node in _Client.ReadNodes(tenantGuid, graphGuid, null, null, e2))
+            {
+                // Console.WriteLine(node.Data.ToString());
+                Console.WriteLine(_Client.ConvertData<Person>(node.Data).ToString());
+            }
+
+            Console.WriteLine("");
+        }
+
+        #endregion
+
+        #region Primitives
+
         static void FindRoutes()
         {
             Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-            Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-            Guid fromGuid  = Inputty.GetGuid("From GUID  :", default(Guid));
-            Guid toGuid    = Inputty.GetGuid("To GUID    :", default(Guid));
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+            Guid fromGuid = Inputty.GetGuid("From GUID  :", default(Guid));
+            Guid toGuid = Inputty.GetGuid("To GUID    :", default(Guid));
             object obj = _Client.GetRoutes(SearchTypeEnum.DepthFirstSearch, tenantGuid, graphGuid, fromGuid, toGuid);
 
             if (obj != null)
@@ -327,13 +728,13 @@
             else if (str.Equals("node"))
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-                Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+                Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
                 obj = _Client.ReadNodes(tenantGuid, graphGuid);
             }
             else if (str.Equals("edge"))
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-                Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+                Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
                 obj = _Client.ReadEdges(tenantGuid, graphGuid);
             }
 
@@ -359,15 +760,15 @@
             else if (str.Equals("node"))
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-                Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-                Guid guid       = Inputty.GetGuid("Node GUID   :", default(Guid));
+                Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+                Guid guid = Inputty.GetGuid("Node GUID   :", default(Guid));
                 obj = _Client.ReadNode(tenantGuid, graphGuid, guid);
             }
             else if (str.Equals("edge"))
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-                Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-                Guid guid       = Inputty.GetGuid("Edge GUID   :", default(Guid));
+                Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+                Guid guid = Inputty.GetGuid("Edge GUID   :", default(Guid));
                 obj = _Client.ReadEdge(tenantGuid, graphGuid, guid);
             }
 
@@ -393,15 +794,15 @@
             else if (str.Equals("node"))
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-                Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-                Guid guid       = Inputty.GetGuid("Node GUID   :", default(Guid));
+                Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+                Guid guid = Inputty.GetGuid("Node GUID   :", default(Guid));
                 exists = _Client.ExistsNode(tenantGuid, graphGuid, guid);
             }
             else if (str.Equals("edge"))
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-                Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-                Guid guid       = Inputty.GetGuid("Edge GUID   :", default(Guid));
+                Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+                Guid guid = Inputty.GetGuid("Edge GUID   :", default(Guid));
                 exists = _Client.ExistsEdge(tenantGuid, graphGuid, guid);
             }
 
@@ -452,15 +853,15 @@
             else if (str.Equals("node"))
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-                Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-                Guid guid       = Inputty.GetGuid("Node GUID   :", default(Guid));
+                Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+                Guid guid = Inputty.GetGuid("Node GUID   :", default(Guid));
                 _Client.DeleteNode(tenantGuid, graphGuid, guid);
             }
             else if (str.Equals("edge"))
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-                Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-                Guid guid       = Inputty.GetGuid("Edge GUID   :", default(Guid));
+                Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+                Guid guid = Inputty.GetGuid("Edge GUID   :", default(Guid));
                 _Client.DeleteEdge(tenantGuid, graphGuid, guid);
             }
         }
@@ -475,21 +876,21 @@
             if (str.Equals("graph"))
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-                IEnumerable<Graph> graphResult = _Client.ReadGraphs(tenantGuid, null, expr, EnumerationOrderEnum.CreatedDescending);
+                IEnumerable<Graph> graphResult = _Client.ReadGraphs(tenantGuid, null, null, expr, EnumerationOrderEnum.CreatedDescending);
                 if (graphResult != null) resultJson = Serializer.SerializeJson(graphResult.ToList());
             }
             else if (str.Equals("node"))
             {
-                Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid); 
-                Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-                IEnumerable<Node> nodeResult = _Client.ReadNodes(tenantGuid, graphGuid, null, expr, EnumerationOrderEnum.CreatedDescending);
+                Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+                Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+                IEnumerable<Node> nodeResult = _Client.ReadNodes(tenantGuid, graphGuid, null, null, expr, EnumerationOrderEnum.CreatedDescending);
                 if (nodeResult != null) resultJson = Serializer.SerializeJson(nodeResult.ToList());
             }
             else if (str.Equals("edge"))
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-                Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-                IEnumerable<Edge> edgeResult = _Client.ReadEdges(tenantGuid, graphGuid, null, expr, EnumerationOrderEnum.CreatedDescending);
+                Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+                IEnumerable<Edge> edgeResult = _Client.ReadEdges(tenantGuid, graphGuid, null, null, expr, EnumerationOrderEnum.CreatedDescending);
                 if (edgeResult != null) resultJson = Serializer.SerializeJson(edgeResult.ToList());
             }
 
@@ -525,8 +926,8 @@
         static void NodeEdgesTo()
         {
             Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-            Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-            Guid guid       = Inputty.GetGuid("Node GUID   :", default(Guid));
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+            Guid guid = Inputty.GetGuid("Node GUID   :", default(Guid));
             object obj = _Client.GetEdgesTo(tenantGuid, graphGuid, guid);
 
             if (obj != null)
@@ -536,8 +937,8 @@
         static void NodeEdgesFrom()
         {
             Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-            Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-            Guid guid       = Inputty.GetGuid("Node GUID   :", default(Guid));
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+            Guid guid = Inputty.GetGuid("Node GUID   :", default(Guid));
             object obj = _Client.GetEdgesFrom(tenantGuid, graphGuid, guid);
 
             if (obj != null)
@@ -547,9 +948,9 @@
         static void NodeEdgesBetween()
         {
             Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-            Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-            Guid fromGuid   = Inputty.GetGuid("From GUID   :", default(Guid));
-            Guid toGuid     = Inputty.GetGuid("To GUID     :", default(Guid));
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+            Guid fromGuid = Inputty.GetGuid("From GUID   :", default(Guid));
+            Guid toGuid = Inputty.GetGuid("To GUID     :", default(Guid));
             object obj = _Client.GetEdgesBetween(tenantGuid, graphGuid, fromGuid, toGuid);
 
             if (obj != null)
@@ -559,8 +960,8 @@
         static void NodeParents()
         {
             Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-            Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-            Guid guid       = Inputty.GetGuid("Node GUID   :", default(Guid));
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+            Guid guid = Inputty.GetGuid("Node GUID   :", default(Guid));
             object obj = _Client.GetParents(tenantGuid, graphGuid, guid);
 
             if (obj != null)
@@ -570,8 +971,8 @@
         static void NodeChildren()
         {
             Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-            Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-            Guid guid       = Inputty.GetGuid("Node GUID   :", default(Guid));
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+            Guid guid = Inputty.GetGuid("Node GUID   :", default(Guid));
             object obj = _Client.GetChildren(tenantGuid, graphGuid, guid);
 
             if (obj != null)
@@ -581,12 +982,14 @@
         static void NodeNeighbors()
         {
             Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
-            Guid graphGuid  = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
-            Guid guid       = Inputty.GetGuid("Node GUID   :", default(Guid));
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+            Guid guid = Inputty.GetGuid("Node GUID   :", default(Guid));
             object obj = _Client.GetNeighbors(tenantGuid, graphGuid, guid);
 
             if (obj != null)
                 Console.WriteLine(Serializer.SerializeJson(obj, true));
         }
+
+        #endregion
     }
 }

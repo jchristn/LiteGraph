@@ -39,6 +39,9 @@
 		<None Include="Dockerrun.sh">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Include="CopyDbFromTest.bat">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

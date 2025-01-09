@@ -221,6 +221,21 @@
         public List<Edge> Edges { get; set; } = null;
 
         /// <summary>
+        /// Label GUID.
+        /// </summary>
+        public Guid? LabelGUID { get; set; } = null;
+
+        /// <summary>
+        /// Label.
+        /// </summary>
+        public LabelMetadata Label { get; set; } = null;
+
+        /// <summary>
+        /// Labels.
+        /// </summary>
+        public List<LabelMetadata> Labels { get; set; } = null;
+
+        /// <summary>
         /// Tag GUID.
         /// </summary>
         public Guid? TagGUID { get; set; } = null;
@@ -385,10 +400,11 @@
                 if (_Url.UrlParameters.AllKeys.Contains("tenantGuid")) TenantGUID = Guid.Parse(_Url.GetParameter("tenantGuid"));
                 if (_Url.UrlParameters.AllKeys.Contains("userGuid")) UserGUID = Guid.Parse(_Url.GetParameter("userGuid"));
                 if (_Url.UrlParameters.AllKeys.Contains("credentialGuid")) CredentialGUID = Guid.Parse(_Url.GetParameter("credentialGuid"));
+                if (_Url.UrlParameters.AllKeys.Contains("labelGuid")) LabelGUID = Guid.Parse(_Url.GetParameter("labelGuid"));
+                if (_Url.UrlParameters.AllKeys.Contains("tagGuid")) TagGUID = Guid.Parse(_Url.GetParameter("tagGuid"));
                 if (_Url.UrlParameters.AllKeys.Contains("graphGuid")) GraphGUID = Guid.Parse(_Url.GetParameter("graphGuid"));
                 if (_Url.UrlParameters.AllKeys.Contains("nodeGuid")) NodeGUID = Guid.Parse(_Url.GetParameter("nodeGuid"));
                 if (_Url.UrlParameters.AllKeys.Contains("edgeGuid")) EdgeGUID = Guid.Parse(_Url.GetParameter("edgeGuid"));
-                if (_Url.UrlParameters.AllKeys.Contains("tagGuid")) TagGUID = Guid.Parse(_Url.GetParameter("tagGuid"));
             }
 
             if (_Url.QueryExists(Constants.SkipQuerystring))

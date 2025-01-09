@@ -137,6 +137,41 @@
 
         #endregion
 
+        #region Labels
+
+        /// <summary>
+        /// LabelCreate
+        /// </summary>
+        [EnumMember(Value = "LabelCreate")]
+        LabelCreate,
+        /// <summary>
+        /// LabelDelete
+        /// </summary>
+        [EnumMember(Value = "LabelDelete")]
+        LabelDelete,
+        /// <summary>
+        /// LabelExists
+        /// </summary>
+        [EnumMember(Value = "LabelExists")]
+        LabelExists,
+        /// <summary>
+        /// LabelRead
+        /// </summary>
+        [EnumMember(Value = "LabelRead")]
+        LabelRead,
+        /// <summary>
+        /// LabelReadMany
+        /// </summary>
+        [EnumMember(Value = "LabelReadMany")]
+        LabelReadMany,
+        /// <summary>
+        /// LabelUpdate
+        /// </summary>
+        [EnumMember(Value = "LabelUpdate")]
+        LabelUpdate,
+
+        #endregion
+
         #region Tags
 
         /// <summary>

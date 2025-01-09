@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
-		<Version>3.0.0</Version>
+		<Version>3.1.0</Version>
 		<Description>SDK for LiteGraph, a simple graph database abstraction with a RESTful interface, JSON data query support, and GEXF output support.</Description>
 		<PackageReleaseNotes>Refactor, multitenancy, users, credentials, and tags, including tag based retrieval</PackageReleaseNotes>
 		<ApplicationIcon>assets\favicon.ico</ApplicationIcon>

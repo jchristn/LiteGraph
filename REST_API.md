@@ -42,6 +42,19 @@
 }
 ```
 
+### Label
+```
+{
+    "GUID": "738d4956-a833-429a-9531-c99336638617",
+    "TenantGUID": "ba1dc0a6-372d-47ee-aea5-75e7dbbbd175",
+    "GraphGUID": "97826e1a-d0c1-4884-820a-bfda74b3be33",
+    "EdgeGUID": "971da046-8234-4627-8ae8-e062311874c8",
+    "Label": "edge",
+    "CreatedUtc": "2025-01-08T23:28:05.312128Z",
+    "LastUpdateUtc": "2025-01-08T23:28:05.312128Z"
+}
+```
+
 ### Tag
 ```
 {
@@ -230,6 +243,19 @@ Credential APIs require administrator bearer token authentication.
 | Update             | PUT    | /v1.0/tenants/[guid]/credentials/[guid] |
 | Delete             | DELETE | /v1.0/tenants/[guid]/credentials/[guid] |
 | Exists             | HEAD   | /v1.0/tenants/[guid]/credentials/[guid] |
+
+## Label APIs
+
+Label APIs require administrator bearer token authentication.
+
+| API                | Method | URL                                |
+|--------------------|--------|------------------------------------|
+| Create             | PUT    | /v1.0/tenants/[guid]/labels        |
+| Read many          | GET    | /v1.0/tenants/[guid]/labels        |
+| Read               | GET    | /v1.0/tenants/[guid]/labels/[guid] |
+| Update             | PUT    | /v1.0/tenants/[guid]/labels/[guid] |
+| Delete             | DELETE | /v1.0/tenants/[guid]/labels/[guid] |
+| Exists             | HEAD   | /v1.0/tenants/[guid]/labels/[guid] |
 
 ## Tag APIs
 

@@ -6,21 +6,13 @@
 
 LiteGraph is a lightweight graph database built using Sqlite with support for exporting to GEXF.
 
-## New in v3.0.x
+## New in v3.1.x
 
-- Major internal refactor to support multitenancy and authentication, including tenants (`TenantMetadata`), users (`UserMaster`), and credentials (`Credential`)
-- Graph, node, and edge objects are now contained within a given tenant (`TenantGUID`)
-- Extensible key and value metadata (`TagMetadata`) support for graphs, nodes, and edges
-- Schema changes to make column names more accurate (`id` becomes `guid`)
-- Setup script to create default records
-- Environment variables for webserver port (`LITEGRAPH_PORT`) and database filename (`LITEGRAPH_DB`)
-- Moved logic into a protocol-agnostic handler layer to support future protocols
-- Added last update UTC timestamp to each object (`LastUpdateUtc`)
-- Authentication using bearer tokens (`Authorization: Bearer [token]`)
-- System administrator bearer token defined within the settings file (`Settings.LiteGraph.AdminBearerToken`) with default value `litegraphadmin`
-- Tag-based retrieval and filtering for graphs, nodes, and edges
-- Updated SDK and test project
-- Updated Postman collection
+- Added support for labels on graphs, nodes, edges (string list)
+- Updated SDK, test, and Postman collections accordingly
+- Updated GEXF export to support labels and tags
+- Internal refactor to reduce code bloat
+- Multiple bugfixes and QoL improvements
 
 ## Bugs, Feedback, or Enhancement Requests
 
@@ -70,11 +62,30 @@ foreach (RouteDetail route in graph.GetRoutes(
 graph.ExportGraphToGexfFile(tenant.GUID, graph.GUID, "mygraph.gexf");
 ```
 
-## Working with Object Tags and Data
+## Working with Object Labels, Tags, and Data
 
-The `Tags` property is a `NameValueCollection` allowing you to attach key-value pairs to any `Graph`, `Node`, or `Edge`.  These key-value pairs are stored in a separate look-aside table which is accessed upon creation, update, deletion, retrieval, or search of the aforementioned types.
+The `Labels` property is a `List<string>` allowing to attach labels to any `Graph`, `Node`, or `Edge`.  The `Tags` property is a `NameValueCollection` allowing you to attach key-value pairs to any `Graph`, `Node`, or `Edge`.  These objects are stored in separate look-aside tables which are consulted or modified upon creation, update, deletion, retrieval, or search of the aforementioned types.
 
 The `Data` property can also be attached to any `Graph`, `Node`, or `Edge` object and supports any object serializable to JSON.  This value is retrieved when reading or searching objects, and filters can be created to retrieve only objects that have matches based on elements in the object stored in `Data`.  Refer to [ExpressionTree](https://github.com/jchristn/ExpressionTree/) for information on how to craft expressions.
+
+All of these properties can be used in conjunction with one another.
+
+### Storing and Searching Labels
+
+```csharp
+List<string> labels = new List<string> 
+{
+  "test",
+  "label1"
+};
+
+graph.CreateNode(tenant.GUID, new Node { Name = "Joel", Labels = labels });
+
+foreach (Node node in graph.ReadNodes(tenant.GUID, graph.GUID, labels))
+{
+  Console.WriteLine(...);
+}
+```
 
 ### Storing and Searching Tags
 
@@ -84,7 +95,7 @@ nvc.Add("key", "value");
 
 graph.CreateNode(tenant.GUID, new Node { Name = "Joel", Tags = nvc });
 
-foreach (Node node in graph.ReadNodes(tenant.GUID, graph.GUID, nvc))
+foreach (Node node in graph.ReadNodes(tenant.GUID, graph.GUID, null, nvc))
 {
   Console.WriteLine(...);
 }

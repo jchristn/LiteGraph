@@ -1,6 +1,7 @@
 ﻿namespace LiteGraph.Sdk
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.Specialized;
 
     /// <summary>
@@ -34,6 +35,11 @@
         /// Timestamp from last update, in UTC.
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Labels.
+        /// </summary>
+        public List<string> Labels { get; set; } = null;
 
         /// <summary>
         /// Tags.

@@ -45,6 +45,22 @@
         }
 
         /// <summary>
+        /// Search labels.
+        /// </summary>
+        public List<string> Labels
+        {
+            get
+            {
+                return _Labels;
+            }
+            set
+            {
+                if (value == null) value = new List<string>();
+                _Labels = value;
+            }
+        }
+
+        /// <summary>
         /// Search tags.
         /// </summary>
         public NameValueCollection Tags
@@ -70,6 +86,7 @@
         #region Private-Members
 
         private int _Skip = 0;
+        private List<string> _Labels = new List<string>();
         private NameValueCollection _Tags { get; set; } = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
 
         #endregion

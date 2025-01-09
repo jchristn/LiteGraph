@@ -128,6 +128,17 @@
 
             #endregion
 
+            #region Labels
+
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/labels", LabelCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/labels", LabelReadManyRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/labels/{labelGuid}", LabelReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/tenants/{tenantGuid}/labels/{labelGuid}", LabelExistsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/labels/{labelGuid}", LabelUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/labels/{labelGuid}", LabelDeleteRoute, ExceptionRoute);
+
+            #endregion
+
             #region Tags
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/tags", TagCreateRoute, ExceptionRoute);
@@ -683,6 +694,63 @@
 
         #endregion
 
+        #region Label-Routes
+
+        private async Task LabelCreateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.Label = _Serializer.DeserializeJson<LabelMetadata>(ctx.Request.DataAsString);
+            req.Label.TenantGUID = req.TenantGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.LabelCreate);
+        }
+
+        private async Task LabelReadManyRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.LabelReadMany);
+        }
+
+        private async Task LabelReadRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.LabelRead);
+        }
+
+        private async Task LabelExistsRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.LabelExists);
+        }
+
+        private async Task LabelUpdateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.Label = _Serializer.DeserializeJson<LabelMetadata>(ctx.Request.DataAsString);
+            req.Label.TenantGUID = req.TenantGUID.Value;
+            req.Label.GUID = req.LabelGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.LabelUpdate);
+        }
+
+        private async Task LabelDeleteRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.LabelDelete);
+        }
+
+        #endregion
+
         #region Tag-Routes
 
         private async Task TagCreateRoute(HttpContextBase ctx)
@@ -825,18 +893,28 @@
 
         private async Task GraphGexfExportRoute(HttpContextBase ctx)
         {
-            RequestContext req = (RequestContext)ctx.Metadata;
-            ResponseContext resp = await _ServiceHandler.GraphGexfExport(req);
-            if (!resp.Success)
+            try
             {
-                ctx.Response.StatusCode = 500;
-                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.InternalError), true));
+                RequestContext req = (RequestContext)ctx.Metadata;
+                ResponseContext resp = await _ServiceHandler.GraphGexfExport(req);
+                if (!resp.Success)
+                {
+                    ctx.Response.StatusCode = 500;
+                    await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.InternalError), true));
+                }
+                else
+                {
+                    ctx.Response.ContentType = Constants.XmlContentType;
+                    ctx.Response.StatusCode = 200;
+                    await ctx.Response.Send(resp.Data.ToString());
+                }
             }
-            else
+            catch (Exception e)
             {
-                ctx.Response.ContentType = Constants.XmlContentType;
-                ctx.Response.StatusCode = 200;
-                await ctx.Response.Send(resp.Data.ToString());
+                _Logging.Warn(_Header + "GEXF export error:" + Environment.NewLine + e.ToString());
+                ctx.Response.StatusCode = 500;
+                ctx.Response.ContentType = Constants.JsonContentType;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.InternalError, null, e.Message), true));
             }
         }
 
@@ -1150,6 +1228,7 @@
                 }
                 else if (resp.Success)
                 {
+                    ctx.Response.StatusCode = resp.StatusCode;
                     if (resp.Data != null) await ctx.Response.Send(_Serializer.SerializeJson(resp.Data, true));
                     else await ctx.Response.Send();
                     return;

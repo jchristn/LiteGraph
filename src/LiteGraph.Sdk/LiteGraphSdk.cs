@@ -3,6 +3,7 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Net.Http;
     using System.Text;
     using System.Threading;
@@ -48,6 +49,7 @@
 
         /// <summary>
         /// Check if a tenant exists by GUID.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="guid">GUID.</param>
         /// <param name="token">Cancellation token.</param>
@@ -60,6 +62,7 @@
 
         /// <summary>
         /// Create a tenant.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="guid">GUID.</param>
         /// <param name="name">Name.</param>
@@ -74,6 +77,7 @@
 
         /// <summary>
         /// Read tenants.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Tenants.</returns>
@@ -85,6 +89,7 @@
 
         /// <summary>
         /// Read tenant.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="guid">GUID.</param>
         /// <param name="token">Cancellation token.</param>
@@ -97,6 +102,7 @@
 
         /// <summary>
         /// Update a tenant.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenant">Tenant.</param>
         /// <param name="token">Cancellation token.</param>
@@ -110,9 +116,10 @@
 
         /// <summary>
         /// Delete a tenant.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="guid">GUID.</param>
-        /// <param name="force">Force recursive deletion of subordinate objects.</param>
+        /// <param name="force">Force recursive deletion of subordinate objects.  The request will otherwise fail if nodes exist in the graph.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Task.</returns>
         public async Task DeleteTenant(Guid guid, bool force = false, CancellationToken token = default)
@@ -128,6 +135,7 @@
 
         /// <summary>
         /// Check if a user exists by GUID.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary> 
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
@@ -141,6 +149,7 @@
 
         /// <summary>
         /// Create a user.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="user">User.</param>
@@ -155,6 +164,7 @@
 
         /// <summary>
         /// Read users.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="token">Cancellation token.</param>
@@ -167,6 +177,7 @@
 
         /// <summary>
         /// Read user.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
@@ -180,6 +191,7 @@
 
         /// <summary>
         /// Update a user.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="user">User.</param>
@@ -194,6 +206,7 @@
 
         /// <summary>
         /// Delete a user.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
@@ -211,6 +224,7 @@
 
         /// <summary>
         /// Check if a credential exists by GUID.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary> 
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
@@ -224,6 +238,7 @@
 
         /// <summary>
         /// Create a credential.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="credential">Credential.</param>
@@ -238,6 +253,7 @@
 
         /// <summary>
         /// Read credentials.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="token">Cancellation token.</param>
@@ -250,6 +266,7 @@
 
         /// <summary>
         /// Read credential.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
@@ -263,6 +280,7 @@
 
         /// <summary>
         /// Update a credential.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="credential">Credential.</param>
@@ -277,6 +295,7 @@
 
         /// <summary>
         /// Delete a credential.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
@@ -290,10 +309,100 @@
 
         #endregion
 
+        #region Labels
+
+        /// <summary>
+        /// Check if a label exists by GUID.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary> 
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>True if exists.</returns>
+        public async Task<bool> LabelExists(Guid tenantGuid, Guid guid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/labels/" + guid;
+            return await Head(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Create a label.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="label">Label.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Label.</returns>
+        public async Task<LabelMetadata> CreateLabel(Guid tenantGuid, LabelMetadata label, CancellationToken token = default)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/labels";
+            return await PutCreate<LabelMetadata>(url, label, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Read labels.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Labels.</returns>
+        public async Task<IEnumerable<LabelMetadata>> ReadLabels(Guid tenantGuid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/labels";
+            return await GetMany<LabelMetadata>(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Read label.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Label.</returns>
+        public async Task<LabelMetadata> ReadLabel(Guid tenantGuid, Guid guid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/labels/" + guid;
+            return await Get<LabelMetadata>(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Update a label.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="label">Label.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Label.</returns>
+        public async Task<LabelMetadata> UpdateLabel(Guid tenantGuid, LabelMetadata label, CancellationToken token = default)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/labels/" + label.GUID;
+            return await PutUpdate<LabelMetadata>(url, label, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Delete a label.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task DeleteLabel(Guid tenantGuid, Guid guid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/labels/" + guid;
+            await Delete(url, token).ConfigureAwait(false);
+        }
+
+        #endregion
+
         #region Tags
 
         /// <summary>
         /// Check if a tag exists by GUID.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary> 
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
@@ -307,6 +416,7 @@
 
         /// <summary>
         /// Create a tag.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="tag">Tag.</param>
@@ -321,6 +431,7 @@
 
         /// <summary>
         /// Read tags.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="token">Cancellation token.</param>
@@ -333,6 +444,7 @@
 
         /// <summary>
         /// Read tag.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
@@ -346,6 +458,7 @@
 
         /// <summary>
         /// Update a tag.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="tag">Tag.</param>
@@ -360,6 +473,7 @@
 
         /// <summary>
         /// Delete a tag.
+        /// This is an administrative API, requring use of the admin bearer token.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
@@ -394,14 +508,23 @@
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
         /// <param name="name">Name.</param>
+        /// <param name="labels">Labels.</param>
+        /// <param name="tags">Tags.</param>
         /// <param name="data">Data.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Graph.</returns>
-        public async Task<Graph> CreateGraph(Guid tenantGuid, Guid guid, string name, object data = null, CancellationToken token = default)
+        public async Task<Graph> CreateGraph(
+            Guid tenantGuid, 
+            Guid guid, 
+            string name, 
+            List<string> labels = null,
+            NameValueCollection tags = null,
+            object data = null, 
+            CancellationToken token = default)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/graphs";
-            return await PutCreate<Graph>(url, new Graph { GUID = guid, Name = name, Data = data }, token).ConfigureAwait(false);
+            return await PutCreate<Graph>(url, new Graph { GUID = guid, Name = name, Labels = labels, Tags = tags, Data = data }, token).ConfigureAwait(false);
         }
 
         /// <summary>

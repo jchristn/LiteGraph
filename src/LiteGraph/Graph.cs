@@ -37,6 +37,11 @@
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
+        /// Labels.
+        /// </summary>
+        public List<string> Labels { get; set; } = null;
+
+        /// <summary>
         /// Tags.
         /// </summary>
         public NameValueCollection Tags { get; set; } = null;
