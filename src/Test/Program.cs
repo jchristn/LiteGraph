@@ -487,7 +487,56 @@
 
         static void Test1_3()
         {
+            Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
 
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving graphs where label = 'graph', and tag 'type' = 'graph'");
+
+            List<string> labelGraph = new List<string>
+            {
+                "graph"
+            };
+
+            NameValueCollection tagsGraph = new NameValueCollection();
+            tagsGraph.Add("type", "graph");
+
+            foreach (Graph graph in _Client.ReadGraphs(tenantGuid, labelGraph, tagsGraph))
+                Console.WriteLine("| " + graph.GUID + ": " + graph.Name);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving nodes where labels 'node' and 'even' are present, and tag 'type' = 'node' and 'isEven' = 'true'");
+
+            List<string> labelEvenNodes = new List<string>
+            {
+                "node",
+                "even"
+            };
+
+            NameValueCollection tagsEvenNodes = new NameValueCollection();
+            tagsEvenNodes.Add("type", "node");
+            tagsEvenNodes.Add("isEven", "true");
+
+            foreach (Node node in _Client.ReadNodes(tenantGuid, graphGuid, labelEvenNodes, tagsEvenNodes))
+                Console.WriteLine("| " + node.GUID + ": " + node.Name);
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving edges where labels 'edge' and 'odd' are present, and tag 'type' = 'edge' and 'isEven' = 'false'");
+
+            List<string> labelOddEdges = new List<string>
+            {
+                "edge",
+                "odd"
+            };
+
+            NameValueCollection tagsOddEdges = new NameValueCollection();
+            tagsOddEdges.Add("type", "edge");
+            tagsOddEdges.Add("isEven", "false");
+
+            foreach (Edge edge in _Client.ReadEdges(tenantGuid, graphGuid, labelOddEdges, tagsOddEdges))
+                Console.WriteLine("| " + edge.GUID + ": " + edge.Name);
+
+            Console.WriteLine("");
         }
 
         #endregion
