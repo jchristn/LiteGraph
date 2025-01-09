@@ -385,6 +385,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.TenantExists(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Check if a tenant exists by GUID.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="guid">GUID.</param>
             <param name="token">Cancellation token.</param>
@@ -393,6 +394,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateTenant(System.Guid,System.String,System.Threading.CancellationToken)">
             <summary>
             Create a tenant.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="guid">GUID.</param>
             <param name="name">Name.</param>
@@ -402,6 +404,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadTenants(System.Threading.CancellationToken)">
             <summary>
             Read tenants.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="token">Cancellation token.</param>
             <returns>Tenants.</returns>
@@ -409,6 +412,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadTenant(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Read tenant.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="guid">GUID.</param>
             <param name="token">Cancellation token.</param>
@@ -417,6 +421,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.UpdateTenant(LiteGraph.Sdk.TenantMetadata,System.Threading.CancellationToken)">
             <summary>
             Update a tenant.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenant">Tenant.</param>
             <param name="token">Cancellation token.</param>
@@ -425,15 +430,17 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.DeleteTenant(System.Guid,System.Boolean,System.Threading.CancellationToken)">
             <summary>
             Delete a tenant.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="guid">GUID.</param>
-            <param name="force">Force recursive deletion of subordinate objects.</param>
+            <param name="force">Force recursive deletion of subordinate objects.  The request will otherwise fail if nodes exist in the graph.</param>
             <param name="token">Cancellation token.</param>
             <returns>Task.</returns>
         </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.UserExists(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Check if a user exists by GUID.
+            This is an administrative API, requring use of the admin bearer token.
             </summary> 
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
@@ -443,6 +450,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateUser(System.Guid,LiteGraph.Sdk.UserMaster,System.Threading.CancellationToken)">
             <summary>
             Create a user.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="user">User.</param>
@@ -452,6 +460,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadUsers(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Read users.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="token">Cancellation token.</param>
@@ -460,6 +469,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadUser(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Read user.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
@@ -469,6 +479,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.UpdateUser(System.Guid,LiteGraph.Sdk.UserMaster,System.Threading.CancellationToken)">
             <summary>
             Update a user.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="user">User.</param>
@@ -478,6 +489,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.DeleteUser(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Delete a user.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
@@ -487,6 +499,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.CredentialExists(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Check if a credential exists by GUID.
+            This is an administrative API, requring use of the admin bearer token.
             </summary> 
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
@@ -496,6 +509,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateCredential(System.Guid,LiteGraph.Sdk.Credential,System.Threading.CancellationToken)">
             <summary>
             Create a credential.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="credential">Credential.</param>
@@ -505,6 +519,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadCredentials(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Read credentials.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="token">Cancellation token.</param>
@@ -513,6 +528,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadCredential(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Read credential.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
@@ -522,6 +538,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.UpdateCredential(System.Guid,LiteGraph.Sdk.Credential,System.Threading.CancellationToken)">
             <summary>
             Update a credential.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="credential">Credential.</param>
@@ -531,6 +548,66 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.DeleteCredential(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Delete a credential.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.LabelExists(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Check if a label exists by GUID.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary> 
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if exists.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateLabel(System.Guid,LiteGraph.Sdk.LabelMetadata,System.Threading.CancellationToken)">
+            <summary>
+            Create a label.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="label">Label.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Label.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadLabels(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Read labels.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Labels.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadLabel(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Read label.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Label.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.UpdateLabel(System.Guid,LiteGraph.Sdk.LabelMetadata,System.Threading.CancellationToken)">
+            <summary>
+            Update a label.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="label">Label.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Label.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.DeleteLabel(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete a label.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
@@ -540,6 +617,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.TagExists(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Check if a tag exists by GUID.
+            This is an administrative API, requring use of the admin bearer token.
             </summary> 
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
@@ -549,6 +627,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateTag(System.Guid,LiteGraph.Sdk.TagMetadata,System.Threading.CancellationToken)">
             <summary>
             Create a tag.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="tag">Tag.</param>
@@ -558,6 +637,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadTags(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Read tags.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="token">Cancellation token.</param>
@@ -566,6 +646,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadTag(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Read tag.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
@@ -575,6 +656,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.UpdateTag(System.Guid,LiteGraph.Sdk.TagMetadata,System.Threading.CancellationToken)">
             <summary>
             Update a tag.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="tag">Tag.</param>
@@ -584,6 +666,7 @@
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.DeleteTag(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Delete a tag.
+            This is an administrative API, requring use of the admin bearer token.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
@@ -599,13 +682,15 @@
             <param name="token">Cancellation token.</param>
             <returns>True if exists.</returns>
         </member>
-        <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateGraph(System.Guid,System.Guid,System.String,System.Object,System.Threading.CancellationToken)">
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateGraph(System.Guid,System.Guid,System.String,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Object,System.Threading.CancellationToken)">
             <summary>
             Create a graph.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
             <param name="name">Name.</param>
+            <param name="labels">Labels.</param>
+            <param name="tags">Tags.</param>
             <param name="data">Data.</param>
             <param name="token">Cancellation token.</param>
             <returns>Graph.</returns>
@@ -1254,6 +1339,11 @@
         <member name="P:LiteGraph.Sdk.SearchRequest.Skip">
             <summary>
             The number of records to skip.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.SearchRequest.Labels">
+            <summary>
+            Labels.
             </summary>
         </member>
         <member name="P:LiteGraph.Sdk.SearchRequest.Tags">

@@ -105,7 +105,11 @@
                 }
             }
 
-            if (graphFilter != null) ret += "AND " + Converters.ExpressionToWhereClause("graphs", graphFilter);
+            if (graphFilter != null)
+            {
+                string filterClause = Converters.ExpressionToWhereClause("graphs", graphFilter);
+                if (!String.IsNullOrEmpty(filterClause)) ret += "AND " + filterClause;
+            }
 
             if (labels != null && labels.Count > 0)
             {

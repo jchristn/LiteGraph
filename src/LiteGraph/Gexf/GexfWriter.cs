@@ -48,16 +48,21 @@
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="filename">Output filename.</param>
         /// <param name="includeData">True to include node and edge data.</param>
-        public void ExportToFile(LiteGraphClient client, Guid tenantGuid, Guid graphGuid, string filename, bool includeData = false)
+        public void ExportToFile(
+            LiteGraphClient client, 
+            Guid tenantGuid, 
+            Guid graphGuid, 
+            string filename, 
+            bool includeData = false)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
             if (string.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
 
-            Document doc = GraphToGexfDocument(client, tenantGuid, graphGuid, includeData);
+            GexfDocument doc = GraphToGexfDocument(client, tenantGuid, graphGuid, includeData);
 
             using (FileStream fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
-                string xml = SerializeXml<Document>(doc, true);
+                string xml = SerializeXml<GexfDocument>(doc, true);
                 byte[] bytes = Encoding.UTF8.GetBytes(xml);
                 fs.Write(bytes, 0, bytes.Length);
             }
@@ -71,11 +76,15 @@
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="includeData">True to include node and edge data.</param>
         /// <returns>GEXF document.</returns>
-        public string RenderAsGexf(LiteGraphClient client, Guid tenantGuid, Guid graphGuid, bool includeData = false)
+        public string RenderAsGexf(
+            LiteGraphClient client, 
+            Guid tenantGuid, 
+            Guid graphGuid, 
+            bool includeData = false)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-            Document doc = GraphToGexfDocument(client, tenantGuid, graphGuid, includeData);
-            string xml = SerializeXml<Document>(doc, true);
+            GexfDocument doc = GraphToGexfDocument(client, tenantGuid, graphGuid, includeData);
+            string xml = SerializeXml<GexfDocument>(doc, true);
             return xml;
         }
 
@@ -128,24 +137,46 @@
             }
         }
 
-        private Document GraphToGexfDocument(LiteGraphClient client, Guid tenantGuid, Guid graphGuid, bool includeData = false)
+        private GexfDocument GraphToGexfDocument(
+            LiteGraphClient client, 
+            Guid tenantGuid, 
+            Guid graphGuid, 
+            bool includeData = false)
         {
             LiteGraph.Graph graph = client.ReadGraph(tenantGuid, graphGuid);
             if (graph == null) throw new ArgumentException("No graph with GUID '" + graphGuid + "' was found.");
 
-            Document doc = new Document();
+            GexfDocument doc = new GexfDocument();
             doc.Graph.DefaultEdgeType = "directed";
-            doc.Graph.Attributes.AttributeList.Add(new Attribute("0", "props"));
+            doc.Graph.Attributes.AttributeList.Add(new GexfAttribute("0", "props"));
 
             foreach (LiteGraph.Node node in client.ReadNodes(tenantGuid, graphGuid))
             {
                 GexfNode gNode = new GexfNode(node.GUID, node.Name);
 
                 if (!String.IsNullOrEmpty(node.Name))
-                    gNode.ValueList.Values.Add(new AttributeValue("Name", node.Name));
+                    gNode.ValueList.Values.Add(new GexfAttributeValue("Name", node.Name));
+
+                if (node.Labels != null)
+                {
+                    foreach (string label in node.Labels)
+                    {
+                        gNode.ValueList.Values.Add(new GexfAttributeValue(label, null));
+                    }
+                }
+
+                if (node.Tags != null && node.Tags.Count > 0)
+                {
+                    foreach (string key in node.Tags)
+                    {
+                        gNode.ValueList.Values.Add(new GexfAttributeValue(key, node.Tags.Get(key)));
+                    }
+                }
 
                 if (node.Data != null && includeData)
-                    gNode.ValueList.Values.Add(new AttributeValue("Data", _Serializer.SerializeJson(node.Data, false)));
+                {
+                    gNode.ValueList.Values.Add(new GexfAttributeValue("Data", _Serializer.SerializeJson(node.Data, false)));
+                }
 
                 doc.Graph.NodeList.Nodes.Add(gNode);
             }
@@ -155,12 +186,30 @@
                 GexfEdge gEdge = new GexfEdge(edge.GUID, edge.From, edge.To);
 
                 if (!String.IsNullOrEmpty(edge.Name))
-                    gEdge.ValueList.Values.Add(new AttributeValue("Name", edge.Name));
+                    gEdge.ValueList.Values.Add(new GexfAttributeValue("Name", edge.Name));
 
-                gEdge.ValueList.Values.Add(new AttributeValue("Cost", edge.Cost.ToString()));
+                gEdge.ValueList.Values.Add(new GexfAttributeValue("Cost", edge.Cost.ToString()));
+
+                if (edge.Labels != null)
+                {
+                    foreach (string label in edge.Labels)
+                    {
+                        gEdge.ValueList.Values.Add(new GexfAttributeValue(label, null));
+                    }
+                }
+
+                if (edge.Tags != null && edge.Tags.Count > 0)
+                {
+                    foreach (string key in edge.Tags)
+                    {
+                        gEdge.ValueList.Values.Add(new GexfAttributeValue(key, edge.Tags.Get(key)));
+                    }
+                }
 
                 if (edge.Data != null && includeData)
-                    gEdge.ValueList.Values.Add(new AttributeValue("Data", _Serializer.SerializeJson(edge.Data, false)));
+                {
+                    gEdge.ValueList.Values.Add(new GexfAttributeValue("Data", _Serializer.SerializeJson(edge.Data, false)));
+                }
 
                 doc.Graph.EdgeList.Edges.Add(gEdge);
             }

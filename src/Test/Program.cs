@@ -87,8 +87,8 @@
             Console.WriteLine("  cls             clear the screen");
             Console.WriteLine("  debug           enable or disable debug (enabled: " + _Debug + ")");
             Console.WriteLine("");
-            Console.WriteLine("  tenant          set the tenant GUID");
-            Console.WriteLine("  graph           set the graph GUID");
+            Console.WriteLine("  tenant          set the tenant GUID (currently " + _TenantGuid + ")");
+            Console.WriteLine("  graph           set the graph GUID (currently " + _GraphGuid + ")");
             Console.WriteLine("  load1           load sample graph 1");
             Console.WriteLine("  load2           load sample graph 2");
             Console.WriteLine("  route           find routes between two nodes");

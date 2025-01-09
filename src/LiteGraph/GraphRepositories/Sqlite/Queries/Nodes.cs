@@ -154,7 +154,11 @@
                 }
             }
 
-            if (nodeFilter != null) ret += "AND " + Converters.ExpressionToWhereClause("nodes", nodeFilter);
+            if (nodeFilter != null)
+            {
+                string filterClause = Converters.ExpressionToWhereClause("nodes", nodeFilter);
+                if (!String.IsNullOrEmpty(filterClause)) ret += "AND " + filterClause;
+            }
 
             if (labels != null && labels.Count > 0)
             {

@@ -39,7 +39,7 @@
         /// <summary>
         /// Labels.
         /// </summary>
-        public List<LabelMetadata> Labels { get; set; } = null;
+        public List<string> Labels { get; set; } = null;
 
         /// <summary>
         /// Tags.

@@ -2,6 +2,16 @@
 
 ## Current Version
 
+v3.1.x
+
+- Added support for labels on graphs, nodes, edges (string list)
+- Updated SDK, test, and Postman collections accordingly
+- Updated GEXF export to support labels and tags
+- Internal refactor to reduce code bloat
+- Multiple bugfixes and QoL improvements
+
+## Previous Versions
+
 v3.0.x
 
 - Major internal refactor to support multitenancy and authentication, including tenants (`TenantMetadata`), users (`UserMaster`), and credentials (`Credential`)
@@ -17,8 +27,6 @@ v3.0.x
 - Tag-based retrieval and filtering for graphs, nodes, and edges
 - Updated SDK and test project
 - Updated Postman collection
-
-## Previous Versions
 
 v2.1.0
 

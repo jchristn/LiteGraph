@@ -163,7 +163,11 @@
                 }
             }
 
-            if (edgeFilter != null) ret += "AND " + Converters.ExpressionToWhereClause("edges", edgeFilter);
+            if (edgeFilter != null)
+            {
+                string filterClause = Converters.ExpressionToWhereClause("edges", edgeFilter);
+                if (!String.IsNullOrEmpty(filterClause)) ret += "AND " + filterClause;
+            }
 
             if (labels != null && labels.Count > 0)
             {

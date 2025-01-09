@@ -425,6 +425,128 @@
 
         #endregion
 
+        #region Labels
+
+        /// <summary>
+        /// Create a label.
+        /// </summary>
+        /// <param name="label">Label.</param>
+        /// <returns>Label.</returns>
+        public LabelMetadata CreateLabel(LabelMetadata label)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+
+            LabelMetadata existing = _Repository.ReadLabel(label.TenantGUID, label.GUID);
+            if (existing != null) return existing;
+
+            LabelMetadata created = _Repository.CreateLabel(label);
+            Logging.Log(SeverityEnum.Info, "created label " + created.GUID);
+            return created;
+        }
+
+        /// <summary>
+        /// Create a label using a unique name.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <param name="label">Label.</param>
+        /// <returns>Label.</returns>
+        public LabelMetadata CreateLabel(Guid tenantGuid, Guid graphGuid, Guid? nodeGuid, Guid? edgeGuid, string label)
+        {
+            if (String.IsNullOrEmpty(label)) throw new ArgumentNullException(nameof(label));
+            return CreateLabel(new LabelMetadata { 
+                GUID = Guid.NewGuid(), 
+                TenantGUID = tenantGuid, 
+                GraphGUID = graphGuid, 
+                NodeGUID = nodeGuid, 
+                EdgeGUID = edgeGuid, 
+                Label = label 
+            });
+        }
+
+        /// <summary>
+        /// Read labels.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <param name="label">Label.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Labels.</returns>
+        public IEnumerable<LabelMetadata> ReadLabels(
+            Guid tenantGuid, 
+            Guid? graphGuid, 
+            Guid? nodeGuid, 
+            Guid? edgeGuid, 
+            string label,
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving labels");
+
+            foreach (LabelMetadata curr in _Repository.ReadLabels(tenantGuid, graphGuid, nodeGuid, edgeGuid, label, order))
+            {
+                yield return curr;
+            }
+        }
+
+        /// <summary>
+        /// Read a label by GUID.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <returns>Label.</returns>
+        public LabelMetadata ReadLabel(Guid tenantGuid, Guid guid)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving label with GUID " + guid);
+
+            return _Repository.ReadLabel(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Update a label.
+        /// </summary>
+        /// <param name="label">LabelMetadata.</param>
+        /// <returns>Label.</returns>
+        public LabelMetadata UpdateLabel(LabelMetadata label)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+
+            Logging.Log(SeverityEnum.Debug, "updating label " + label.Label + " in GUID " + label.GUID);
+
+            return _Repository.UpdateLabel(label);
+        }
+
+        /// <summary>
+        /// Delete a label.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        public void DeleteLabel(Guid tenantGuid, Guid guid)
+        {
+            LabelMetadata label = ReadLabel(tenantGuid, guid);
+            if (label == null) return;
+
+            Logging.Log(SeverityEnum.Info, "deleting label " + label.Label + " in GUID " + label.GUID);
+
+            _Repository.DeleteLabel(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Check if a label exists by GUID.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ExistsLabelMetadata(Guid tenantGuid, Guid guid)
+        {
+            return _Repository.ExistsLabel(tenantGuid, guid);
+        }
+
+        #endregion
+
         #region Tags
 
         /// <summary>

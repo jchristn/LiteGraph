@@ -231,6 +231,60 @@
 
         #endregion
 
+        #region Label-Routes
+
+        internal async Task<ResponseContext> LabelCreate(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (req.Label == null) throw new ArgumentNullException(nameof(req.Label));
+            req.Label.TenantGUID = req.TenantGUID.Value;
+            LabelMetadata obj = _LiteGraph.CreateLabel(req.Label);
+            return new ResponseContext(req, obj);
+        }
+
+        internal async Task<ResponseContext> LabelReadMany(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            List<LabelMetadata> objs = _LiteGraph.ReadLabels(req.TenantGUID.Value, req.GraphGUID, req.NodeGUID, req.EdgeGUID, null).ToList();
+            if (objs == null) objs = new List<LabelMetadata>();
+            return new ResponseContext(req, objs);
+        }
+
+        internal async Task<ResponseContext> LabelRead(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
+            LabelMetadata obj = _LiteGraph.ReadLabel(req.TenantGUID.Value, req.LabelGUID.Value);
+            if (obj != null) return new ResponseContext(req, obj);
+            else return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+        }
+
+        internal async Task<ResponseContext> LabelExists(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (_LiteGraph.ExistsLabelMetadata(req.TenantGUID.Value, req.LabelGUID.Value)) return new ResponseContext(req);
+            else return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+        }
+
+        internal async Task<ResponseContext> LabelUpdate(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (req.Label == null) throw new ArgumentNullException(nameof(req.Label));
+            req.Label.TenantGUID = req.TenantGUID.Value;
+            LabelMetadata obj = _LiteGraph.UpdateLabel(req.Label);
+            if (obj == null) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+            return new ResponseContext(req, obj);
+        }
+
+        internal async Task<ResponseContext> LabelDelete(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            _LiteGraph.DeleteLabel(req.TenantGUID.Value, req.LabelGUID.Value);
+            return new ResponseContext(req);
+        }
+
+        #endregion
+
         #region Tag-Routes
 
         internal async Task<ResponseContext> TagCreate(RequestContext req)
@@ -396,6 +450,11 @@
             catch (ArgumentException)
             {
                 return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+            }
+            catch (Exception e)
+            {
+                _Logging.Warn(_Header + "GEXF export exception:" + Environment.NewLine + e.ToString());
+                return ResponseContext.FromError(req, ApiErrorEnum.InternalError);
             }
         }
 

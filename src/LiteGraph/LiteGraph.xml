@@ -285,57 +285,32 @@
             Route request.
             </summary>
         </member>
-        <member name="T:LiteGraph.Gexf.Metadata">
-            <summary>
-            Document metadata.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Metadata.Creator">
-            <summary>
-            Document creator.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Metadata.Description">
-            <summary>
-            Document description.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Metadata.LastModifiedDate">
-            <summary>
-            Last modified date.
-            </summary>
-        </member>
-        <member name="M:LiteGraph.Gexf.Metadata.#ctor">
-            <summary>
-            Instantiate the object.
-            </summary>
-        </member>
-        <member name="T:LiteGraph.Gexf.Attribute">
+        <member name="T:LiteGraph.Gexf.GexfAttribute">
             <summary>
             Attribute.
             </summary>
         </member>
-        <member name="P:LiteGraph.Gexf.Attribute.Id">
+        <member name="P:LiteGraph.Gexf.GexfAttribute.Id">
             <summary>
             Attribute ID.
             </summary>
         </member>
-        <member name="P:LiteGraph.Gexf.Attribute.Title">
+        <member name="P:LiteGraph.Gexf.GexfAttribute.Title">
             <summary>
             Attribute title.
             </summary>
         </member>
-        <member name="P:LiteGraph.Gexf.Attribute.Type">
+        <member name="P:LiteGraph.Gexf.GexfAttribute.Type">
             <summary>
             Attribute type.
             </summary>
         </member>
-        <member name="P:LiteGraph.Gexf.Attribute.Default">
+        <member name="P:LiteGraph.Gexf.GexfAttribute.Default">
             <summary>
             Attribute default value.
             </summary>
         </member>
-        <member name="M:LiteGraph.Gexf.Attribute.#ctor(System.String,System.String,System.String)">
+        <member name="M:LiteGraph.Gexf.GexfAttribute.#ctor(System.String,System.String,System.String)">
             <summary>
             Instantiate the object.
             </summary>
@@ -343,69 +318,212 @@
             <param name="title">Attribute title.</param>
             <param name="type">Attribute type.</param>
         </member>
-        <member name="M:LiteGraph.Gexf.Attribute.#ctor">
+        <member name="M:LiteGraph.Gexf.GexfAttribute.#ctor">
             <summary>
             Instantiate the object.
             </summary>
         </member>
-        <member name="T:LiteGraph.Gexf.Attributes">
+        <member name="T:LiteGraph.Gexf.GexfAttributes">
             <summary>
             Attributes.
             </summary>
         </member>
-        <member name="P:LiteGraph.Gexf.Attributes.AttributeList">
+        <member name="P:LiteGraph.Gexf.GexfAttributes.AttributeList">
             <summary>
             Attributes.
             </summary>
         </member>
-        <member name="P:LiteGraph.Gexf.Attributes.Class">
+        <member name="P:LiteGraph.Gexf.GexfAttributes.Class">
             <summary>
             Attribute class, i.e. 'node' or 'edge'.
             </summary>
         </member>
-        <member name="M:LiteGraph.Gexf.Attributes.#ctor">
+        <member name="M:LiteGraph.Gexf.GexfAttributes.#ctor">
             <summary>
             Instantiate the object.
             </summary>
         </member>
-        <member name="T:LiteGraph.Gexf.AttributeValue">
+        <member name="T:LiteGraph.Gexf.GexfAttributeValue">
             <summary>
             Attribute value.
             </summary>
         </member>
-        <member name="P:LiteGraph.Gexf.AttributeValue.For">
+        <member name="P:LiteGraph.Gexf.GexfAttributeValue.For">
             <summary>
             ID of the object to which the attribute is assigned.
             </summary>
         </member>
-        <member name="P:LiteGraph.Gexf.AttributeValue.Value">
+        <member name="P:LiteGraph.Gexf.GexfAttributeValue.Value">
             <summary>
             Value of the attribute.
             </summary>
         </member>
-        <member name="M:LiteGraph.Gexf.AttributeValue.#ctor(System.String,System.String)">
+        <member name="M:LiteGraph.Gexf.GexfAttributeValue.#ctor(System.String,System.String)">
             <summary>
             Instantiate the object.
             </summary>
             <param name="forGuid">ID of the object to which the attribute is assigned.</param>
             <param name="value">Value of the attribute.</param>
         </member>
-        <member name="M:LiteGraph.Gexf.AttributeValue.#ctor">
+        <member name="M:LiteGraph.Gexf.GexfAttributeValue.#ctor">
             <summary>
             Instantiate the object.
             </summary>
         </member>
-        <member name="T:LiteGraph.Gexf.AttributeValues">
+        <member name="T:LiteGraph.Gexf.GexfAttributeValues">
             <summary>
             Attribute values.
             </summary>
         </member>
-        <member name="P:LiteGraph.Gexf.AttributeValues.Values">
+        <member name="P:LiteGraph.Gexf.GexfAttributeValues.Values">
             <summary>
             Attribute values.
             </summary>
         </member>
-        <member name="M:LiteGraph.Gexf.AttributeValues.#ctor">
+        <member name="M:LiteGraph.Gexf.GexfAttributeValues.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Gexf.GexfDocument">
+            <summary>
+            Graph Exchange XML Format document.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfDocument.Meta">
+            <summary>
+            Document metadata.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfDocument.Graph">
+            <summary>
+            Graph.  
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfDocument.Xmlns">
+            <summary>
+            XML namespace.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfDocument.SchemaLocation">
+            <summary>
+            Schema location.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfDocument.Version">
+            <summary>
+            Version.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Gexf.GexfDocument.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Gexf.GexfEdge">
+            <summary>
+            Edge.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfEdge.ValueList">
+            <summary>
+            Attribute values.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfEdge.Id">
+            <summary>
+            ID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfEdge.Source">
+            <summary>
+            Source.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfEdge.Target">
+            <summary>
+            Target.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Gexf.GexfEdge.#ctor(System.Guid,System.Guid,System.Guid)">
+            <summary>
+            Instantiate the object.
+            </summary>
+            <param name="id">ID.</param>
+            <param name="source">Source.</param>
+            <param name="target">Target.</param>
+        </member>
+        <member name="M:LiteGraph.Gexf.GexfEdge.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Gexf.GexfEdges">
+            <summary>
+            Edges.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfEdges.Edges">
+            <summary>
+            List of edges.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Gexf.GexfEdges.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Gexf.GexfGraph">
+            <summary>
+            Graph.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfGraph.Attributes">
+            <summary>
+            Attributes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfGraph.NodeList">
+            <summary>
+            Nodes.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfGraph.EdgeList">
+            <summary>
+            Edges.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfGraph.DefaultEdgeType">
+            <summary>
+            Default edge type, i.e. 'directed'.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Gexf.GexfGraph.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Gexf.GexfMetadata">
+            <summary>
+            Document metadata.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfMetadata.Creator">
+            <summary>
+            Document creator.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfMetadata.Description">
+            <summary>
+            Document description.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Gexf.GexfMetadata.LastModifiedDate">
+            <summary>
+            Last modified date.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Gexf.GexfMetadata.#ctor">
             <summary>
             Instantiate the object.
             </summary>
@@ -453,124 +571,6 @@
             </summary>
         </member>
         <member name="M:LiteGraph.Gexf.GexfNodes.#ctor">
-            <summary>
-            Instantiate the object.
-            </summary>
-        </member>
-        <member name="T:LiteGraph.Gexf.GexfEdges">
-            <summary>
-            Edges.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.GexfEdges.Edges">
-            <summary>
-            List of edges.
-            </summary>
-        </member>
-        <member name="M:LiteGraph.Gexf.GexfEdges.#ctor">
-            <summary>
-            Instantiate the object.
-            </summary>
-        </member>
-        <member name="T:LiteGraph.Gexf.GexfEdge">
-            <summary>
-            Edge.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.GexfEdge.ValueList">
-            <summary>
-            Attribute values.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.GexfEdge.Id">
-            <summary>
-            ID.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.GexfEdge.Source">
-            <summary>
-            Source.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.GexfEdge.Target">
-            <summary>
-            Target.
-            </summary>
-        </member>
-        <member name="M:LiteGraph.Gexf.GexfEdge.#ctor(System.Guid,System.Guid,System.Guid)">
-            <summary>
-            Instantiate the object.
-            </summary>
-            <param name="id">ID.</param>
-            <param name="source">Source.</param>
-            <param name="target">Target.</param>
-        </member>
-        <member name="M:LiteGraph.Gexf.GexfEdge.#ctor">
-            <summary>
-            Instantiate the object.
-            </summary>
-        </member>
-        <member name="T:LiteGraph.Gexf.Graph">
-            <summary>
-            Graph.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Graph.Attributes">
-            <summary>
-            Attributes.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Graph.NodeList">
-            <summary>
-            Nodes.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Graph.EdgeList">
-            <summary>
-            Edges.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Graph.DefaultEdgeType">
-            <summary>
-            Default edge type, i.e. 'directed'.
-            </summary>
-        </member>
-        <member name="M:LiteGraph.Gexf.Graph.#ctor">
-            <summary>
-            Instantiate the object.
-            </summary>
-        </member>
-        <member name="T:LiteGraph.Gexf.Document">
-            <summary>
-            Graph Exchange XML Format document.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Document.Meta">
-            <summary>
-            Document metadata.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Document.Graph">
-            <summary>
-            Graph.  
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Document.Xmlns">
-            <summary>
-            XML namespace.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Document.SchemaLocation">
-            <summary>
-            Schema location.
-            </summary>
-        </member>
-        <member name="P:LiteGraph.Gexf.Document.Version">
-            <summary>
-            Version.
-            </summary>
-        </member>
-        <member name="M:LiteGraph.Gexf.Document.#ctor">
             <summary>
             Instantiate the object.
             </summary>
@@ -2301,6 +2301,66 @@
         <member name="M:LiteGraph.LiteGraphClient.ExistsCredential(System.Guid,System.Guid)">
             <summary>
             Check if a credential exists by GUID.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+            <returns>True if exists.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.CreateLabel(LiteGraph.LabelMetadata)">
+            <summary>
+            Create a label.
+            </summary>
+            <param name="label">Label.</param>
+            <returns>Label.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.CreateLabel(System.Guid,System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.String)">
+            <summary>
+            Create a label using a unique name.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+            <param name="edgeGuid">Edge GUID.</param>
+            <param name="label">Label.</param>
+            <returns>Label.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.ReadLabels(System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,LiteGraph.EnumerationOrderEnum)">
+            <summary>
+            Read labels.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+            <param name="edgeGuid">Edge GUID.</param>
+            <param name="label">Label.</param>
+            <param name="order">Enumeration order.</param>
+            <returns>Labels.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.ReadLabel(System.Guid,System.Guid)">
+            <summary>
+            Read a label by GUID.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+            <returns>Label.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.UpdateLabel(LiteGraph.LabelMetadata)">
+            <summary>
+            Update a label.
+            </summary>
+            <param name="label">LabelMetadata.</param>
+            <returns>Label.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.DeleteLabel(System.Guid,System.Guid)">
+            <summary>
+            Delete a label.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.ExistsLabelMetadata(System.Guid,System.Guid)">
+            <summary>
+            Check if a label exists by GUID.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>

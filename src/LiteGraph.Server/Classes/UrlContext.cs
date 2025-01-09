@@ -280,6 +280,9 @@
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/credentials", out _UrlParameters)) return RequestTypeEnum.CredentialReadMany;
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/credentials/{credentialGuid}", out _UrlParameters)) return RequestTypeEnum.CredentialRead;
 
+                if (matcher.Match("/v1.0/tenants/{tenantGuid}/labels", out _UrlParameters)) return RequestTypeEnum.LabelReadMany;
+                if (matcher.Match("/v1.0/tenants/{tenantGuid}/labels/{labelGuid}", out _UrlParameters)) return RequestTypeEnum.LabelRead;
+
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/tags", out _UrlParameters)) return RequestTypeEnum.TagReadMany;
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/tags/{tagGuid}", out _UrlParameters)) return RequestTypeEnum.TagRead;
 
@@ -314,6 +317,8 @@
 
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/credentials/{credentialGuid}", out _UrlParameters)) return RequestTypeEnum.CredentialExists;
 
+                if (matcher.Match("/v1.0/tenants/{tenantGuid}/labels/{labelGuid}", out _UrlParameters)) return RequestTypeEnum.LabelExists;
+
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/tags/{tagGuid}", out _UrlParameters)) return RequestTypeEnum.TagExists;
 
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/graphs/{graphGuid}", out _UrlParameters)) return RequestTypeEnum.GraphExists;
@@ -336,6 +341,9 @@
 
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/credentials", out _UrlParameters)) return RequestTypeEnum.CredentialCreate;
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/credentials/{credentialGuid}", out _UrlParameters)) return RequestTypeEnum.CredentialUpdate;
+
+                if (matcher.Match("/v1.0/tenants/{tenantGuid}/labels", out _UrlParameters)) return RequestTypeEnum.LabelCreate;
+                if (matcher.Match("/v1.0/tenants/{tenantGuid}/labels/{labelGuid}", out _UrlParameters)) return RequestTypeEnum.LabelUpdate;
 
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/tags", out _UrlParameters)) return RequestTypeEnum.TagCreate;
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/tags/{tagGuid}", out _UrlParameters)) return RequestTypeEnum.TagUpdate;
@@ -378,6 +386,8 @@
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/users/{userGuid}", out _UrlParameters)) return RequestTypeEnum.UserDelete;
 
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/credentials/{credentialGuid}", out _UrlParameters)) return RequestTypeEnum.CredentialDelete;
+
+                if (matcher.Match("/v1.0/tenants/{tenantGuid}/labels/{labelGuid}", out _UrlParameters)) return RequestTypeEnum.LabelDelete;
 
                 if (matcher.Match("/v1.0/tenants/{tenantGuid}/tags/{tagGuid}", out _UrlParameters)) return RequestTypeEnum.TagDelete;
 

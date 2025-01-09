@@ -1126,6 +1126,7 @@
                 if (tags.Count > 0) CreateMultipleTags(graph.TenantGUID, graph.GUID, tags);
             }
 
+            created.Labels = graph.Labels;
             created.Tags = graph.Tags;
             return created;
         }
@@ -1215,6 +1216,20 @@
             Graph updated = Converters.GraphFromDataRow(Query(Graphs.UpdateGraphQuery(graph), true).Rows[0]);
             DeleteGraphLabels(graph.TenantGUID, graph.GUID);
             DeleteGraphTags(graph.TenantGUID, graph.GUID);
+
+            if (graph.Labels != null)
+            {
+                CreateMultipleLabels(
+                    graph.TenantGUID,
+                    graph.GUID,
+                    LabelMetadata.FromListString(
+                        graph.TenantGUID,
+                        graph.GUID,
+                        null,
+                        null,
+                        graph.Labels));
+                updated.Labels = graph.Labels;
+            }
             if (graph.Tags != null)
             {
                 CreateMultipleTags(
@@ -2042,6 +2057,7 @@
                 if (tags.Count > 0) CreateMultipleTags(edge.TenantGUID, edge.GraphGUID, tags);
             }
 
+            created.Labels = edge.Labels;
             created.Tags = edge.Tags;
             return created;
         }

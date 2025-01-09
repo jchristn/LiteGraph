@@ -16,8 +16,9 @@
         private static bool _Debug = true;
         private static bool _RunForever = true;
         private static string _Endpoint = "http://localhost:8701";
-        private static string _BearerToken = "default";
-        private static Guid _TenantGuid = Guid.Parse("00000000-0000-0000-0000-000000000000");
+        private static string _BearerToken = "litegraphadmin";
+        private static Guid _Tenant = Guid.Parse("00000000-0000-0000-0000-000000000000");
+        private static Guid _Graph = Guid.Parse("00000000-0000-0000-0000-000000000000");
         private static LiteGraphSdk _Sdk = null;
 
         public static void Main(string[] args)
@@ -26,7 +27,7 @@
                 Inputty.GetString("Endpoint     :", _Endpoint, false),
                 Inputty.GetString("Bearer token :", _BearerToken, false));
 
-            _TenantGuid = Inputty.GetGuid("Tenant GUID  :", _TenantGuid);
+            _Tenant = Inputty.GetGuid("Tenant GUID  :", _Tenant);
 
             if (_Debug) _Sdk.Logger = Logger;
 
@@ -48,6 +49,13 @@
 
                     case "conn":
                         ValidateConnectivity();
+                        break;
+
+                    case "tenant":
+                        SetTenant();
+                        break;
+                    case "graph":
+                        SetGraph();
                         break;
 
                     case "tenant exists":
@@ -229,6 +237,8 @@
             Console.WriteLine("  q               quit");
             Console.WriteLine("  cls             clear the screen");
             Console.WriteLine("  conn            validate connectivity");
+            Console.WriteLine("  tenant          set the tenant GUID (currently " + _Tenant + ")");
+            Console.WriteLine("  graph           set the graph GUID (currently " + _Graph + ")");
             Console.WriteLine("");
             Console.WriteLine("Object commands:");
             Console.WriteLine("  Tenants     : tenant [create|update|all|read|delete|exists]");
@@ -249,21 +259,45 @@
             Console.WriteLine(sev.ToString() + " " + msg);
         }
 
+        private static void SetTenant()
+        {
+            _Tenant = Inputty.GetGuid("Tenant GUID:", _Tenant);
+        }
+
+        private static void SetGraph()
+        {
+            _Graph = Inputty.GetGuid("Graph GUID:", _Graph);
+        }
+
         private static string GetName()
         {
             return Inputty.GetString("Name:", null, false);
         }
 
+        private static List<string> GetLabels()
+        {
+            string val = GetJson("Labels JSON:");
+            if (!String.IsNullOrEmpty(val)) return Serializer.DeserializeJson<List<string>>(val);
+            return null;
+        }
+
+        private static NameValueCollection GetTags()
+        {
+            string val = GetJson("Tags JSON:");
+            if (!String.IsNullOrEmpty(val)) return Serializer.DeserializeJson<NameValueCollection>(val);
+            return null;
+        }
+
         private static object GetData()
         {
-            string val = GetJson();
+            string val = GetJson("Data JSON:");
             if (!String.IsNullOrEmpty(val)) return Serializer.DeserializeJson<object>(val);
             return null;
         }
 
-        private static string GetJson()
+        private static string GetJson(string prompt)
         {
-            return Inputty.GetString("JSON:", null, true);
+            return Inputty.GetString(prompt, null, true);
         }
 
         private static Guid GetGuid(string prompt, Guid? guid = null)
@@ -285,7 +319,8 @@
             if (expr == null) return null;
 
             SearchRequest req = new SearchRequest();
-            req.GraphGUID = Inputty.GetGuid("Graph GUID:", default(Guid));
+            req.TenantGUID = Inputty.GetGuid("Tenant GUID:", _Tenant);
+            req.GraphGUID = Inputty.GetGuid("Graph GUID:", _Graph);
             req.Tags = nvc;
             req.Expr = expr;
             return req;
@@ -364,7 +399,7 @@
         private static void TenantExists()
         {
             EnumerateResult(_Sdk.TenantExists(
-                GetGuid("GUID:")).Result);
+                GetGuid("GUID:", _Tenant)).Result);
         }
 
         private static void TenantCreate()
@@ -378,7 +413,7 @@
         {
             ShowSampleTenant();
             EnumerateResult(_Sdk.UpdateTenant(
-                Serializer.DeserializeJson<TenantMetadata>(GetJson())).Result);
+                Serializer.DeserializeJson<TenantMetadata>(GetJson("Tenant JSON:"))).Result);
         }
 
         private static void TenantAll()
@@ -389,13 +424,13 @@
         private static void TenantRead()
         {
             EnumerateResult(_Sdk.ReadTenant(
-                GetGuid("GUID:")).Result);
+                GetGuid("GUID:", _Tenant)).Result);
         }
 
         private static void TenantDelete()
         {
             _Sdk.DeleteTenant(
-                GetGuid("GUID:"),
+                GetGuid("GUID:", _Tenant),
                 GetBoolean("Force:")).Wait();
         }
 
@@ -419,7 +454,7 @@
         private static void UserExists()
         {
             EnumerateResult(_Sdk.UserExists(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("GUID:")).Result);
         }
 
@@ -427,19 +462,19 @@
         {
             ShowSampleUser();
             EnumerateResult(_Sdk.CreateUser(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                Serializer.DeserializeJson<UserMaster>(GetJson())).Result);
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<UserMaster>(GetJson("User JSON:"))).Result);
         }
 
         private static void UserAll()
         {
-            EnumerateResult(_Sdk.ReadUsers(GetGuid("Tenant GUID:", _TenantGuid)).Result);
+            EnumerateResult(_Sdk.ReadUsers(GetGuid("Tenant GUID:", _Tenant)).Result);
         }
 
         private static void UserRead()
         {
             EnumerateResult(_Sdk.ReadUser(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("GUID:")).Result);
         }
 
@@ -447,14 +482,14 @@
         {
             ShowSampleUser();
             EnumerateResult(_Sdk.UpdateUser(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                Serializer.DeserializeJson<UserMaster>(GetJson())).Result);
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<UserMaster>(GetJson("User JSON:"))).Result);
         }
 
         private static void UserDelete()
         {
             _Sdk.DeleteUser(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("GUID:")).Wait();
         }
 
@@ -474,7 +509,7 @@
         private static void CredentialExists()
         {
             EnumerateResult(_Sdk.CredentialExists(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("GUID:")).Result);
         }
 
@@ -482,19 +517,19 @@
         {
             ShowSampleCredential();
             EnumerateResult(_Sdk.CreateCredential(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                Serializer.DeserializeJson<Credential>(GetJson())).Result);
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<Credential>(GetJson("Credential JSON:"))).Result);
         }
 
         private static void CredentialAll()
         {
-            EnumerateResult(_Sdk.ReadCredentials(GetGuid("Tenant GUID:", _TenantGuid)).Result);
+            EnumerateResult(_Sdk.ReadCredentials(GetGuid("Tenant GUID:", _Tenant)).Result);
         }
 
         private static void CredentialRead()
         {
             EnumerateResult(_Sdk.ReadCredential(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("GUID:")).Result);
         }
 
@@ -502,14 +537,14 @@
         {
             ShowSampleCredential();
             EnumerateResult(_Sdk.UpdateCredential(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                Serializer.DeserializeJson<Credential>(GetJson())).Result);
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<Credential>(GetJson("Credential JSON:"))).Result);
         }
 
         private static void CredentialDelete()
         {
             _Sdk.DeleteCredential(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("GUID:")).Wait();
         }
 
@@ -530,7 +565,7 @@
         private static void TagExists()
         {
             EnumerateResult(_Sdk.TagExists(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("GUID:")).Result);
         }
 
@@ -538,19 +573,19 @@
         {
             ShowSampleTag();
             EnumerateResult(_Sdk.CreateTag(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                Serializer.DeserializeJson<TagMetadata>(GetJson())).Result);
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<TagMetadata>(GetJson("Tag JSON:"))).Result);
         }
 
         private static void TagAll()
         {
-            EnumerateResult(_Sdk.ReadTags(GetGuid("Tenant GUID:", _TenantGuid)).Result);
+            EnumerateResult(_Sdk.ReadTags(GetGuid("Tenant GUID:", _Tenant)).Result);
         }
 
         private static void TagRead()
         {
             EnumerateResult(_Sdk.ReadTag(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("GUID:")).Result);
         }
 
@@ -558,14 +593,14 @@
         {
             ShowSampleTag();
             EnumerateResult(_Sdk.UpdateTag(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                Serializer.DeserializeJson<TagMetadata>(GetJson())).Result);
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<TagMetadata>(GetJson("Tag JSON:"))).Result);
         }
 
         private static void TagDelete()
         {
             _Sdk.DeleteTag(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("GUID:")).Wait();
         }
 
@@ -575,54 +610,68 @@
 
         private static void ShowSampleGraph()
         {
+            List<string> labels = new List<string>();
+            labels.Add("test");
+
+            Dictionary<string, string> data = new Dictionary<string, string>();
+            data.Add("key", "value");
+
+            NameValueCollection tags = new NameValueCollection();
+            tags.Add("key", "value");
+
             Console.WriteLine("Sample JSON:");
             Console.WriteLine(Serializer.SerializeJson(new Graph
             {
-                Name = "Test graph"
+                Name = "Test graph",
+                Labels = labels,
+                Tags = tags,
+                Data = data
             }, false));
         }
 
         private static void GraphExists()
         {
             EnumerateResult(_Sdk.GraphExists(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("GUID:")).Result);
         }
 
         private static void GraphCreate()
         {
             EnumerateResult(_Sdk.CreateGraph(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 GetGuid("Graph GUID:"), 
                 GetName(), 
+                GetLabels(),
+                GetTags(),
                 GetData()).Result);
         }
 
         private static void GraphAll()
         {
-            EnumerateResult(_Sdk.ReadGraphs(GetGuid("Tenant GUID:", _TenantGuid)).Result);
+            EnumerateResult(_Sdk.ReadGraphs(GetGuid("Tenant GUID:", _Tenant)).Result);
         }
 
         private static void GraphRead()
         {
             EnumerateResult(_Sdk.ReadGraph(
-                GetGuid("Tenant GUID:", _TenantGuid), 
-                GetGuid("GUID:")).Result);
+                GetGuid("Tenant GUID:", _Tenant), 
+                GetGuid("GUID:", _Graph)).Result);
         }
 
         private static void GraphUpdate()
         {
             ShowSampleGraph();
             EnumerateResult(_Sdk.UpdateGraph(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                Serializer.DeserializeJson<Graph>(GetJson())).Result);
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<Graph>(GetJson("Graph JSON:"))).Result);
         }
 
         private static void GraphDelete()
         {
             _Sdk.DeleteGraph(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                GetGuid("GUID:"), 
+                GetGuid("Tenant GUID:", _Tenant),
+                GetGuid("GUID:", _Graph), 
                 GetBoolean("Force:")).Wait();
         }
 
@@ -631,7 +680,7 @@
             SearchRequest req = BuildSearchRequest();
             if (req == null) return;
             EnumerateResult(_Sdk.SearchGraphs(
-                GetGuid("Tenant GUID:", _TenantGuid),
+                GetGuid("Tenant GUID:", _Tenant),
                 req).Result);
         }
 
@@ -641,6 +690,9 @@
 
         private static void ShowSampleNode()
         {
+            List<string> labels = new List<string>();
+            labels.Add("test");
+
             Dictionary<string, string> data = new Dictionary<string, string>();
             data.Add("key", "value");
 
@@ -651,7 +703,10 @@
 
             Console.WriteLine(Serializer.SerializeJson(new Node
             {
+                TenantGUID = _Tenant,
+                GUID = _Graph,
                 Name = "My node",
+                Labels = labels,
                 Tags = tags,
                 Data = data
             }, false));
@@ -661,8 +716,8 @@
         {
             EnumerateResult(
                 _Sdk.NodeExists(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
                     GetGuid("Node GUID:")
                 )
                 .Result);
@@ -673,9 +728,9 @@
             ShowSampleNode();
             EnumerateResult(
                 _Sdk.CreateNode(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
-                    Serializer.DeserializeJson<Node>(GetJson())
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
+                    Serializer.DeserializeJson<Node>(GetJson("Node JSON:"))
                 )
                 .Result);
         }
@@ -683,16 +738,16 @@
         private static void NodeAll()
         {
             EnumerateResult(_Sdk.ReadNodes(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                GetGuid("Graph GUID:")).Result);
+                GetGuid("Tenant GUID:", _Tenant),
+                GetGuid("Graph GUID:", _Graph)).Result);
         }
 
         private static void NodeRead()
         {
             EnumerateResult(
                 _Sdk.ReadNode(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
                     GetGuid("Node GUID:")
                 )
                 .Result);
@@ -703,9 +758,9 @@
             ShowSampleNode();
             EnumerateResult(
                 _Sdk.UpdateNode(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
-                    Serializer.DeserializeJson<Node>(GetJson())
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
+                    Serializer.DeserializeJson<Node>(GetJson("Node JSON:"))
                 )
                 .Result);
         }
@@ -713,8 +768,8 @@
         private static void NodeDelete()
         {
             _Sdk.DeleteNode(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                GetGuid("Graph GUID:"), 
+                GetGuid("Tenant GUID:", _Tenant),
+                GetGuid("Graph GUID:", _Graph), 
                 GetGuid("Node GUID:")
                 )
                 .Wait();
@@ -726,8 +781,8 @@
             if (req == null) return;
             EnumerateResult(
                 _Sdk.SearchNodes(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
                     req
                 )
                 .Result);
@@ -737,7 +792,7 @@
         {
             EnumerateResult(
                 _Sdk.GetAllNodeEdges(
-                    GetGuid("Tenant GUID:", _TenantGuid),
+                    GetGuid("Tenant GUID:", _Tenant),
                     GetGuid("Graph GUID:"),
                     GetGuid("Node GUID:")
                 )
@@ -748,7 +803,7 @@
         {
             EnumerateResult(
                 _Sdk.GetParentsFromNode(
-                    GetGuid("Tenant GUID:", _TenantGuid),
+                    GetGuid("Tenant GUID:", _Tenant),
                     GetGuid("Graph GUID:"),
                     GetGuid("Node GUID:")
                 )
@@ -759,7 +814,7 @@
         {
             EnumerateResult(
                 _Sdk.GetChildrenFromNode(
-                    GetGuid("Tenant GUID:", _TenantGuid),
+                    GetGuid("Tenant GUID:", _Tenant),
                     GetGuid("Graph GUID:"),
                     GetGuid("Node GUID:")
                 )
@@ -772,6 +827,9 @@
 
         private static void ShowSampleEdge()
         {
+            List<string> labels = new List<string>();
+            labels.Add("test");
+
             Dictionary<string, string> data = new Dictionary<string, string>();
             data.Add("key", "value");
 
@@ -782,9 +840,12 @@
 
             Console.WriteLine(Serializer.SerializeJson(new Edge
             {
+                TenantGUID = _Tenant,
+                GUID = _Graph,
                 From = Guid.NewGuid(),
                 To = Guid.NewGuid(),
                 Name = "My edge",
+                Labels = labels,
                 Tags = tags,
                 Data = data
             }, false));
@@ -794,8 +855,8 @@
         {
             EnumerateResult(
                 _Sdk.EdgeExists(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
                     GetGuid("Edge GUID:")
                 )
                 .Result);
@@ -806,9 +867,9 @@
             ShowSampleEdge();
             EnumerateResult(
                 _Sdk.CreateEdge(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
-                    Serializer.DeserializeJson<Edge>(GetJson())
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
+                    Serializer.DeserializeJson<Edge>(GetJson("Edge JSON:"))
                 )
                 .Result);
         }
@@ -817,16 +878,16 @@
         {
             EnumerateResult(
                 _Sdk.ReadEdges(
-                    GetGuid("Tenant GUID:", _TenantGuid), 
-                    GetGuid("Graph GUID:")).Result);
+                    GetGuid("Tenant GUID:", _Tenant), 
+                    GetGuid("Graph GUID:", _Graph)).Result);
         }
 
         private static void EdgeRead()
         {
             EnumerateResult(
                 _Sdk.ReadEdge(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
                     GetGuid("Edge GUID:")
                 )
                 .Result);
@@ -837,9 +898,9 @@
             ShowSampleEdge();
             EnumerateResult(
                 _Sdk.UpdateEdge(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
-                    Serializer.DeserializeJson<Edge>(GetJson())
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
+                    Serializer.DeserializeJson<Edge>(GetJson("Edge JSON:"))
                 )
                 .Result);
         }
@@ -847,8 +908,8 @@
         private static void EdgeDelete()
         {
             _Sdk.DeleteEdge(
-                GetGuid("Tenant GUID:", _TenantGuid),
-                GetGuid("Graph GUID:"),
+                GetGuid("Tenant GUID:", _Tenant),
+                GetGuid("Graph GUID:", _Graph),
                 GetGuid("Edge GUID:")
                 )
                 .Wait();
@@ -860,8 +921,8 @@
             if (req == null) return;
             EnumerateResult(
                 _Sdk.SearchEdges(
-                    GetGuid("Tenant GUID:", _TenantGuid), 
-                    GetGuid("Graph GUID:"), 
+                    GetGuid("Tenant GUID:", _Tenant), 
+                    GetGuid("Graph GUID:", _Graph), 
                     req
                     )
                 .Result);
@@ -871,8 +932,8 @@
         {
             EnumerateResult(
                 _Sdk.GetEdgesFromNode(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
                     GetGuid("Node GUID:")
                 )
                 .Result);
@@ -882,8 +943,8 @@
         {
             EnumerateResult(
                 _Sdk.GetEdgesToNode(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
                     GetGuid("Edge GUID:")
                 )
                 .Result);
@@ -893,8 +954,8 @@
         {
             EnumerateResult(
                 _Sdk.GetEdgesBetween(
-                    GetGuid("Tenant GUID:", _TenantGuid),
-                    GetGuid("Graph GUID:"),
+                    GetGuid("Tenant GUID:", _Tenant),
+                    GetGuid("Graph GUID:", _Graph),
                     GetGuid("From GUID :"),
                     GetGuid("To GUID   :")
                 )
@@ -909,8 +970,8 @@
         {
             EnumerateResult(
                 _Sdk.GetRoutes(
-                    GetGuid("Tenant GUID    :", _TenantGuid),
-                    GetGuid("Graph GUID     :"),
+                    GetGuid("Tenant GUID    :", _Tenant),
+                    GetGuid("Graph GUID     :", _Graph),
                     GetGuid("From node GUID :"),
                     GetGuid("To node GUID   :")
                 )
