@@ -10,6 +10,7 @@
     using LiteGraph.Serialization;
     using System.Xml.Linq;
     using System.Collections.Specialized;
+    using System.Reflection.Metadata.Ecma335;
 
     /// <summary>
     /// LiteGraph client.
@@ -658,6 +659,174 @@
 
         #endregion
 
+        #region Vectors
+
+        /// <summary>
+        /// Create a vector.
+        /// </summary>
+        /// <param name="vector">Vector.</param>
+        /// <returns>Vector.</returns>
+        public VectorMetadata CreateVector(VectorMetadata vector)
+        {
+            if (vector == null) throw new ArgumentNullException(nameof(vector));
+
+            VectorMetadata existing = _Repository.ReadVector(vector.TenantGUID, vector.GUID);
+            if (existing != null) return existing;
+
+            VectorMetadata created = _Repository.CreateVector(vector);
+            Logging.Log(SeverityEnum.Info, "created vector " + created.GUID);
+            return created;
+        }
+
+        /// <summary>
+        /// Read vectors.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <param name="order">Enumeration order.</param>
+        /// <returns>Vectors.</returns>
+        public IEnumerable<VectorMetadata> ReadVectors(
+            Guid tenantGuid, 
+            Guid? graphGuid, 
+            Guid? nodeGuid, 
+            Guid? edgeGuid, 
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving vectors");
+
+            IEnumerable<VectorMetadata> vectors;
+
+            if (graphGuid != null) vectors = _Repository.ReadGraphVectors(tenantGuid, graphGuid.Value);
+            else if (graphGuid != null && nodeGuid != null && edgeGuid == null) vectors = _Repository.ReadNodeVectors(tenantGuid, graphGuid.Value, nodeGuid.Value);
+            else if (graphGuid != null && nodeGuid == null && edgeGuid != null) vectors = _Repository.ReadEdgeVectors(tenantGuid, graphGuid.Value, nodeGuid.Value);
+            else vectors = _Repository.ReadVectors(tenantGuid, null, null, null);
+
+            foreach (VectorMetadata vector in vectors)
+            {
+                yield return vector;
+            }
+        }
+
+        /// <summary>
+        /// Read a vector by GUID.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <returns>Vector.</returns>
+        public VectorMetadata ReadVector(Guid tenantGuid, Guid guid)
+        {
+            Logging.Log(SeverityEnum.Debug, "retrieving vector with GUID " + guid);
+
+            return _Repository.ReadVector(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Update a vector.
+        /// </summary>
+        /// <param name="vector">VectorMetadata.</param>
+        /// <returns>Vector.</returns>
+        public VectorMetadata UpdateVector(VectorMetadata vector)
+        {
+            if (vector == null) throw new ArgumentNullException(nameof(vector));
+
+            Logging.Log(SeverityEnum.Debug, "updating vector GUID " + vector.GUID);
+
+            return _Repository.UpdateVector(vector);
+        }
+
+        /// <summary>
+        /// Delete a vector.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        public void DeleteVector(Guid tenantGuid, Guid guid)
+        {
+            VectorMetadata vector = ReadVector(tenantGuid, guid);
+            if (vector == null) return;
+
+            Logging.Log(SeverityEnum.Info, "deleting vector GUID " + vector.GUID);
+
+            _Repository.DeleteVector(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Check if a vector exists by GUID.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ExistsVectorMetadata(Guid tenantGuid, Guid guid)
+        {
+            return _Repository.ExistsVector(tenantGuid, guid);
+        }
+
+        /// <summary>
+        /// Search vectors.
+        /// </summary>
+        /// <param name="searchReq">Vector search request.</param>
+        /// <returns>Vector search results.</returns>
+        public IEnumerable<VectorSearchResult> SearchVectors(VectorSearchRequest searchReq)
+        {
+            if (searchReq == null) throw new ArgumentNullException(nameof(searchReq));
+            return SearchVectors(
+                searchReq.Domain,
+                searchReq.SearchType,
+                searchReq.Embeddings,
+                searchReq.TenantGUID,
+                searchReq.GraphGUID,
+                searchReq.Labels,
+                searchReq.Tags,
+                searchReq.Expr);
+        }
+
+        /// <summary>
+        /// Search vectors.
+        /// </summary>
+        /// <param name="domain">Vector search domain.</param>
+        /// <param name="searchType">Vector search type.</param>
+        /// <param name="vectors">Vectors.</param>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="labels">Labels.</param>
+        /// <param name="tags">Tags.</param>
+        /// <param name="filter">Filter.</param>
+        /// <returns></returns>
+        public IEnumerable<VectorSearchResult> SearchVectors(
+            VectorSearchDomainEnum domain,
+            VectorSearchTypeEnum searchType,
+            List<float> vectors,
+            Guid tenantGuid,
+            Guid? graphGuid = null,
+            List<string> labels = null,
+            NameValueCollection tags = null,
+            Expr filter = null)
+        {
+            if (vectors == null || vectors.Count < 1) throw new ArgumentException("The supplied vector list must include at least one value.");
+            
+            if (domain == VectorSearchDomainEnum.Graph)
+            {
+                return _Repository.SearchGraphVectors(searchType, vectors, tenantGuid, labels, tags, filter);
+            }
+            else if (domain == VectorSearchDomainEnum.Node)
+            {
+                if (graphGuid == null) throw new ArgumentException("Graph GUID must be supplied when performing a node vector search.");
+                return _Repository.SearchNodeVectors(searchType, vectors, tenantGuid, graphGuid.Value, labels, tags, filter);
+            }
+            else if (domain == VectorSearchDomainEnum.Edge)
+            {
+                if (graphGuid == null) throw new ArgumentException("Graph GUID must be supplied when performing an edge vector search.");
+                return _Repository.SearchEdgeVectors(searchType, vectors, tenantGuid, graphGuid.Value, labels, tags, filter);
+            }
+            else
+            {
+                throw new ArgumentException("Unknown vector search domain '" + domain.ToString() + "'.");
+            }
+        }
+
+        #endregion
+
         #region Graphs
 
         /// <summary>
@@ -669,8 +838,16 @@
         /// <param name="labels">Labels.</param>
         /// <param name="tags">Tags.</param>
         /// <param name="data">Data.</param>
+        /// <param name="vectors">Vectors.</param>
         /// <returns>Graph.</returns>
-        public Graph CreateGraph(Guid tenantGuid, Guid guid, string name, List<string> labels = null, NameValueCollection tags = null, object data = null)
+        public Graph CreateGraph(
+            Guid tenantGuid, 
+            Guid guid, 
+            string name, 
+            List<string> labels = null, 
+            NameValueCollection tags = null, 
+            List<VectorMetadata> vectors = null,
+            object data = null)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 

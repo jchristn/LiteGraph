@@ -68,7 +68,7 @@
         /// <summary>
         /// Content.
         /// </summary>
-        public List<float> Embeddings { get; set; } = null;
+        public List<float> Vectors { get; set; } = null;
 
         /// <summary>
         /// Creation timestamp, in UTC.

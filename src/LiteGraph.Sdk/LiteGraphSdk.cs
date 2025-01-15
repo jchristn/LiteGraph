@@ -487,6 +487,123 @@
 
         #endregion
 
+        #region Vectors
+
+        /// <summary>
+        /// Check if a vector exists by GUID.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary> 
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>True if exists.</returns>
+        public async Task<bool> VectorExists(Guid tenantGuid, Guid guid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/vectors/" + guid;
+            return await Head(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Create a vector.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="vector">Vector.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Vector.</returns>
+        public async Task<VectorMetadata> CreateVector(Guid tenantGuid, VectorMetadata vector, CancellationToken token = default)
+        {
+            if (vector == null) throw new ArgumentNullException(nameof(vector));
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/vectors";
+            return await PutCreate<VectorMetadata>(url, vector, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Read vectors.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Vectors.</returns>
+        public async Task<IEnumerable<VectorMetadata>> ReadVectors(Guid tenantGuid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/vectors";
+            return await GetMany<VectorMetadata>(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Read vector.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Vector.</returns>
+        public async Task<VectorMetadata> ReadVector(Guid tenantGuid, Guid guid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/vectors/" + guid;
+            return await Get<VectorMetadata>(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Update a vector.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="vector">Vector.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Vector.</returns>
+        public async Task<VectorMetadata> UpdateVector(Guid tenantGuid, VectorMetadata vector, CancellationToken token = default)
+        {
+            if (vector == null) throw new ArgumentNullException(nameof(vector));
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/vectors/" + vector.GUID;
+            return await PutUpdate<VectorMetadata>(url, vector, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Delete a vector.
+        /// This is an administrative API, requring use of the admin bearer token.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task DeleteVector(Guid tenantGuid, Guid guid, CancellationToken token = default)
+        {
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/vectors/" + guid;
+            await Delete(url, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Search vectors.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="searchReq">Search request.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Vector search result.</returns>
+        public async Task<List<VectorSearchResult>> SearchVectors(Guid tenantGuid, Guid? graphGuid, VectorSearchRequest searchReq, CancellationToken token = default)
+        {
+            if (searchReq == null) throw new ArgumentNullException(nameof(searchReq));
+
+            searchReq.TenantGUID = tenantGuid;
+            searchReq.GraphGUID = graphGuid;
+
+            string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/vectors";
+            string json = Serializer.SerializeJson(searchReq, true);
+            byte[] bytes = await PostRaw(url, Encoding.UTF8.GetBytes(json), "application/json", token).ConfigureAwait(false);
+
+            if (bytes != null && bytes.Length > 0)
+            {
+                List<VectorSearchResult> result = Serializer.DeserializeJson<List<VectorSearchResult>>(Encoding.UTF8.GetString(bytes));
+                return result;
+            }
+
+            return null;
+        }
+
+        #endregion
+
         #region Graph
 
         /// <summary>
@@ -511,6 +628,7 @@
         /// <param name="labels">Labels.</param>
         /// <param name="tags">Tags.</param>
         /// <param name="data">Data.</param>
+        /// <param name="vectors">Vectors.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Graph.</returns>
         public async Task<Graph> CreateGraph(
@@ -520,11 +638,20 @@
             List<string> labels = null,
             NameValueCollection tags = null,
             object data = null, 
+            List<VectorMetadata> vectors = null,
             CancellationToken token = default)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/graphs";
-            return await PutCreate<Graph>(url, new Graph { GUID = guid, Name = name, Labels = labels, Tags = tags, Data = data }, token).ConfigureAwait(false);
+            return await PutCreate<Graph>(url, new Graph 
+            { 
+                GUID = guid, 
+                Name = name, 
+                Labels = labels, 
+                Tags = tags, 
+                Data = data,
+                Vectors = vectors
+            }, token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -549,6 +676,8 @@
         public async Task<SearchResult> SearchGraphs(Guid tenantGuid, SearchRequest searchReq, CancellationToken token = default)
         {
             if (searchReq == null) throw new ArgumentNullException(nameof(searchReq));
+
+            searchReq.TenantGUID = tenantGuid;
 
             string url = Endpoint + "v1.0/tenants/" + tenantGuid + "/graphs/search";
             string json = Serializer.SerializeJson(searchReq, true);

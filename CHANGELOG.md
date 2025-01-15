@@ -5,6 +5,7 @@
 v3.1.x
 
 - Added support for labels on graphs, nodes, edges (string list)
+- Added support for vector persistence and search
 - Updated SDK, test, and Postman collections accordingly
 - Updated GEXF export to support labels and tags
 - Internal refactor to reduce code bloat

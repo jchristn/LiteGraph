@@ -656,7 +656,7 @@
                 Model = GetDataRowStringValue(row, "model"),
                 Dimensionality = GetDataRowIntValue(row, "dimensionality"),
                 Content = GetDataRowStringValue(row, "content"),
-                Embeddings = Serializer.DeserializeJson<List<float>>(GetDataRowStringValue(row, "embeddings")),
+                Vectors = Serializer.DeserializeJson<List<float>>(GetDataRowStringValue(row, "embeddings")),
                 CreatedUtc = DateTime.Parse(row["createdutc"].ToString()),
                 LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString())
             };

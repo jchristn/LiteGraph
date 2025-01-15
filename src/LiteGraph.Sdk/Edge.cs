@@ -92,6 +92,11 @@
         /// </summary>
         public object Data { get; set; } = null;
 
+        /// <summary>
+        /// Vectors.
+        /// </summary>
+        public List<VectorMetadata> Vectors { get; set; } = null;
+
         #endregion
 
         #region Private-Members

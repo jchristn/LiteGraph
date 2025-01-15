@@ -30,7 +30,7 @@
                 + "'" + Sanitizer.Sanitize(vector.Model) + "',"
                 + vector.Dimensionality + ","
                 + "'" + Sanitizer.Sanitize(vector.Content) + "',"
-                + "'" + Serializer.SerializeJson(vector.Embeddings, false) + "',"
+                + "'" + Serializer.SerializeJson(vector.Vectors, false) + "',"
                 + "'" + Sanitizer.Sanitize(vector.CreatedUtc.ToString(TimestampFormat)) + "',"
                 + "'" + Sanitizer.Sanitize(vector.LastUpdateUtc.ToString(TimestampFormat)) + "'"
                 + ") "
@@ -57,7 +57,7 @@
                     + "'" + Sanitizer.Sanitize(vectors[i].Model) + "',"
                     + vectors[i].Dimensionality + ","
                     + "'" + Sanitizer.Sanitize(vectors[i].Content) + "',"
-                    + "'" + Serializer.SerializeJson(vectors[i].Embeddings, false) + "',"
+                    + "'" + Serializer.SerializeJson(vectors[i].Vectors, false) + "',"
                     + "'" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
                     + "'" + DateTime.UtcNow.ToString(TimestampFormat) + "'";
                 ret += ")";
@@ -113,7 +113,9 @@
             string ret =
                 "SELECT * FROM 'vectors' WHERE guid IS NOT NULL " +
                 "AND tenantguid = '" + tenantGuid.ToString() + "' " +
-                "AND graphguid = '" + graphGuid.ToString() + "' ";
+                "AND graphguid = '" + graphGuid.ToString() + "' " +
+                "AND nodeguid IS NULL " +
+                "AND edgeguid IS NULL ";
 
             ret +=
                 "ORDER BY " + Converters.EnumerationOrderToClause(order) + " "
@@ -176,7 +178,7 @@
                 + "model = '" + Sanitizer.Sanitize(vector.Model) + "',"
                 + "dimensionality = " + vector.Dimensionality + ","
                 + "content = '" + Sanitizer.Sanitize(vector.Content) + "',"
-                + "embeddings = '" + Serializer.SerializeJson(vector.Embeddings, false) + "',"
+                + "embeddings = '" + Serializer.SerializeJson(vector.Vectors, false) + "',"
                 + "WHERE guid = '" + vector.GUID + "' "
                 + "RETURNING *;";
         }

@@ -67,6 +67,7 @@
         TenantUpdate,
 
         #endregion
+
         #region Users
 
         /// <summary>
@@ -169,6 +170,46 @@
         /// </summary>
         [EnumMember(Value = "LabelUpdate")]
         LabelUpdate,
+
+        #endregion
+
+        #region Vectors
+
+        /// <summary>
+        /// VectorCreate
+        /// </summary>
+        [EnumMember(Value = "VectorCreate")]
+        VectorCreate,
+        /// <summary>
+        /// VectorDelete
+        /// </summary>
+        [EnumMember(Value = "VectorDelete")]
+        VectorDelete,
+        /// <summary>
+        /// VectorExists
+        /// </summary>
+        [EnumMember(Value = "VectorExists")]
+        VectorExists,
+        /// <summary>
+        /// VectorRead
+        /// </summary>
+        [EnumMember(Value = "VectorRead")]
+        VectorRead,
+        /// <summary>
+        /// VectorReadMany
+        /// </summary>
+        [EnumMember(Value = "VectorReadMany")]
+        VectorReadMany,
+        /// <summary>
+        /// VectorSearch
+        /// </summary>
+        [EnumMember(Value = "VectorSearch")]
+        VectorSearch,
+        /// <summary>
+        /// VectorUpdate
+        /// </summary>
+        [EnumMember(Value = "VectorUpdate")]
+        VectorUpdate,
 
         #endregion
 

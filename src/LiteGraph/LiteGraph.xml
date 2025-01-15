@@ -144,6 +144,11 @@
             Object data.
             </summary>
         </member>
+        <member name="P:LiteGraph.Edge.Vectors">
+            <summary>
+            Vectors.
+            </summary>
+        </member>
         <member name="M:LiteGraph.Edge.#ctor">
             <summary>
             Instantiate.
@@ -651,6 +656,11 @@
             Object data.
             </summary>
         </member>
+        <member name="P:LiteGraph.Graph.Vectors">
+            <summary>
+            Vectors.
+            </summary>
+        </member>
         <member name="M:LiteGraph.Graph.#ctor">
             <summary>
             Instantiate the object.
@@ -1077,6 +1087,32 @@
             <param name="skip">Number of records to skip.</param>
             <returns>Vectors.</returns>
         </member>
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadGraphVectors(System.Guid,System.Guid)">
+            <summary>
+            Read graph vectors.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <returns>Vectors.</returns>
+        </member>
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadNodeVectors(System.Guid,System.Guid,System.Guid)">
+            <summary>
+            Read node vectors.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+            <returns>Vectors.</returns>
+        </member>
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadEdgeVectors(System.Guid,System.Guid,System.Guid)">
+            <summary>
+            Read edge vectors.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edgeGuid">Edge GUID.</param>
+            <returns>Vectors.</returns>
+        </member>
         <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadVector(System.Guid,System.Guid)">
             <summary>
             Read a vector by GUID.
@@ -1116,22 +1152,19 @@
             <param name="guid">GUID.</param>
             <returns>True if exists.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.SearchEdgeVectors(LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,System.Nullable{System.Single},System.Nullable{System.Single})">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.SearchGraphVectors(LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr)">
             <summary>
-            Search edge vectors.
+            Search graph vectors.
             </summary>
             <param name="searchType">Vector search type.</param>
             <param name="vectors">Vectors.</param>
             <param name="tenantGuid">Tenant GUID.</param>
-            <param name="graphGuid">Graph GUID.</param>
             <param name="labels">Labels.</param>
             <param name="tags">Tags.</param>
             <param name="filter">Filter.</param>
-            <param name="minimumScore">Minimum score.</param>
-            <param name="maximumScore">Maximum score.</param>
-            <returns>Edges.</returns>
+            <returns>Vector search results containing graphs.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.SearchNodeVectors(LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,System.Nullable{System.Single},System.Nullable{System.Single})">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.SearchNodeVectors(LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr)">
             <summary>
             Search node vectors.
             </summary>
@@ -1142,9 +1175,20 @@
             <param name="labels">Labels.</param>
             <param name="tags">Tags.</param>
             <param name="filter">Filter.</param>
-            <param name="minimumScore">Minimum score.</param>
-            <param name="maximumScore">Maximum score.</param>
-            <returns>Nodes.</returns>
+            <returns>Vector search results containing nodes.</returns>
+        </member>
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.SearchEdgeVectors(LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr)">
+            <summary>
+            Search edge vectors.
+            </summary>
+            <param name="searchType">Vector search type.</param>
+            <param name="vectors">Vectors.</param>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="labels">Labels.</param>
+            <param name="tags">Tags.</param>
+            <param name="filter">Filter.</param>
+            <returns>Vector search results containing edges.</returns>
         </member>
         <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateGraph(LiteGraph.Graph)">
             <summary>
@@ -1153,9 +1197,9 @@
             <param name="graph">Graph.</param>
             <returns>Graph.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateGraph(System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateGraph(System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Collections.Generic.List{LiteGraph.VectorMetadata})">
             <summary>
-            Create a graph using a unique name.
+            Create a graph.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
@@ -1163,6 +1207,7 @@
             <param name="data">Data.</param>
             <param name="labels">Labels.</param>
             <param name="tags">Tags.</param>
+            <param name="vectors">Vectors.</param>
             <returns>Graph.</returns>
         </member>
         <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadGraphs(System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
@@ -1266,7 +1311,7 @@
             <param name="node">Node.</param>
             <returns>Node.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateNode(System.Guid,System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateNode(System.Guid,System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Collections.Generic.List{LiteGraph.VectorMetadata})">
             <summary>
             Create a node.
             </summary>
@@ -1277,6 +1322,7 @@
             <param name="data">Data.</param>
             <param name="labels">Labels.</param>
             <param name="tags">Tags.</param>
+            <param name="vectors">Vectors.</param>
             <returns>Node.</returns>
         </member>
         <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateMultipleNodes(System.Guid,System.Guid,System.Collections.Generic.List{LiteGraph.Node})">
@@ -1359,6 +1405,14 @@
             <param name="graphGuid">Graph GUID.</param>
             <param name="nodeGuid">Node GUID.</param>
         </member>
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.DeleteNodeVectors(System.Guid,System.Guid,System.Guid)">
+            <summary>
+            Delete vectors for a node object.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+        </member>
         <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ExistsNode(System.Guid,System.Guid,System.Guid)">
             <summary>
             Check existence of a node.
@@ -1375,7 +1429,7 @@
             <param name="edge">Edge.</param>
             <returns>Edge.</returns>
         </member>
-        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateEdge(System.Guid,System.Guid,System.Guid,System.Guid,System.Guid,System.String,System.Int32,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection)">
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateEdge(System.Guid,System.Guid,System.Guid,System.Guid,System.Guid,System.String,System.Int32,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Collections.Generic.List{LiteGraph.VectorMetadata})">
             <summary>
             Create an edge between two nodes.
             </summary>
@@ -1389,6 +1443,7 @@
             <param name="labels">Labels.</param>
             <param name="data">Data.</param>
             <param name="tags">Tags.</param>
+            <param name="vectors">Vectors.</param>
             <returns>Edge.</returns>
         </member>
         <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.CreateMultipleEdges(System.Guid,System.Guid,System.Collections.Generic.List{LiteGraph.Edge})">
@@ -1482,6 +1537,14 @@
         <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.DeleteEdgeTags(System.Guid,System.Guid,System.Guid)">
             <summary>
             Delete edge tags.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="edgeGuid">Edge GUID.</param>
+        </member>
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.DeleteEdgeVectors(System.Guid,System.Guid,System.Guid)">
+            <summary>
+            Delete vectors for an edge object.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="graphGuid">Graph GUID.</param>
@@ -1817,19 +1880,31 @@
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadVectors(System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},LiteGraph.EnumerationOrderEnum,System.Int32)">
             <inheritdoc />
         </member>
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadGraphVectors(System.Guid,System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadNodeVectors(System.Guid,System.Guid,System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadEdgeVectors(System.Guid,System.Guid,System.Guid)">
+            <inheritdoc />
+        </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.UpdateVector(LiteGraph.VectorMetadata)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.SearchEdgeVectors(LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,System.Nullable{System.Single},System.Nullable{System.Single})">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.SearchGraphVectors(LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.SearchNodeVectors(LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,System.Nullable{System.Single},System.Nullable{System.Single})">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.SearchNodeVectors(LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr)">
+            <inheritdoc />
+        </member>
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.SearchEdgeVectors(LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateGraph(LiteGraph.Graph)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateGraph(System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateGraph(System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Collections.Generic.List{LiteGraph.VectorMetadata})">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadGraphs(System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum,System.Int32)">
@@ -1871,7 +1946,7 @@
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateNode(LiteGraph.Node)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateNode(System.Guid,System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateNode(System.Guid,System.Guid,System.Guid,System.String,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Collections.Generic.List{LiteGraph.VectorMetadata})">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateMultipleNodes(System.Guid,System.Guid,System.Collections.Generic.List{LiteGraph.Node})">
@@ -1907,6 +1982,9 @@
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.DeleteNodeTags(System.Guid,System.Guid,System.Guid)">
             <inheritdoc />
         </member>
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.DeleteNodeVectors(System.Guid,System.Guid,System.Guid)">
+            <inheritdoc />
+        </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ExistsNode(System.Guid,System.Guid,System.Guid)">
             <inheritdoc />
         </member>
@@ -1940,7 +2018,7 @@
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateEdge(LiteGraph.Edge)">
             <inheritdoc />
         </member>
-        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateEdge(System.Guid,System.Guid,System.Guid,System.Guid,System.Guid,System.String,System.Int32,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection)">
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateEdge(System.Guid,System.Guid,System.Guid,System.Guid,System.Guid,System.String,System.Int32,System.Object,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Collections.Generic.List{LiteGraph.VectorMetadata})">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.CreateMultipleEdges(System.Guid,System.Guid,System.Collections.Generic.List{LiteGraph.Edge})">
@@ -1968,6 +2046,9 @@
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.DeleteEdgeTags(System.Guid,System.Guid,System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.DeleteEdgeVectors(System.Guid,System.Guid,System.Guid)">
             <inheritdoc />
         </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ExistsEdge(System.Guid,System.Guid,System.Guid)">
@@ -2428,7 +2509,76 @@
             <param name="guid">GUID.</param>
             <returns>True if exists.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.CreateGraph(System.Guid,System.Guid,System.String,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Object)">
+        <member name="M:LiteGraph.LiteGraphClient.CreateVector(LiteGraph.VectorMetadata)">
+            <summary>
+            Create a vector.
+            </summary>
+            <param name="vector">Vector.</param>
+            <returns>Vector.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.ReadVectors(System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},LiteGraph.EnumerationOrderEnum)">
+            <summary>
+            Read vectors.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+            <param name="edgeGuid">Edge GUID.</param>
+            <param name="order">Enumeration order.</param>
+            <returns>Vectors.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.ReadVector(System.Guid,System.Guid)">
+            <summary>
+            Read a vector by GUID.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+            <returns>Vector.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.UpdateVector(LiteGraph.VectorMetadata)">
+            <summary>
+            Update a vector.
+            </summary>
+            <param name="vector">VectorMetadata.</param>
+            <returns>Vector.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.DeleteVector(System.Guid,System.Guid)">
+            <summary>
+            Delete a vector.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.ExistsVectorMetadata(System.Guid,System.Guid)">
+            <summary>
+            Check if a vector exists by GUID.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+            <returns>True if exists.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.SearchVectors(LiteGraph.VectorSearchRequest)">
+            <summary>
+            Search vectors.
+            </summary>
+            <param name="searchReq">Vector search request.</param>
+            <returns>Vector search results.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.SearchVectors(LiteGraph.VectorSearchDomainEnum,LiteGraph.VectorSearchTypeEnum,System.Collections.Generic.List{System.Single},System.Guid,System.Nullable{System.Guid},System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr)">
+            <summary>
+            Search vectors.
+            </summary>
+            <param name="domain">Vector search domain.</param>
+            <param name="searchType">Vector search type.</param>
+            <param name="vectors">Vectors.</param>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="labels">Labels.</param>
+            <param name="tags">Tags.</param>
+            <param name="filter">Filter.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.CreateGraph(System.Guid,System.Guid,System.String,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Collections.Generic.List{LiteGraph.VectorMetadata},System.Object)">
             <summary>
             Create a graph using a unique name.
             </summary>
@@ -2438,6 +2588,7 @@
             <param name="labels">Labels.</param>
             <param name="tags">Tags.</param>
             <param name="data">Data.</param>
+            <param name="vectors">Vectors.</param>
             <returns>Graph.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.ReadGraphs(System.Guid,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,ExpressionTree.Expr,LiteGraph.EnumerationOrderEnum)">
@@ -2913,6 +3064,11 @@
             Object data.
             </summary>
         </member>
+        <member name="P:LiteGraph.Node.Vectors">
+            <summary>
+            Vectors.
+            </summary>
+        </member>
         <member name="M:LiteGraph.Node.#ctor">
             <summary>
             Instantiate the object.
@@ -3347,9 +3503,9 @@
             Content.
             </summary>
         </member>
-        <member name="P:LiteGraph.VectorMetadata.Embeddings">
+        <member name="P:LiteGraph.VectorMetadata.Vectors">
             <summary>
-            Content.
+            Vectors.
             </summary>
         </member>
         <member name="P:LiteGraph.VectorMetadata.CreatedUtc">
@@ -3365,6 +3521,134 @@
         <member name="M:LiteGraph.VectorMetadata.#ctor">
             <summary>
             Instantiate.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.VectorMetadata.FromFloatsList(System.Guid,System.Guid,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Collections.Generic.List{System.Collections.Generic.List{System.Single}})">
+            <summary>
+            Create a list of vector metadata from a list of floats.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="nodeGuid">Node GUID.</param>
+            <param name="edgeGuid">Edge GUID.</param>
+            <param name="embeddings">Embeddings.</param>
+            <returns>List of vector metadata.</returns>
+        </member>
+        <member name="M:LiteGraph.VectorMetadata.ToListString(System.Collections.Generic.List{LiteGraph.VectorMetadata})">
+            <summary>
+            Create a list float lists for all vector metadata entries.
+            </summary>
+            <param name="vectors">Vectors.</param>
+            <returns>Labels.</returns>
+        </member>
+        <member name="T:LiteGraph.VectorSearchDomainEnum">
+            <summary>
+            Vector search domain.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.VectorSearchDomainEnum.Graph">
+            <summary>
+            Graph.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.VectorSearchDomainEnum.Node">
+            <summary>
+            Node.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.VectorSearchDomainEnum.Edge">
+            <summary>
+            Edge.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.VectorSearchRequest">
+            <summary>
+            Vector search request.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchRequest.TenantGUID">
+            <summary>
+            Tenant GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchRequest.GraphGUID">
+            <summary>
+            Graph GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchRequest.Domain">
+            <summary>
+            Vector search domain.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchRequest.SearchType">
+            <summary>
+            Vector search type.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchRequest.Labels">
+            <summary>
+            Search labels.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchRequest.Tags">
+            <summary>
+            Search tags.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchRequest.Expr">
+            <summary>
+            Expression.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchRequest.Embeddings">
+            <summary>
+            Embeddings.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.VectorSearchRequest.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.VectorSearchResult">
+            <summary>
+            Vector search result.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchResult.Score">
+            <summary>
+            Score.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchResult.Distance">
+            <summary>
+            Distance.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchResult.InnerProduct">
+            <summary>
+            Inner product.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchResult.Graph">
+            <summary>
+            Graph.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchResult.Node">
+            <summary>
+            Node.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.VectorSearchResult.Edge">
+            <summary>
+            Edge.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.VectorSearchResult.#ctor">
+            <summary>
+            Instantiate the object.
             </summary>
         </member>
         <member name="T:LiteGraph.VectorSearchTypeEnum">
