@@ -129,6 +129,11 @@
             Object data.
             </summary>
         </member>
+        <member name="P:LiteGraph.Sdk.Edge.Vectors">
+            <summary>
+            Vectors.
+            </summary>
+        </member>
         <member name="M:LiteGraph.Sdk.Edge.#ctor">
             <summary>
             Instantiate.
@@ -313,6 +318,11 @@
         <member name="P:LiteGraph.Sdk.Graph.Data">
             <summary>
             Object data.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.Graph.Vectors">
+            <summary>
+            Vectors.
             </summary>
         </member>
         <member name="M:LiteGraph.Sdk.Graph.#ctor">
@@ -673,6 +683,75 @@
             <param name="token">Cancellation token.</param>
             <returns>Task.</returns>
         </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.VectorExists(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Check if a vector exists by GUID.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary> 
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if exists.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateVector(System.Guid,LiteGraph.Sdk.VectorMetadata,System.Threading.CancellationToken)">
+            <summary>
+            Create a vector.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="vector">Vector.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Vector.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadVectors(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Read vectors.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Vectors.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.ReadVector(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Read vector.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Vector.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.UpdateVector(System.Guid,LiteGraph.Sdk.VectorMetadata,System.Threading.CancellationToken)">
+            <summary>
+            Update a vector.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="vector">Vector.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Vector.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.DeleteVector(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete a vector.
+            This is an administrative API, requring use of the admin bearer token.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="guid">GUID.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.SearchVectors(System.Guid,System.Nullable{System.Guid},LiteGraph.Sdk.VectorSearchRequest,System.Threading.CancellationToken)">
+            <summary>
+            Search vectors.
+            </summary>
+            <param name="tenantGuid">Tenant GUID.</param>
+            <param name="graphGuid">Graph GUID.</param>
+            <param name="searchReq">Search request.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Vector search result.</returns>
+        </member>
         <member name="M:LiteGraph.Sdk.LiteGraphSdk.GraphExists(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Check if a graph exists by GUID.
@@ -682,7 +761,7 @@
             <param name="token">Cancellation token.</param>
             <returns>True if exists.</returns>
         </member>
-        <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateGraph(System.Guid,System.Guid,System.String,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Object,System.Threading.CancellationToken)">
+        <member name="M:LiteGraph.Sdk.LiteGraphSdk.CreateGraph(System.Guid,System.Guid,System.String,System.Collections.Generic.List{System.String},System.Collections.Specialized.NameValueCollection,System.Object,System.Collections.Generic.List{LiteGraph.Sdk.VectorMetadata},System.Threading.CancellationToken)">
             <summary>
             Create a graph.
             </summary>
@@ -692,6 +771,7 @@
             <param name="labels">Labels.</param>
             <param name="tags">Tags.</param>
             <param name="data">Data.</param>
+            <param name="vectors">Vectors.</param>
             <param name="token">Cancellation token.</param>
             <returns>Graph.</returns>
         </member>
@@ -1085,6 +1165,11 @@
         <member name="P:LiteGraph.Sdk.Node.Data">
             <summary>
             Object data.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.Node.Vectors">
+            <summary>
+            Vectors.
             </summary>
         </member>
         <member name="M:LiteGraph.Sdk.Node.#ctor">
@@ -1857,7 +1942,7 @@
             Content.
             </summary>
         </member>
-        <member name="P:LiteGraph.Sdk.VectorMetadata.Embeddings">
+        <member name="P:LiteGraph.Sdk.VectorMetadata.Vectors">
             <summary>
             Content.
             </summary>
@@ -1875,6 +1960,146 @@
         <member name="M:LiteGraph.Sdk.VectorMetadata.#ctor">
             <summary>
             Instantiate.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Sdk.VectorSearchDomainEnum">
+            <summary>
+            Vector search domain.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.Sdk.VectorSearchDomainEnum.Graph">
+            <summary>
+            Graph.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.Sdk.VectorSearchDomainEnum.Node">
+            <summary>
+            Node.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.Sdk.VectorSearchDomainEnum.Edge">
+            <summary>
+            Edge.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Sdk.VectorSearchRequest">
+            <summary>
+            Vector search request.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchRequest.TenantGUID">
+            <summary>
+            Tenant GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchRequest.GraphGUID">
+            <summary>
+            Graph GUID.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchRequest.Domain">
+            <summary>
+            Vector search domain.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchRequest.SearchType">
+            <summary>
+            Vector search type.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchRequest.Labels">
+            <summary>
+            Search labels.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchRequest.Tags">
+            <summary>
+            Search tags.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchRequest.Expr">
+            <summary>
+            Expression.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchRequest.Embeddings">
+            <summary>
+            Embeddings.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Sdk.VectorSearchRequest.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Sdk.VectorSearchResult">
+            <summary>
+            Vector search result.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchResult.Score">
+            <summary>
+            Score.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchResult.Distance">
+            <summary>
+            Distance.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchResult.InnerProduct">
+            <summary>
+            Inner product.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchResult.Graph">
+            <summary>
+            Graph.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchResult.Node">
+            <summary>
+            Node.
+            </summary>
+        </member>
+        <member name="P:LiteGraph.Sdk.VectorSearchResult.Edge">
+            <summary>
+            Edge.
+            </summary>
+        </member>
+        <member name="M:LiteGraph.Sdk.VectorSearchResult.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="T:LiteGraph.Sdk.VectorSearchTypeEnum">
+            <summary>
+            Vector search type.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.Sdk.VectorSearchTypeEnum.CosineDistance">
+            <summary>
+            Cosine distance, the inverse of cosine similarity.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.Sdk.VectorSearchTypeEnum.CosineSimilarity">
+            <summary>
+            Cosine similarity, the inverse of cosine distance.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.Sdk.VectorSearchTypeEnum.EuclidianDistance">
+            <summary>
+            Euclidian distance, also known as L2 distance, the inverse of Euclidian similarity or L2 similarity.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.Sdk.VectorSearchTypeEnum.EuclidianSimilarity">
+            <summary>
+            Euclidian simmilarity, also known as L2 similarity, the inverse of Euclidian distance or L2 distance.
+            </summary>
+        </member>
+        <member name="F:LiteGraph.Sdk.VectorSearchTypeEnum.DotProduct">
+            <summary>
+            Dot product similarity.  Equivalent to cosine similarity when vectors are normalized, that is, magnitudes are all 1.
             </summary>
         </member>
     </members>

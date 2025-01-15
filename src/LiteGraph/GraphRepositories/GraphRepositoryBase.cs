@@ -556,6 +556,32 @@
             int skip = 0);
 
         /// <summary>
+        /// Read graph vectors.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <returns>Vectors.</returns>
+        public abstract IEnumerable<VectorMetadata> ReadGraphVectors(Guid tenantGuid, Guid graphGuid);
+
+        /// <summary>
+        /// Read node vectors.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        /// <returns>Vectors.</returns>
+        public abstract IEnumerable<VectorMetadata> ReadNodeVectors(Guid tenantGuid, Guid graphGuid, Guid nodeGuid);
+
+        /// <summary>
+        /// Read edge vectors.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        /// <returns>Vectors.</returns>
+        public abstract IEnumerable<VectorMetadata> ReadEdgeVectors(Guid tenantGuid, Guid graphGuid, Guid edgeGuid);
+
+        /// <summary>
         /// Read a vector by GUID.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
@@ -595,28 +621,22 @@
         public abstract bool ExistsVector(Guid tenantGuid, Guid guid);
 
         /// <summary>
-        /// Search edge vectors.
+        /// Search graph vectors.
         /// </summary>
         /// <param name="searchType">Vector search type.</param>
         /// <param name="vectors">Vectors.</param>
         /// <param name="tenantGuid">Tenant GUID.</param>
-        /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="labels">Labels.</param>
         /// <param name="tags">Tags.</param>
         /// <param name="filter">Filter.</param>
-        /// <param name="minimumScore">Minimum score.</param>
-        /// <param name="maximumScore">Maximum score.</param>
-        /// <returns>Edges.</returns>
-        public abstract IEnumerable<Edge> SearchEdgeVectors(
+        /// <returns>Vector search results containing graphs.</returns>
+        public abstract IEnumerable<VectorSearchResult> SearchGraphVectors(
             VectorSearchTypeEnum searchType,
             List<float> vectors,
             Guid tenantGuid,
-            Guid graphGuid,
             List<string> labels = null,
             NameValueCollection tags = null,
-            Expr filter = null,
-            float? minimumScore = null,
-            float? maximumScore = null);
+            Expr filter = null);
 
         /// <summary>
         /// Search node vectors.
@@ -628,19 +648,35 @@
         /// <param name="labels">Labels.</param>
         /// <param name="tags">Tags.</param>
         /// <param name="filter">Filter.</param>
-        /// <param name="minimumScore">Minimum score.</param>
-        /// <param name="maximumScore">Maximum score.</param>
-        /// <returns>Nodes.</returns>
-        public abstract IEnumerable<Node> SearchNodeVectors(
+        /// <returns>Vector search results containing nodes.</returns>
+        public abstract IEnumerable<VectorSearchResult> SearchNodeVectors(
             VectorSearchTypeEnum searchType,
             List<float> vectors,
             Guid tenantGuid,
             Guid graphGuid,
             List<string> labels = null,
             NameValueCollection tags = null,
-            Expr filter = null,
-            float? minimumScore = null,
-            float? maximumScore = null);
+            Expr filter = null);
+
+        /// <summary>
+        /// Search edge vectors.
+        /// </summary>
+        /// <param name="searchType">Vector search type.</param>
+        /// <param name="vectors">Vectors.</param>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="labels">Labels.</param>
+        /// <param name="tags">Tags.</param>
+        /// <param name="filter">Filter.</param>
+        /// <returns>Vector search results containing edges.</returns>
+        public abstract IEnumerable<VectorSearchResult> SearchEdgeVectors(
+            VectorSearchTypeEnum searchType,
+            List<float> vectors,
+            Guid tenantGuid,
+            Guid graphGuid,
+            List<string> labels = null,
+            NameValueCollection tags = null,
+            Expr filter = null);
 
         #endregion
 
@@ -654,7 +690,7 @@
         public abstract Graph CreateGraph(Graph graph);
 
         /// <summary>
-        /// Create a graph using a unique name.
+        /// Create a graph.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
         /// <param name="guid">GUID.</param>
@@ -662,6 +698,7 @@
         /// <param name="data">Data.</param>
         /// <param name="labels">Labels.</param>
         /// <param name="tags">Tags.</param>
+        /// <param name="vectors">Vectors.</param>
         /// <returns>Graph.</returns>
         public abstract Graph CreateGraph(
             Guid tenantGuid, 
@@ -669,7 +706,8 @@
             string name, 
             object data = null, 
             List<string> labels = null,
-            NameValueCollection tags = null);
+            NameValueCollection tags = null,
+            List<VectorMetadata> vectors = null);
 
         /// <summary>
         /// Read graphs.
@@ -792,6 +830,7 @@
         /// <param name="data">Data.</param>
         /// <param name="labels">Labels.</param>
         /// <param name="tags">Tags.</param>
+        /// <param name="vectors">Vectors.</param>
         /// <returns>Node.</returns>
         public abstract Node CreateNode(
             Guid tenantGuid, 
@@ -800,7 +839,8 @@
             string name, 
             object data = null, 
             List<string> labels = null,
-            NameValueCollection tags = null);
+            NameValueCollection tags = null,
+            List<VectorMetadata> vectors = null);
 
         /// <summary>
         /// Create multiple nodes.
@@ -890,6 +930,14 @@
         public abstract void DeleteNodeTags(Guid tenantGuid, Guid graphGuid, Guid nodeGuid);
 
         /// <summary>
+        /// Delete vectors for a node object.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="nodeGuid">Node GUID.</param>
+        public abstract void DeleteNodeVectors(Guid tenantGuid, Guid graphGuid, Guid nodeGuid);
+
+        /// <summary>
         /// Check existence of a node.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
@@ -922,6 +970,7 @@
         /// <param name="labels">Labels.</param>
         /// <param name="data">Data.</param>
         /// <param name="tags">Tags.</param>
+        /// <param name="vectors">Vectors.</param>
         /// <returns>Edge.</returns>
         public abstract Edge CreateEdge(
             Guid tenantGuid, 
@@ -933,7 +982,8 @@
             int cost = 0, 
             object data = null, 
             List<string> labels = null,
-            NameValueCollection tags = null);
+            NameValueCollection tags = null,
+            List<VectorMetadata> vectors = null);
 
         /// <summary>
         /// Create multiple edges.
@@ -1037,6 +1087,14 @@
         /// <param name="graphGuid">Graph GUID.</param>
         /// <param name="edgeGuid">Edge GUID.</param>
         public abstract void DeleteEdgeTags(Guid tenantGuid, Guid graphGuid, Guid edgeGuid);
+
+        /// <summary>
+        /// Delete vectors for an edge object.
+        /// </summary>
+        /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="graphGuid">Graph GUID.</param>
+        /// <param name="edgeGuid">Edge GUID.</param>
+        public abstract void DeleteEdgeVectors(Guid tenantGuid, Guid graphGuid, Guid edgeGuid);
 
         /// <summary>
         /// Check if an edge exists by GUID.

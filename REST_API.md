@@ -70,6 +70,23 @@
 }
 ```
 
+### Vector
+```
+{
+    "GUID": "00000000-0000-0000-0000-000000000000",
+    "TenantGUID": "00000000-0000-0000-0000-000000000000",
+    "GraphGUID": "00000000-0000-0000-0000-000000000000",
+    "NodeGUID": "00000000-0000-0000-0000-000000000000",
+    "EdgeGUID": "00000000-0000-0000-0000-000000000000",
+    "Model": "testmodel",
+    "Dimensionality": 3,
+    "Content": "test content",
+    "Vectors": [ 0.05, -0.25, 0.45 ],
+    "CreatedUtc": "2025-01-15T10:41:13.243174Z",
+    "LastUpdateUtc": "2025-01-15T10:41:13.243188Z"
+}
+```
+
 ### Graph
 ```
 {
@@ -198,6 +215,39 @@
 }
 ```
 
+### Vector Search Request
+
+```
+{
+    "GraphGUID": "00000000-0000-0000-0000-000000000000",
+    "Domain": "Graph",
+    "SearchType": "CosineSimilarity",
+    "Labels": [],
+    "Tags": {},
+    "Expr": null,
+    "Embeddings": [ 0.1, 0.2, 0.3 ]
+}
+```
+
+Valid domains are `Graph` `Node` `Edge`
+Valid search types are `CosineSimilarity` `CosineDistance` `EuclidianSimilarity` `EuclidianDistance` `DotProduct`
+
+### Vector Search Result
+
+```
+[
+    {
+        "Score": 0.874456,
+        "Distance": null,
+        "InnerProduct": null,
+        "Graph": { ... },
+        "Node": { ... },
+        "Edge": { ... }
+    },
+    ...
+]
+```
+
 ## General APIs
 
 | API                   | Method | URL                                      |
@@ -269,6 +319,20 @@ Tag APIs require administrator bearer token authentication.
 | Update             | PUT    | /v1.0/tenants/[guid]/tags/[guid] |
 | Delete             | DELETE | /v1.0/tenants/[guid]/tags/[guid] |
 | Exists             | HEAD   | /v1.0/tenants/[guid]/tags/[guid] |
+
+## Vector APIs
+
+Vector APIs require administrator bearer token authentication, aside from the vector search API.
+
+| API                | Method | URL                                 |
+|--------------------|--------|-------------------------------------|
+| Create             | PUT    | /v1.0/tenants/[guid]/vectors        |
+| Read many          | GET    | /v1.0/tenants/[guid]/vectors        |
+| Read               | GET    | /v1.0/tenants/[guid]/vectors/[guid] |
+| Update             | PUT    | /v1.0/tenants/[guid]/vectors/[guid] |
+| Delete             | DELETE | /v1.0/tenants/[guid]/vectors/[guid] |
+| Exists             | HEAD   | /v1.0/tenants/[guid]/vectors/[guid] |
+| Search             | POST   | /v1.0/tenants/[guid]/vectors        |
 
 ## Graph APIs
 

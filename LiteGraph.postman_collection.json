@@ -4293,6 +4293,229 @@
 					]
 				},
 				{
+					"name": "Vectors",
+					"item": [
+						{
+							"name": "Read all",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"vectors"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/de13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags",
+										"de13ed50-eada-4acc-a7b7-486e51a6a10f"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Exists",
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/be13ea50-eada-4acc-a7b7-486e51a6a10f",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags",
+										"be13ea50-eada-4acc-a7b7-486e51a6a10f"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GraphGUID\": null,\r\n    \"NodeGUID\": null,\r\n    \"EdgeGUID\": null,\r\n    \"Key\": \"mykey\",\r\n    \"Value\": \"myvalue\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Key\": \"updatedkey\",\r\n    \"Value\": \"myvalue\",\r\n    \"CreatedUtc\": \"2024-12-27T18:12:38.653402Z\",\r\n    \"LastUpdateUtc\": \"2024-12-27T18:12:38.653402Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/ce13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags",
+										"ce13ed50-eada-4acc-a7b7-486e51a6a10f"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/00000000-0000-0000-0000-000000000000",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"tags",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search Vectors",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GraphGUID\": \"025876cb-2676-4dc5-996c-5af22f8a9155\",\r\n    \"Domain\": \"Node\",\r\n    \"SearchType\": \"CosineSimilarity\",\r\n    \"Labels\": [],\r\n    \"Tags\": {},\r\n    \"Expr\": null,\r\n    \"Embeddings\": [ 0.1, 0.2, 0.3 ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"vectors"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Graphs",
 					"item": [
 						{
@@ -4471,6 +4694,43 @@
 										"{{tenant}}",
 										"graphs",
 										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search Vectors",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GraphGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"Domain\": \"Graph\",\r\n    \"SearchType\": \"CosineSimliarity\",\r\n    \"Labels\": [],\r\n    \"Tags\": {},\r\n    \"Expr\": null,\r\n    \"Embeddings\": [ 0.1, 0.2, 0.3 ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"vectors"
 									]
 								}
 							},
@@ -4725,7 +4985,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"Name\": \"My test node\",\r\n    \"Labels\": [\r\n        \"test\"\r\n    ],\r\n    \"Tags\": {\r\n        \"Foo\": \"Bar\"\r\n    },\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
+									"raw": "{\r\n    \"Name\": \"My test node\",\r\n    \"Labels\": [\r\n        \"test\",\r\n        \"hello\"\r\n    ],\r\n    \"Tags\": {\r\n        \"Foo\": \"Bar\",\r\n        \"Bar\": \"Baz\"\r\n    },\r\n    \"Data\": {\r\n        \"Hello\": \"World\",\r\n        \"Foo\": {\r\n            \"Data\": \"hello\"\r\n        }\r\n    }\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4866,6 +5126,43 @@
 										"{{graph}}",
 										"nodes",
 										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search Vectors",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GraphGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"Domain\": \"Node\",\r\n    \"SearchType\": \"CosineSimliarity\",\r\n    \"Labels\": [],\r\n    \"Tags\": {},\r\n    \"Expr\": null,\r\n    \"Embeddings\": [ 0.1, 0.2, 0.3 ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"vectors"
 									]
 								}
 							},
@@ -5224,6 +5521,43 @@
 										"{{graph}}",
 										"edges",
 										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search Vectors",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"GraphGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"Domain\": \"Edge\",\r\n    \"SearchType\": \"CosineSimliarity\",\r\n    \"Labels\": [],\r\n    \"Tags\": {},\r\n    \"Expr\": null,\r\n    \"Embeddings\": [ 0.1, 0.2, 0.3 ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"vectors"
 									]
 								}
 							},
@@ -5661,16 +5995,22 @@
 		{
 			"key": "bearertoken",
 			"value": "litegraphadmin",
-			"type": "string"
+			"type": "string",
+			"disabled": true
 		},
 		{
 			"key": "tenant",
-			"value": "ba1dc0a6-372d-47ee-aea5-75e7dbbbd175",
+			"value": "00000000-0000-0000-0000-000000000000",
 			"type": "string"
 		},
 		{
 			"key": "graph",
-			"value": "97826e1a-d0c1-4884-820a-bfda74b3be33",
+			"value": "00000000-0000-0000-0000-000000000000",
+			"type": "string"
+		},
+		{
+			"key": "bearertoken",
+			"value": "litegraphadmin",
 			"type": "string"
 		}
 	]

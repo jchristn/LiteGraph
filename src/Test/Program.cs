@@ -43,6 +43,7 @@
                 else if (userInput.Equals("test1-1")) Test1_1();
                 else if (userInput.Equals("test1-2")) Test1_2();
                 else if (userInput.Equals("test1-3")) Test1_3();
+                else if (userInput.Equals("test1-4")) Test1_4();
                 else if (userInput.Equals("test2-1")) Test2_1();
                 else
                 {
@@ -93,9 +94,10 @@
             Console.WriteLine("  load2           load sample graph 2");
             Console.WriteLine("  route           find routes between two nodes");
             Console.WriteLine("");
-            Console.WriteLine("  test1-1         using sample graph 1, validate node retrieval by labels");
-            Console.WriteLine("  test1-2         using sample graph 1, validate node retrieval by tags");
-            Console.WriteLine("  test1-3         using sample graph 1, validate node retrieval by labels and tags");
+            Console.WriteLine("  test1-1         using sample graph 1, validate retrieval by labels");
+            Console.WriteLine("  test1-2         using sample graph 1, validate retrieval by tags");
+            Console.WriteLine("  test1-3         using sample graph 1, validate retrieval by labels and tags");
+            Console.WriteLine("  test1-4         using sample graph 1, validate retrieval by vectors");
             Console.WriteLine("  test2-1         using sample graph 2, validate node retrieval by properties");
             Console.WriteLine("");
             Console.WriteLine("  [type] [cmd]    execute a command against a given type");
@@ -171,6 +173,11 @@
                 "edge"
             };
 
+            List<float> embeddings1 = new List<float> { 0.1f, 0.2f, 0.3f };
+            List<float> embeddings2 = new List<float> { 0.05f, -0.25f, 0.45f };
+            List<float> embeddings3 = new List<float> { -0.2f, 0.3f, -0.4f };
+            List<float> embeddings4 = new List<float> { 0.25f, -0.5f, -0.75f };
+
             #endregion
 
             #region Tags
@@ -194,88 +201,242 @@
 
             #region Graph
 
+            Guid graphGuid = Guid.NewGuid();
+
+            List<VectorMetadata> graphVectors = new List<VectorMetadata>
+            {
+                new VectorMetadata
+                {
+                    TenantGUID = tenant.GUID,
+                    GraphGUID = graphGuid,
+                    Model = "testmodel",
+                    Dimensionality = 3,
+                    Content = "testcontent",
+                    Vectors = embeddings1                    
+                }
+            };
+
+            Console.WriteLine("| Creating graph with GUID " + graphGuid);
+
             Graph graph = _Client.CreateGraph(
                 tenant.GUID,
-                Guid.NewGuid(),
+                graphGuid,
                 "Sample Graph 1",
                 labelsGraph,
                 tagsGraph,
+                graphVectors,
                 new GraphMetadata { Description = "This is my sample graph #2" });
 
             #endregion
 
             #region Nodes
 
+            Guid node1Guid = Guid.NewGuid();
+            Console.WriteLine("| Creating node 1 " + node1Guid + " in tenant " + tenant.GUID + " graph " + graph.GUID);
+
             Node n1 = _Client.CreateNode(new Node
             {
+                GUID = node1Guid,
                 TenantGUID = tenant.GUID,
                 GraphGUID = graph.GUID,
                 Name = "1",
                 Labels = StringHelpers.Combine(labelsOdd, labelsNode),
-                Tags = NvcHelpers.Combine(tagsOdd, tagsNode)
+                Tags = NvcHelpers.Combine(tagsOdd, tagsNode),
+                Vectors = new List<VectorMetadata> 
+                { 
+                    new VectorMetadata
+                    {
+                        TenantGUID = tenant.GUID,
+                        GraphGUID = graph.GUID,
+                        NodeGUID = node1Guid,
+                        Model = "testmodel",
+                        Dimensionality = 3,
+                        Content = "testcontent",
+                        Vectors = embeddings2
+                    }
+                }
             });
+
+            Guid node2Guid = Guid.NewGuid();
+            Console.WriteLine("| Creating node 2 " + node2Guid + " in tenant " + tenant.GUID + " graph " + graph.GUID);
 
             Node n2 = _Client.CreateNode(new Node
             {
+                GUID = node2Guid,
                 TenantGUID = tenant.GUID,
                 GraphGUID = graph.GUID,
                 Name = "2",
                 Labels = StringHelpers.Combine(labelsEven, labelsNode),
-                Tags = NvcHelpers.Combine(tagsEven, tagsNode)
+                Tags = NvcHelpers.Combine(tagsEven, tagsNode),
+                Vectors = new List<VectorMetadata>
+                {
+                    new VectorMetadata
+                    {
+                        TenantGUID = tenant.GUID,
+                        GraphGUID = graph.GUID,
+                        NodeGUID = node2Guid,
+                        Model = "testmodel",
+                        Dimensionality = 3,
+                        Content = "testcontent",
+                        Vectors = embeddings3
+                    }
+                }
             });
+
+            Guid node3Guid = Guid.NewGuid();
+            Console.WriteLine("| Creating node 3 " + node3Guid + " in tenant " + tenant.GUID + " graph " + graph.GUID);
 
             Node n3 = _Client.CreateNode(new Node
             {
+                GUID = node3Guid,
                 TenantGUID = tenant.GUID,
                 GraphGUID = graph.GUID,
                 Name = "3",
                 Labels = StringHelpers.Combine(labelsOdd, labelsNode),
-                Tags = NvcHelpers.Combine(tagsOdd, tagsNode)
+                Tags = NvcHelpers.Combine(tagsOdd, tagsNode),
+                Vectors = new List<VectorMetadata>
+                {
+                    new VectorMetadata
+                    {
+                        TenantGUID = tenant.GUID,
+                        GraphGUID = graph.GUID,
+                        NodeGUID = node3Guid,
+                        Model = "testmodel",
+                        Dimensionality = 3,
+                        Content = "testcontent",
+                        Vectors = embeddings4
+                    }
+                }
             });
+
+            Guid node4Guid = Guid.NewGuid();
+            Console.WriteLine("| Creating node 4 " + node4Guid + " in tenant " + tenant.GUID + " graph " + graph.GUID);
 
             Node n4 = _Client.CreateNode(new Node
             {
+                GUID = node4Guid,
                 TenantGUID = tenant.GUID,
                 GraphGUID = graph.GUID,
                 Name = "4",
                 Labels = StringHelpers.Combine(labelsEven, labelsNode),
-                Tags = NvcHelpers.Combine(tagsEven, tagsNode)
+                Tags = NvcHelpers.Combine(tagsEven, tagsNode),
+                Vectors = new List<VectorMetadata>
+                {
+                    new VectorMetadata
+                    {
+                        TenantGUID = tenant.GUID,
+                        GraphGUID = graph.GUID,
+                        NodeGUID = node4Guid,
+                        Model = "testmodel",
+                        Dimensionality = 3,
+                        Content = "testcontent",
+                        Vectors = embeddings1
+                    }
+                }
             });
+
+            Guid node5Guid = Guid.NewGuid();
+            Console.WriteLine("| Creating node 5 " + node5Guid + " in tenant " + tenant.GUID + " graph " + graph.GUID);
 
             Node n5 = _Client.CreateNode(new Node
             {
+                GUID = node5Guid,
                 TenantGUID = tenant.GUID,
                 GraphGUID = graph.GUID,
                 Name = "5",
                 Labels = StringHelpers.Combine(labelsOdd, labelsNode),
-                Tags = NvcHelpers.Combine(tagsOdd, tagsNode)
+                Tags = NvcHelpers.Combine(tagsOdd, tagsNode),
+                Vectors = new List<VectorMetadata>
+                {
+                    new VectorMetadata
+                    {
+                        TenantGUID = tenant.GUID,
+                        GraphGUID = graph.GUID,
+                        NodeGUID = node5Guid,
+                        Model = "testmodel",
+                        Dimensionality = 3,
+                        Content = "testcontent",
+                        Vectors = embeddings2
+                    }
+                }
             });
+
+            Guid node6Guid = Guid.NewGuid();
+            Console.WriteLine("| Creating node 6 " + node6Guid + " in tenant " + tenant.GUID + " graph " + graph.GUID);
 
             Node n6 = _Client.CreateNode(new Node
             {
+                GUID = node6Guid,
                 TenantGUID = tenant.GUID,
                 GraphGUID = graph.GUID,
                 Name = "6",
                 Labels = StringHelpers.Combine(labelsEven, labelsNode),
-                Tags = NvcHelpers.Combine(tagsEven, tagsNode)
+                Tags = NvcHelpers.Combine(tagsEven, tagsNode),
+                Vectors = new List<VectorMetadata>
+                {
+                    new VectorMetadata
+                    {
+                        TenantGUID = tenant.GUID,
+                        GraphGUID = graph.GUID,
+                        NodeGUID = node6Guid,
+                        Model = "testmodel",
+                        Dimensionality = 3,
+                        Content = "testcontent",
+                        Vectors = embeddings3
+                    }
+                }
             });
+
+            Guid node7Guid = Guid.NewGuid();
+            Console.WriteLine("| Creating node 7 " + node7Guid + " in tenant " + tenant.GUID + " graph " + graph.GUID);
 
             Node n7 = _Client.CreateNode(new Node
             {
+                GUID = node7Guid,
                 TenantGUID = tenant.GUID,
                 GraphGUID = graph.GUID,
                 Name = "7",
                 Labels = StringHelpers.Combine(labelsOdd, labelsNode),
-                Tags = NvcHelpers.Combine(tagsOdd, tagsNode)
+                Tags = NvcHelpers.Combine(tagsOdd, tagsNode),
+                Vectors = new List<VectorMetadata>
+                {
+                    new VectorMetadata
+                    {
+                        TenantGUID = tenant.GUID,
+                        GraphGUID = graph.GUID,
+                        NodeGUID = node7Guid,
+                        Model = "testmodel",
+                        Dimensionality = 3,
+                        Content = "testcontent",
+                        Vectors = embeddings4
+                    }
+                }
             });
+
+            Guid node8Guid = Guid.NewGuid();
+            Console.WriteLine("| Creating node 8 " + node8Guid + " in tenant " + tenant.GUID + " graph " + graph.GUID);
 
             Node n8 = _Client.CreateNode(new Node
             {
+                GUID = node8Guid,
                 TenantGUID = tenant.GUID,
                 GraphGUID = graph.GUID,
                 Name = "8",
                 Labels = StringHelpers.Combine(labelsEven, labelsNode),
-                Tags = NvcHelpers.Combine(tagsEven, tagsNode)
+                Tags = NvcHelpers.Combine(tagsEven, tagsNode),
+                Vectors = new List<VectorMetadata>
+                {
+                    new VectorMetadata
+                    {
+                        TenantGUID = tenant.GUID,
+                        GraphGUID = graph.GUID,
+                        NodeGUID = node8Guid,
+                        Model = "testmodel",
+                        Dimensionality = 3,
+                        Content = "testcontent",
+                        Vectors = embeddings1
+                    }
+                }
             });
 
             #endregion
@@ -539,6 +700,119 @@
             Console.WriteLine("");
         }
 
+        static void Test1_4()
+        {
+            Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+            Guid graphGuid = Inputty.GetGuid("Graph GUID  :", _GraphGuid);
+
+            #region Cosine-Similarity
+
+            VectorSearchRequest searchReqCosineSim = new VectorSearchRequest
+            {
+                TenantGUID = _TenantGuid,
+                GraphGUID = _GraphGuid,
+                Domain = VectorSearchDomainEnum.Node,
+                SearchType = VectorSearchTypeEnum.CosineSimilarity,
+                Embeddings = new List<float> { 0.1f, 0.2f, 0.3f }
+            };
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving nodes by cosine similarity to embeddings [ 0.1, 0.2, 0.3 ]");
+
+            foreach (VectorSearchResult result in _Client.SearchVectors(searchReqCosineSim).OrderByDescending(p => p.Score))
+            {
+                Console.WriteLine("| Node " + result.Node.GUID + " " + result.Node.Name + ": score " + result.Score);
+            }
+
+            #endregion
+
+            #region Cosine-Distance
+
+            VectorSearchRequest searchReqCosineDis = new VectorSearchRequest
+            {
+                TenantGUID = _TenantGuid,
+                GraphGUID = _GraphGuid,
+                Domain = VectorSearchDomainEnum.Node,
+                SearchType = VectorSearchTypeEnum.CosineDistance,
+                Embeddings = new List<float> { 0.1f, 0.2f, 0.3f }
+            };
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving nodes by cosine distance from embeddings [ 0.1, 0.2, 0.3 ]");
+
+            foreach (VectorSearchResult result in _Client.SearchVectors(searchReqCosineDis).OrderBy(p => p.Distance))
+            {
+                Console.WriteLine("| Node " + result.Node.GUID + " " + result.Node.Name + ": distance " + result.Distance);
+            }
+
+            #endregion
+
+            #region Euclidian-Similarity
+
+            VectorSearchRequest searchReqEucSim = new VectorSearchRequest
+            {
+                TenantGUID = _TenantGuid,
+                GraphGUID = _GraphGuid,
+                Domain = VectorSearchDomainEnum.Node,
+                SearchType = VectorSearchTypeEnum.EuclidianSimilarity,
+                Embeddings = new List<float> { 0.1f, 0.2f, 0.3f }
+            };
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving nodes by Euclidian similarity to embeddings [ 0.1, 0.2, 0.3 ]");
+
+            foreach (VectorSearchResult result in _Client.SearchVectors(searchReqEucSim).OrderByDescending(p => p.Score))
+            {
+                Console.WriteLine("| Node " + result.Node.GUID + " " + result.Node.Name + ": score " + result.Score);
+            }
+
+            #endregion
+
+            #region Euclidian-Distance
+
+            VectorSearchRequest searchReqEucDis = new VectorSearchRequest
+            {
+                TenantGUID = _TenantGuid,
+                GraphGUID = _GraphGuid,
+                Domain = VectorSearchDomainEnum.Node,
+                SearchType = VectorSearchTypeEnum.EuclidianDistance,
+                Embeddings = new List<float> { 0.1f, 0.2f, 0.3f }
+            };
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving nodes by Euclidian distance from embeddings [ 0.1, 0.2, 0.3 ]");
+
+            foreach (VectorSearchResult result in _Client.SearchVectors(searchReqEucDis).OrderBy(p => p.Distance))
+            {
+                Console.WriteLine("| Node " + result.Node.GUID + " " + result.Node.Name + ": distance " + result.Distance);
+            }
+
+            #endregion
+
+            #region Inner-Product
+
+            VectorSearchRequest searchReqDp = new VectorSearchRequest
+            {
+                TenantGUID = _TenantGuid,
+                GraphGUID = _GraphGuid,
+                Domain = VectorSearchDomainEnum.Node,
+                SearchType = VectorSearchTypeEnum.DotProduct,
+                Embeddings = new List<float> { 0.1f, 0.2f, 0.3f }
+            };
+
+            Console.WriteLine("");
+            Console.WriteLine("Retrieving nodes by dot product with embeddings [ 0.1, 0.2, 0.3 ]");
+
+            foreach (VectorSearchResult result in _Client.SearchVectors(searchReqDp).OrderByDescending(p => p.InnerProduct))
+            {
+                Console.WriteLine("| Node " + result.Node.GUID + " " + result.Node.Name + ": inner product " + result.InnerProduct);
+            }
+
+            #endregion
+
+            Console.WriteLine("");
+        }
+
         #endregion
 
         #region Graph-2
@@ -553,7 +827,14 @@
 
             #region Graph
 
-            Graph graph = _Client.CreateGraph(tenant.GUID, Guid.NewGuid(), "Sample Graph 2", null, null, new GraphMetadata { Description = "This is my sample graph #2" });
+            Graph graph = _Client.CreateGraph(
+                tenant.GUID, 
+                Guid.NewGuid(), 
+                "Sample Graph 2", 
+                null, 
+                null, 
+                null,
+                new GraphMetadata { Description = "This is my sample graph #2" });
 
             #endregion
 

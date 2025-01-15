@@ -1,4 +1,4 @@
-﻿namespace LiteGraph
+﻿namespace LiteGraph.Sdk
 {
     using ExpressionTree;
     using System;
@@ -7,9 +7,9 @@
     using System.Linq;
 
     /// <summary>
-    /// Search request.
+    /// Vector search request.
     /// </summary>
-    public class SearchRequest
+    public class VectorSearchRequest
     {
         #region Public-Members
 
@@ -21,28 +21,17 @@
         /// <summary>
         /// Graph GUID.
         /// </summary>
-        public Guid GraphGUID { get; set; } = default(Guid);
+        public Guid? GraphGUID { get; set; } = null;
 
         /// <summary>
-        /// Ordering.
+        /// Vector search domain.
         /// </summary>
-        public EnumerationOrderEnum Ordering { get; set; } = EnumerationOrderEnum.CreatedDescending;
+        public VectorSearchDomainEnum Domain { get; set; } = VectorSearchDomainEnum.Node;
 
         /// <summary>
-        /// The number of records to skip.
+        /// Vector search type.
         /// </summary>
-        public int Skip
-        {
-            get
-            {
-                return _Skip;
-            }
-            set
-            {
-                if (value < 0) throw new ArgumentOutOfRangeException(nameof(Skip));
-                _Skip = value;
-            }
-        }
+        public VectorSearchTypeEnum SearchType { get; set; } = VectorSearchTypeEnum.CosineSimilarity;
 
         /// <summary>
         /// Search labels.
@@ -81,13 +70,18 @@
         /// </summary>
         public Expr Expr { get; set; } = null;
 
+        /// <summary>
+        /// Embeddings.
+        /// </summary>
+        public List<float> Embeddings { get; set; } = null;
+
         #endregion
 
         #region Private-Members
 
-        private int _Skip = 0;
         private List<string> _Labels = new List<string>();
         private NameValueCollection _Tags = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
+        private List<float> _Embeddings = new List<float>();
 
         #endregion
 
@@ -96,7 +90,7 @@
         /// <summary>
         /// Instantiate the object.
         /// </summary>
-        public SearchRequest()
+        public VectorSearchRequest()
         {
 
         }

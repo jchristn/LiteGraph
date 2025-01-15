@@ -339,6 +339,77 @@
 
         #endregion
 
+        #region Vector-Routes
+
+        internal async Task<ResponseContext> VectorCreate(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (req.Vector == null) throw new ArgumentNullException(nameof(req.Vector));
+            req.Vector.TenantGUID = req.TenantGUID.Value;
+            VectorMetadata obj = _LiteGraph.CreateVector(req.Vector);
+            return new ResponseContext(req, obj);
+        }
+
+        internal async Task<ResponseContext> VectorReadMany(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            List<VectorMetadata> objs = _LiteGraph.ReadVectors(req.TenantGUID.Value, null, null, null).ToList();
+            if (objs == null) objs = new List<VectorMetadata>();
+            return new ResponseContext(req, objs);
+        }
+
+        internal async Task<ResponseContext> VectorRead(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
+            VectorMetadata obj = _LiteGraph.ReadVector(req.TenantGUID.Value, req.VectorGUID.Value);
+            if (obj != null) return new ResponseContext(req, obj);
+            else return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+        }
+
+        internal async Task<ResponseContext> VectorExists(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (_LiteGraph.ExistsVectorMetadata(req.TenantGUID.Value, req.VectorGUID.Value)) return new ResponseContext(req);
+            else return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+        }
+
+        internal async Task<ResponseContext> VectorUpdate(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (req.Vector == null) throw new ArgumentNullException(nameof(req.Vector));
+            req.Vector.TenantGUID = req.TenantGUID.Value;
+            VectorMetadata obj = _LiteGraph.UpdateVector(req.Vector);
+            if (obj == null) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+            return new ResponseContext(req, obj);
+        }
+
+        internal async Task<ResponseContext> VectorDelete(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            _LiteGraph.DeleteVector(req.TenantGUID.Value, req.VectorGUID.Value);
+            return new ResponseContext(req);
+        }
+
+        internal async Task<ResponseContext> VectorSearch(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (req.VectorSearchRequest == null) throw new ArgumentNullException(nameof(req.VectorSearchRequest));
+            if (req.GraphGUID != null && !_LiteGraph.ExistsGraph(req.TenantGUID.Value, req.GraphGUID.Value)) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+            IEnumerable<VectorSearchResult> sresp = _LiteGraph.SearchVectors(
+                req.VectorSearchRequest.Domain,
+                req.VectorSearchRequest.SearchType,
+                req.VectorSearchRequest.Embeddings,
+                req.VectorSearchRequest.TenantGUID,
+                req.VectorSearchRequest.GraphGUID,
+                req.VectorSearchRequest.Labels,
+                req.VectorSearchRequest.Tags,
+                req.VectorSearchRequest.Expr);
+            return new ResponseContext(req, sresp.ToList());
+        }
+
+        #endregion
+
         #region Graph-Routes
 
         internal async Task<ResponseContext> GraphCreate(RequestContext req)
@@ -353,6 +424,7 @@
                 req.Graph.Name, 
                 req.Graph.Labels,
                 req.Graph.Tags, 
+                req.Graph.Vectors,
                 req.Graph.Data);
             return new ResponseContext(req, graph);
         }

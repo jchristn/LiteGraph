@@ -251,6 +251,26 @@
         public List<TagMetadata> Tags { get; set; } = null;
 
         /// <summary>
+        /// Vector GUID.
+        /// </summary>
+        public Guid? VectorGUID { get; set; } = null;
+
+        /// <summary>
+        /// Vector.
+        /// </summary>
+        public VectorMetadata Vector { get; set; } = null;
+
+        /// <summary>
+        /// Vectors.
+        /// </summary>
+        public List<VectorMetadata> Vectors { get; set; } = null;
+
+        /// <summary>
+        /// Vector search request.
+        /// </summary>
+        public VectorSearchRequest VectorSearchRequest { get; set; } = null;
+
+        /// <summary>
         /// User GUID.
         /// </summary>
         public Guid? UserGUID { get; set; } = null;
@@ -402,6 +422,7 @@
                 if (_Url.UrlParameters.AllKeys.Contains("credentialGuid")) CredentialGUID = Guid.Parse(_Url.GetParameter("credentialGuid"));
                 if (_Url.UrlParameters.AllKeys.Contains("labelGuid")) LabelGUID = Guid.Parse(_Url.GetParameter("labelGuid"));
                 if (_Url.UrlParameters.AllKeys.Contains("tagGuid")) TagGUID = Guid.Parse(_Url.GetParameter("tagGuid"));
+                if (_Url.UrlParameters.AllKeys.Contains("vectorGuid")) VectorGUID = Guid.Parse(_Url.GetParameter("vectorGuid"));
                 if (_Url.UrlParameters.AllKeys.Contains("graphGuid")) GraphGUID = Guid.Parse(_Url.GetParameter("graphGuid"));
                 if (_Url.UrlParameters.AllKeys.Contains("nodeGuid")) NodeGUID = Guid.Parse(_Url.GetParameter("nodeGuid"));
                 if (_Url.UrlParameters.AllKeys.Contains("edgeGuid")) EdgeGUID = Guid.Parse(_Url.GetParameter("edgeGuid"));

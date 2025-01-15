@@ -115,6 +115,25 @@
                         CredentialDelete();
                         break;
 
+                    case "label exists":
+                        LabelExists();
+                        break;
+                    case "label create":
+                        LabelCreate();
+                        break;
+                    case "label update":
+                        LabelUpdate();
+                        break;
+                    case "label all":
+                        LabelAll();
+                        break;
+                    case "label read":
+                        LabelRead();
+                        break;
+                    case "label delete":
+                        LabelDelete();
+                        break;
+
                     case "tag exists":
                         TagExists();
                         break;
@@ -132,6 +151,25 @@
                         break;
                     case "tag delete":
                         TagDelete();
+                        break;
+
+                    case "vector exists":
+                        VectorExists();
+                        break;
+                    case "vector create":
+                        VectorCreate();
+                        break;
+                    case "vector update":
+                        VectorUpdate();
+                        break;
+                    case "vector all":
+                        VectorAll();
+                        break;
+                    case "vector read":
+                        VectorRead();
+                        break;
+                    case "vector delete":
+                        VectorDelete();
                         break;
 
                     case "graph exists":
@@ -223,6 +261,10 @@
                     case "route":
                         Route();
                         break;
+
+                    case "vsearch":
+                        VectorSearch();
+                        break;
                 }
 
                 Console.WriteLine("");
@@ -240,14 +282,19 @@
             Console.WriteLine("  tenant          set the tenant GUID (currently " + _Tenant + ")");
             Console.WriteLine("  graph           set the graph GUID (currently " + _Graph + ")");
             Console.WriteLine("");
-            Console.WriteLine("Object commands:");
-            Console.WriteLine("  Tenants     : tenant [create|update|all|read|delete|exists]");
-            Console.WriteLine("  Users       : user [create|update|all|read|delete|exists]");
-            Console.WriteLine("  Credentials : cred [create|update|all|read|delete|exists]");
-            Console.WriteLine("  Tags        : tag [create|update|all|read|delete|exists]");
-            Console.WriteLine("  Graphs      : graph [create|update|all|read|delete|exists|search]");
-            Console.WriteLine("  Nodes       : node [create|update|all|read|delete|exists|search|edges|parents|children]");
-            Console.WriteLine("  Edges       : edge [create|update|all|read|delete|exists|from|to|search|between]");
+            Console.WriteLine("Administrative commands (requires administrative bearer token):");
+            Console.WriteLine("  Tenants       : tenant [create|update|all|read|delete|exists]");
+            Console.WriteLine("  Users         : user [create|update|all|read|delete|exists]");
+            Console.WriteLine("  Credentials   : cred [create|update|all|read|delete|exists]");
+            Console.WriteLine("  Labels        : label [create|update|all|read|delete|exists]");
+            Console.WriteLine("  Tags          : tag [create|update|all|read|delete|exists]");
+            Console.WriteLine("  Vectors       : vector [create|update|all|read|delete|exists]");
+            Console.WriteLine("");
+            Console.WriteLine("User commands:");
+            Console.WriteLine("  Graphs        : graph [create|update|all|read|delete|exists|search]");
+            Console.WriteLine("  Nodes         : node [create|update|all|read|delete|exists|search|edges|parents|children]");
+            Console.WriteLine("  Edges         : edge [create|update|all|read|delete|exists|from|to|search|between]");
+            Console.WriteLine("  Vector search : vsearch");
             Console.WriteLine("");
             Console.WriteLine("Routing commands:");
             Console.WriteLine("  route");
@@ -295,6 +342,20 @@
             return null;
         }
 
+        private static List<VectorMetadata> GetVectors()
+        {
+            string val = GetJson("Vectors JSON:");
+            if (!String.IsNullOrEmpty(val)) return Serializer.DeserializeJson<List<VectorMetadata>>(val);
+            return null;
+        }
+
+        private static List<float> GetEmbeddings()
+        {
+            string val = GetJson("Embeddings JSON:");
+            if (!String.IsNullOrEmpty(val)) return Serializer.DeserializeJson<List<float>>(val);
+            return null;
+        }
+
         private static string GetJson(string prompt)
         {
             return Inputty.GetString(prompt, null, true);
@@ -313,16 +374,39 @@
 
         private static SearchRequest BuildSearchRequest()
         {
+            List<string> labels = GetLabels();
             NameValueCollection nvc = GetNameValueCollection();
-
             Expr expr = GetExpression();
-            if (expr == null) return null;
 
             SearchRequest req = new SearchRequest();
             req.TenantGUID = Inputty.GetGuid("Tenant GUID:", _Tenant);
             req.GraphGUID = Inputty.GetGuid("Graph GUID:", _Graph);
+            req.Labels = labels;
             req.Tags = nvc;
             req.Expr = expr;
+            return req;
+        }
+
+        private static VectorSearchRequest BuildVectorSearchRequest()
+        {
+            List<string> labels = GetLabels();
+            NameValueCollection nvc = GetNameValueCollection();
+            Expr expr = GetExpression();
+            List<float> embeddings = GetEmbeddings();
+
+            VectorSearchRequest req = new VectorSearchRequest();
+            req.TenantGUID = Inputty.GetGuid("Tenant GUID:", _Tenant);
+            string graphGuid = Inputty.GetString("Graph GUID:", null, true);
+            string domain = Inputty.GetString("Domain [Graph|Node|Edge]:", "Node", false);
+            string searchType = Inputty.GetString("Search type [CosineSimilarity|CosineDistance|EuclidianSimilarity|EuclidianDistance|DotProduct]:", "CosineSimilarity", false);
+
+            if (!String.IsNullOrEmpty(graphGuid)) req.GraphGUID = Guid.Parse(graphGuid);
+            req.Domain = (VectorSearchDomainEnum)(Enum.Parse(typeof(VectorSearchDomainEnum), domain));
+            req.SearchType = (VectorSearchTypeEnum)(Enum.Parse(typeof(VectorSearchTypeEnum), searchType));
+            req.Labels = GetLabels();
+            req.Tags = nvc;
+            req.Expr = expr;
+            req.Embeddings = embeddings;
             return req;
         }
 
@@ -550,6 +634,61 @@
 
         #endregion
 
+        #region Label
+
+        private static void ShowSampleLabel()
+        {
+            Console.WriteLine("Sample JSON:");
+            Console.WriteLine(Serializer.SerializeJson(new LabelMetadata
+            {
+                Label = "label"
+            }, false));
+        }
+
+        private static void LabelExists()
+        {
+            EnumerateResult(_Sdk.LabelExists(
+                GetGuid("Tenant GUID:", _Tenant),
+                GetGuid("GUID:")).Result);
+        }
+
+        private static void LabelCreate()
+        {
+            ShowSampleLabel();
+            EnumerateResult(_Sdk.CreateLabel(
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<LabelMetadata>(GetJson("Label JSON:"))).Result);
+        }
+
+        private static void LabelAll()
+        {
+            EnumerateResult(_Sdk.ReadLabels(GetGuid("Tenant GUID:", _Tenant)).Result);
+        }
+
+        private static void LabelRead()
+        {
+            EnumerateResult(_Sdk.ReadLabel(
+                GetGuid("Tenant GUID:", _Tenant),
+                GetGuid("GUID:")).Result);
+        }
+
+        private static void LabelUpdate()
+        {
+            ShowSampleLabel();
+            EnumerateResult(_Sdk.UpdateLabel(
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<LabelMetadata>(GetJson("Label JSON:"))).Result);
+        }
+
+        private static void LabelDelete()
+        {
+            _Sdk.DeleteLabel(
+                GetGuid("Tenant GUID:", _Tenant),
+                GetGuid("GUID:")).Wait();
+        }
+
+        #endregion
+
         #region Tag
 
         private static void ShowSampleTag()
@@ -606,6 +745,68 @@
 
         #endregion
 
+        #region Vector
+
+        private static void ShowSampleVector()
+        {
+            Console.WriteLine("Sample JSON:");
+            Console.WriteLine(Serializer.SerializeJson(new VectorMetadata
+            {
+                TenantGUID = _Tenant,
+                GraphGUID = default(Guid),
+                NodeGUID = default(Guid),
+                EdgeGUID = default(Guid),
+                Model = "test",
+                Dimensionality = 384,
+                Content = "content",
+                Vectors = new List<float> { 0.1f, 0.2f, 0.3f }
+            }, false));
+        }
+
+        private static void VectorExists()
+        {
+            EnumerateResult(_Sdk.VectorExists(
+                GetGuid("Tenant GUID:", _Tenant),
+                GetGuid("GUID:")).Result);
+        }
+
+        private static void VectorCreate()
+        {
+            ShowSampleVector();
+            EnumerateResult(_Sdk.CreateVector(
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<VectorMetadata>(GetJson("Vector JSON:"))).Result);
+        }
+
+        private static void VectorAll()
+        {
+            EnumerateResult(_Sdk.ReadVectors(GetGuid("Tenant GUID:", _Tenant)).Result);
+        }
+
+        private static void VectorRead()
+        {
+            EnumerateResult(_Sdk.ReadVector(
+                GetGuid("Tenant GUID:", _Tenant),
+                GetGuid("GUID:")).Result);
+        }
+
+        private static void VectorUpdate()
+        {
+            ShowSampleVector();
+            EnumerateResult(_Sdk.UpdateVector(
+                GetGuid("Tenant GUID:", _Tenant),
+                Serializer.DeserializeJson<VectorMetadata>(GetJson("Vector JSON:"))).Result);
+        }
+
+        private static void VectorDelete()
+        {
+            _Sdk.DeleteVector(
+                GetGuid("Tenant GUID:", _Tenant),
+                GetGuid("GUID:")).Wait();
+        }
+
+        #endregion
+
         #region Graph
 
         private static void ShowSampleGraph()
@@ -619,13 +820,27 @@
             NameValueCollection tags = new NameValueCollection();
             tags.Add("key", "value");
 
+            List<VectorMetadata> vectors = new List<VectorMetadata>
+            {
+                new VectorMetadata
+                {
+                    TenantGUID = default(Guid),
+                    GraphGUID = default(Guid),
+                    Model = "test model",
+                    Dimensionality = 3,
+                    Content = "test data",
+                    Vectors = new List<float> { 0.1f, 0.2f, 0.3f }
+                }
+            };
+
             Console.WriteLine("Sample JSON:");
             Console.WriteLine(Serializer.SerializeJson(new Graph
             {
                 Name = "Test graph",
                 Labels = labels,
                 Tags = tags,
-                Data = data
+                Data = data,
+                Vectors = vectors
             }, false));
         }
 
@@ -699,6 +914,20 @@
             NameValueCollection tags = new NameValueCollection();
             tags.Add("key", "value");
 
+            List<VectorMetadata> vectors = new List<VectorMetadata>
+            {
+                new VectorMetadata
+                {
+                    TenantGUID = default(Guid),
+                    GraphGUID = default(Guid),
+                    NodeGUID = default(Guid),
+                    Model = "test model",
+                    Dimensionality = 3,
+                    Content = "test data",
+                    Vectors = new List<float> { 0.1f, 0.2f, 0.3f }
+                }
+            };
+
             Console.WriteLine("Sample JSON:");
 
             Console.WriteLine(Serializer.SerializeJson(new Node
@@ -708,7 +937,8 @@
                 Name = "My node",
                 Labels = labels,
                 Tags = tags,
-                Data = data
+                Data = data,
+                Vectors = vectors
             }, false));
         }
 
@@ -836,6 +1066,20 @@
             NameValueCollection tags = new NameValueCollection();
             tags.Add("key", "value");
 
+            List<VectorMetadata> vectors = new List<VectorMetadata>
+            {
+                new VectorMetadata
+                {
+                    TenantGUID = default(Guid),
+                    GraphGUID = default(Guid),
+                    EdgeGUID = default(Guid),
+                    Model = "test model",
+                    Dimensionality = 3,
+                    Content = "test data",
+                    Vectors = new List<float> { 0.1f, 0.2f, 0.3f }
+                }
+            };
+
             Console.WriteLine("Sample JSON:");
 
             Console.WriteLine(Serializer.SerializeJson(new Edge
@@ -847,7 +1091,8 @@
                 Name = "My edge",
                 Labels = labels,
                 Tags = tags,
-                Data = data
+                Data = data,
+                Vectors = vectors
             }, false));
         }
 
@@ -923,8 +1168,7 @@
                 _Sdk.SearchEdges(
                     GetGuid("Tenant GUID:", _Tenant), 
                     GetGuid("Graph GUID:", _Graph), 
-                    req
-                    )
+                    req)
                 .Result);
         }
 
@@ -975,6 +1219,21 @@
                     GetGuid("From node GUID :"),
                     GetGuid("To node GUID   :")
                 )
+                .Result);
+        }
+
+        #endregion
+
+        #region Vector
+
+        private static void VectorSearch()
+        {
+            VectorSearchRequest req = BuildVectorSearchRequest();
+            EnumerateResult(
+                _Sdk.SearchVectors(
+                    req.TenantGUID,
+                    req.GraphGUID,
+                    req)
                 .Result);
         }
 

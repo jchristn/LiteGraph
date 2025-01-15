@@ -10,11 +10,13 @@
     using System.Reflection.Emit;
     using System.Threading.Tasks;
     using System.Xml.Linq;
+    using System.Xml.Schema;
     using Caching;
     using ExpressionTree;
     using LiteGraph;
     using LiteGraph.GraphRepositories.Sqlite;
     using LiteGraph.GraphRepositories.Sqlite.Queries;
+    using LiteGraph.Helpers;
     using LiteGraph.Serialization;
     using Microsoft.Data.Sqlite;
     using PrettyId;
@@ -887,12 +889,12 @@
             string model,
             int dimensionality,
             string content,
-            List<float> embeddings)
+            List<float> vectors)
         {
             if (String.IsNullOrEmpty(model)) throw new ArgumentNullException(nameof(model));
             if (dimensionality < 0) throw new ArgumentOutOfRangeException(nameof(dimensionality));
             if (String.IsNullOrEmpty(content)) throw new ArgumentNullException(nameof(content));
-            if (embeddings == null || embeddings.Count < 1) throw new ArgumentNullException(nameof(embeddings));
+            if (vectors == null || vectors.Count < 1) throw new ArgumentNullException(nameof(vectors));
             return CreateVector(new VectorMetadata { 
                 GUID = Guid.NewGuid(), 
                 TenantGUID = tenantGuid, 
@@ -902,7 +904,7 @@
                 Model = model,
                 Dimensionality = dimensionality,
                 Content = content,
-                Embeddings = embeddings
+                Vectors = vectors
             });
         }
 
@@ -1005,6 +1007,73 @@
         }
 
         /// <inheritdoc />
+        public override IEnumerable<VectorMetadata> ReadGraphVectors(Guid tenantGuid, Guid graphGuid)
+        {
+            int skip = 0;
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending;
+
+            while (true)
+            {
+                string query = Vectors.SelectGraphVectorsQuery(tenantGuid, graphGuid, SelectBatchSize, skip, order);
+                DataTable result = Query(query);
+                if (result == null || result.Rows.Count < 1) break;
+
+                for (int i = 0; i < result.Rows.Count; i++)
+                {
+                    yield return Converters.VectorFromDataRow(result.Rows[i]);
+                    skip++;
+                }
+
+                if (result.Rows.Count < SelectBatchSize) break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<VectorMetadata> ReadNodeVectors(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
+        {
+            int skip = 0;
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending;
+
+            while (true)
+            {
+                string query = Vectors.SelectNodeVectorsQuery(tenantGuid, graphGuid, nodeGuid, SelectBatchSize, skip, order);
+                DataTable result = Query(query);
+                if (result == null || result.Rows.Count < 1) break;
+
+                for (int i = 0; i < result.Rows.Count; i++)
+                {
+                    VectorMetadata md = Converters.VectorFromDataRow(result.Rows[i]);
+                    yield return md;
+                    skip++;
+                }
+
+                if (result.Rows.Count < SelectBatchSize) break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<VectorMetadata> ReadEdgeVectors(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
+        {
+            int skip = 0;
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending;
+
+            while (true)
+            {
+                string query = Vectors.SelectEdgeVectorsQuery(tenantGuid, graphGuid, edgeGuid, SelectBatchSize, skip, order);
+                DataTable result = Query(query);
+                if (result == null || result.Rows.Count < 1) break;
+
+                for (int i = 0; i < result.Rows.Count; i++)
+                {
+                    yield return Converters.VectorFromDataRow(result.Rows[i]);
+                    skip++;
+                }
+
+                if (result.Rows.Count < SelectBatchSize) break;
+            }
+        }
+
+        /// <inheritdoc />
         public override VectorMetadata UpdateVector(VectorMetadata vector)
         {
             if (vector == null) throw new ArgumentNullException(nameof(vector));
@@ -1028,40 +1097,117 @@
         }
 
         /// <inheritdoc />
-        public override IEnumerable<Edge> SearchEdgeVectors(
+        public override IEnumerable<VectorSearchResult> SearchGraphVectors(
             VectorSearchTypeEnum searchType,
             List<float> vectors,
             Guid tenantGuid,
-            Guid graphGuid,
             List<string> labels = null,
             NameValueCollection tags = null,
-            Expr filter = null,
-            float? minimumScore = null,
-            float? maximumScore = null)
+            Expr filter = null)
         {
-            foreach (Edge edge in ReadEdges(tenantGuid, graphGuid, labels, tags, filter))
-            {
+            if (vectors == null || vectors.Count < 1) throw new ArgumentException("The supplied vector list must contain at least one vector.");
 
+            foreach (Graph graph in ReadGraphs(tenantGuid, labels, tags, filter))
+            {
+                if (graph.Vectors == null || graph.Vectors.Count < 1 || graph.Vectors.Count != vectors.Count) continue;
+
+                foreach (VectorMetadata vmd in graph.Vectors)
+                {
+                    if (vmd.Vectors == null || vmd.Vectors.Count < 1) continue;
+
+                    float? score = null;
+                    float? distance = null;
+                    float? innerProduct = null;
+
+                    CompareVectors(searchType, vectors, vmd.Vectors, out score, out distance, out innerProduct);
+
+                    yield return new VectorSearchResult
+                    {
+                        Graph = graph,
+                        Score = score,
+                        Distance = distance,
+                        InnerProduct = innerProduct,
+                    };
+                }
             }
 
             yield break;
         }
 
         /// <inheritdoc />
-        public override IEnumerable<Node> SearchNodeVectors(
+        public override IEnumerable<VectorSearchResult> SearchNodeVectors(
             VectorSearchTypeEnum searchType,
             List<float> vectors,
             Guid tenantGuid,
             Guid graphGuid,
             List<string> labels = null,
             NameValueCollection tags = null,
-            Expr filter = null,
-            float? minimumScore = null,
-            float? maximumScore = null)
+            Expr filter = null)
         {
+            if (vectors == null || vectors.Count < 1) throw new ArgumentException("The supplied vector list must contain at least one vector.");
+
             foreach (Node node in ReadNodes(tenantGuid, graphGuid, labels, tags, filter))
             {
-                
+                if (node.Vectors == null || node.Vectors.Count < 1) continue;
+
+                foreach (VectorMetadata vmd in node.Vectors)
+                {
+                    if (vmd.Vectors == null || vmd.Vectors.Count < 1) continue;
+                    if (vmd.Vectors.Count != vectors.Count) continue;
+
+                    float? score = null;
+                    float? distance = null;
+                    float? innerProduct = null;
+
+                    CompareVectors(searchType, vectors, vmd.Vectors, out score, out distance, out innerProduct);
+
+                    yield return new VectorSearchResult
+                    {
+                        Node = node,
+                        Score = score,
+                        Distance = distance,
+                        InnerProduct = innerProduct,
+                    };
+                }
+            }
+
+            yield break;
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<VectorSearchResult> SearchEdgeVectors(
+            VectorSearchTypeEnum searchType,
+            List<float> vectors,
+            Guid tenantGuid,
+            Guid graphGuid,
+            List<string> labels = null,
+            NameValueCollection tags = null,
+            Expr filter = null)
+        {
+            if (vectors == null || vectors.Count < 1) throw new ArgumentException("The supplied vector list must contain at least one vector.");
+
+            foreach (Edge edge in ReadEdges(tenantGuid, graphGuid, labels, tags, filter))
+            {
+                if (edge.Vectors == null || edge.Vectors.Count < 1 || edge.Vectors.Count != vectors.Count) continue;
+
+                foreach (VectorMetadata vmd in edge.Vectors)
+                {
+                    if (vmd.Vectors == null || vmd.Vectors.Count < 1) continue;
+
+                    float? score = null;
+                    float? distance = null;
+                    float? innerProduct = null;
+
+                    CompareVectors(searchType, vectors, vmd.Vectors, out score, out distance, out innerProduct);
+
+                    yield return new VectorSearchResult
+                    {
+                        Edge = edge,
+                        Score = score,
+                        Distance = distance,
+                        InnerProduct = innerProduct,
+                    };
+                }
             }
 
             yield break;
@@ -1126,6 +1272,17 @@
                 if (tags.Count > 0) CreateMultipleTags(graph.TenantGUID, graph.GUID, tags);
             }
 
+            if (graph.Vectors != null && graph.Vectors.Count > 0)
+            {
+                foreach (VectorMetadata vector in graph.Vectors)
+                {
+                    vector.TenantGUID = graph.TenantGUID;
+                    vector.GraphGUID = graph.GUID;
+                }
+
+                created.Vectors = CreateMultipleVectors(graph.TenantGUID, graph.GUID, graph.Vectors);
+            }
+
             created.Labels = graph.Labels;
             created.Tags = graph.Tags;
             return created;
@@ -1138,7 +1295,8 @@
             string name,
             object data = null,
             List<string> labels = null,
-            NameValueCollection tags = null)
+            NameValueCollection tags = null,
+            List<VectorMetadata> vectors = null)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
@@ -1149,7 +1307,8 @@
                 Name = name,
                 Labels = labels,
                 Tags = tags,
-                Data = data
+                Data = data,
+                Vectors = vectors
             });
         }
 
@@ -1179,6 +1338,8 @@
                     List<TagMetadata> allTags = ReadTags(tenantGuid, graph.GUID, null, null, null, null).ToList();
                     if (allTags != null) graph.Tags = TagMetadata.ToNameValueCollection(allTags);
 
+                    graph.Vectors = ReadGraphVectors(tenantGuid, graph.GUID).ToList();
+
                     yield return graph;
                     skip++;
                 }
@@ -1201,6 +1362,8 @@
                 List<TagMetadata> allTags = ReadTags(tenantGuid, guid, null, null, null, null).ToList();
                 if (allTags != null) graph.Tags = TagMetadata.ToNameValueCollection(allTags);
 
+                graph.Vectors = ReadGraphVectors(tenantGuid, guid).ToList();
+
                 return graph;
             }
             return null;
@@ -1216,6 +1379,7 @@
             Graph updated = Converters.GraphFromDataRow(Query(Graphs.UpdateGraphQuery(graph), true).Rows[0]);
             DeleteGraphLabels(graph.TenantGUID, graph.GUID);
             DeleteGraphTags(graph.TenantGUID, graph.GUID);
+            DeleteGraphVectors(graph.TenantGUID, graph.GUID);
 
             if (graph.Labels != null)
             {
@@ -1230,6 +1394,7 @@
                         graph.Labels));
                 updated.Labels = graph.Labels;
             }
+
             if (graph.Tags != null)
             {
                 CreateMultipleTags(
@@ -1243,6 +1408,18 @@
                         graph.Tags));
                 updated.Tags = graph.Tags;
             }
+
+            if (graph.Vectors != null)
+            {
+                foreach (VectorMetadata vector in graph.Vectors)
+                {
+                    vector.TenantGUID = graph.TenantGUID;
+                    vector.GraphGUID = graph.GUID;
+                }
+
+                updated.Vectors = CreateMultipleVectors(graph.TenantGUID, graph.GUID, graph.Vectors);                
+            }
+
             return updated;
         }
 
@@ -1382,6 +1559,18 @@
                 if (tags.Count > 0) CreateMultipleTags(node.TenantGUID, node.GraphGUID, tags);
             }
 
+            if (node.Vectors != null && node.Vectors.Count > 0)
+            {
+                foreach (VectorMetadata vector in node.Vectors)
+                {
+                    vector.TenantGUID = node.TenantGUID;
+                    vector.GraphGUID = node.GraphGUID;
+                    vector.NodeGUID = node.GUID;
+                }
+
+                created.Vectors = CreateMultipleVectors(node.TenantGUID, node.GraphGUID, node.Vectors);
+            }
+
             created.Labels = node.Labels;
             created.Tags = node.Tags;
             return created;
@@ -1395,7 +1584,8 @@
             string name,
             object data = null,
             List<string> labels = null,
-            NameValueCollection tags = null)
+            NameValueCollection tags = null,
+            List<VectorMetadata> vectors = null)
         {
             return CreateNode(new Node
             {
@@ -1405,7 +1595,8 @@
                 Name = name,
                 Labels = labels,
                 Data = data,
-                Tags = tags
+                Tags = tags,
+                Vectors = vectors
             });
         }
 
@@ -1453,6 +1644,8 @@
                     List<TagMetadata> allTags = ReadTags(tenantGuid, graphGuid, node.GUID, null, null, null).ToList();
                     if (allTags != null) node.Tags = TagMetadata.ToNameValueCollection(allTags);
 
+                    node.Vectors = ReadNodeVectors(tenantGuid, graphGuid, node.GUID).ToList();
+
                     yield return node;
                     skip++;
                 }
@@ -1476,6 +1669,8 @@
                 List<TagMetadata> allTags = ReadTags(tenantGuid, graphGuid, nodeGuid, null, null, null).ToList();
                 if (allTags != null) node.Tags = TagMetadata.ToNameValueCollection(allTags);
 
+                node.Vectors = ReadNodeVectors(tenantGuid, graphGuid, nodeGuid).ToList();
+
                 return node;
             }
             return null;
@@ -1489,8 +1684,10 @@
             ValidateTenantExists(node.TenantGUID);
             ValidateGraphExists(node.TenantGUID, node.GraphGUID);
             Node updated = Converters.NodeFromDataRow(Query(Nodes.UpdateNodeQuery(node), true).Rows[0]);
-            
             DeleteNodeLabels(node.TenantGUID, node.GraphGUID, node.GUID);
+            DeleteNodeTags(node.TenantGUID, node.GraphGUID, node.GUID);
+            DeleteNodeVectors(node.TenantGUID, node.GraphGUID, node.GUID);
+
             if (node.Labels != null)
             {
                 CreateMultipleLabels(
@@ -1500,7 +1697,6 @@
                 updated.Labels = node.Labels;
             }
 
-            DeleteNodeTags(node.TenantGUID, node.GraphGUID, node.GUID);
             if (node.Tags != null)
             {
                 CreateMultipleTags(
@@ -1513,6 +1709,19 @@
                         null,
                         node.Tags));
                 updated.Tags = node.Tags;
+            }
+
+            if (node.Vectors != null)
+            {
+                foreach (VectorMetadata vector in node.Vectors)
+                {
+                    vector.TenantGUID = node.TenantGUID;
+                    vector.GraphGUID = node.GraphGUID;
+                    vector.NodeGUID = node.GUID;
+                    vector.EdgeGUID = null;
+                }
+
+                updated.Vectors = CreateMultipleVectors(node.TenantGUID, node.GraphGUID, node.Vectors);
             }
 
             return updated;
@@ -1589,6 +1798,12 @@
         public override void DeleteNodeTags(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
         {
             DeleteTags(tenantGuid, graphGuid, new List<Guid> { nodeGuid }, null);
+        }
+
+        /// <inheritdoc />
+        public override void DeleteNodeVectors(Guid tenantGuid, Guid graphGuid, Guid nodeGuid)
+        {
+            DeleteVectors(tenantGuid, graphGuid, new List<Guid> { nodeGuid }, null);
         }
 
         /// <inheritdoc />
@@ -1918,6 +2133,7 @@
                     Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
                     edge.Labels = LabelMetadata.ToListString(ReadLabels(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null).ToList());
                     edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                    edge.Vectors = ReadEdgeVectors(edge.TenantGUID, edge.GraphGUID, edge.GUID).ToList();
                     yield return edge;
                     skip++;
                 }
@@ -1950,6 +2166,7 @@
                     Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
                     edge.Labels = LabelMetadata.ToListString(ReadLabels(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null).ToList());
                     edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                    edge.Vectors = ReadEdgeVectors(edge.TenantGUID, edge.GraphGUID, edge.GUID).ToList();
                     yield return edge;
                     skip++;
                 }
@@ -1982,6 +2199,7 @@
                     Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
                     edge.Labels = LabelMetadata.ToListString(ReadLabels(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null).ToList());
                     edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                    edge.Vectors = ReadEdgeVectors(edge.TenantGUID, edge.GraphGUID, edge.GUID).ToList();
                     yield return edge;
                     skip++;
                 }
@@ -2015,6 +2233,7 @@
                     Edge edge = Converters.EdgeFromDataRow(result.Rows[i]);
                     edge.Labels = LabelMetadata.ToListString(ReadLabels(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null).ToList());
                     edge.Tags = TagMetadata.ToNameValueCollection(ReadTags(edge.TenantGUID, edge.GraphGUID, null, edge.GUID, null, null).ToList());
+                    edge.Vectors = ReadEdgeVectors(edge.TenantGUID, edge.GraphGUID, edge.GUID).ToList();
                     yield return edge;
                     skip++;
                 }
@@ -2057,6 +2276,18 @@
                 if (tags.Count > 0) CreateMultipleTags(edge.TenantGUID, edge.GraphGUID, tags);
             }
 
+            if (edge.Vectors != null && edge.Vectors.Count > 0)
+            {
+                foreach (VectorMetadata vector in edge.Vectors)
+                {
+                    vector.TenantGUID = edge.TenantGUID;
+                    vector.GraphGUID = edge.GraphGUID;
+                    vector.EdgeGUID = edge.GUID;
+                }
+
+                created.Vectors = CreateMultipleVectors(edge.TenantGUID, edge.GraphGUID, edge.Vectors);
+            }
+
             created.Labels = edge.Labels;
             created.Tags = edge.Tags;
             return created;
@@ -2073,7 +2304,8 @@
             int cost = 0,
             object data = null,
             List<string> labels = null,
-            NameValueCollection tags = null)
+            NameValueCollection tags = null,
+            List<VectorMetadata> vectors = null)
         {
             return CreateEdge(new Edge
             {
@@ -2086,7 +2318,8 @@
                 Cost = cost,
                 Data = data,
                 Labels = labels,
-                Tags = tags
+                Tags = tags,
+                Vectors = vectors
             });
         }
 
@@ -2134,6 +2367,8 @@
                     List<TagMetadata> allTags = ReadTags(tenantGuid, graphGuid, null, edge.GUID, null, null).ToList();
                     if (allTags != null) edge.Tags = TagMetadata.ToNameValueCollection(allTags);
 
+                    edge.Vectors = ReadEdgeVectors(tenantGuid, graphGuid, edge.GUID).ToList();
+
                     yield return edge;
                     skip++;
                 }
@@ -2157,6 +2392,8 @@
                 List<TagMetadata> allTags = ReadTags(tenantGuid, graphGuid, null, edgeGuid, null, null).ToList();
                 if (allTags != null) edge.Tags = TagMetadata.ToNameValueCollection(allTags);
 
+                edge.Vectors = ReadEdgeVectors(tenantGuid, graphGuid, edge.GUID).ToList();
+
                 return edge;
             }
             return null;
@@ -2172,6 +2409,7 @@
             Edge updated = Converters.EdgeFromDataRow(Query(Edges.UpdateEdgeQuery(edge), true).Rows[0]);
             DeleteEdgeLabels(edge.TenantGUID, edge.GraphGUID, edge.GUID);
             DeleteEdgeTags(edge.TenantGUID, edge.GraphGUID, edge.GUID);
+            DeleteEdgeVectors(edge.TenantGUID, edge.GraphGUID, edge.GUID);
 
             if (edge.Labels != null)
             {
@@ -2199,6 +2437,19 @@
                         edge.GUID,
                         edge.Tags));
                 updated.Tags = edge.Tags;
+            }
+
+            if (edge.Vectors != null)
+            {
+                foreach (VectorMetadata vector in edge.Vectors)
+                {
+                    vector.TenantGUID = edge.TenantGUID;
+                    vector.GraphGUID = edge.GraphGUID;
+                    vector.NodeGUID = null;
+                    vector.EdgeGUID = edge.GUID;
+                }
+
+                updated.Vectors = CreateMultipleVectors(edge.TenantGUID, edge.GraphGUID, edge.Vectors);
             }
 
             return updated;
@@ -2252,6 +2503,12 @@
         public override void DeleteEdgeTags(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
         {
             DeleteTags(tenantGuid, graphGuid, null, new List<Guid> { edgeGuid });
+        }
+
+        /// <inheritdoc />
+        public override void DeleteEdgeVectors(Guid tenantGuid, Guid graphGuid, Guid edgeGuid)
+        {
+            DeleteVectors(tenantGuid, graphGuid, null, new List<Guid> { edgeGuid });
         }
 
         /// <inheritdoc />
@@ -2451,6 +2708,38 @@
             if (edgeGuid == null) return;
             if (!ExistsEdge(tenantGuid, graphGuid.Value, edgeGuid.Value))
                 throw new ArgumentException("No edge with GUID '" + edgeGuid.Value + "' exists.");
+        }
+
+        #endregion
+
+        #region Vectors
+
+        private void CompareVectors(
+            VectorSearchTypeEnum searchType, 
+            List<float> vectors1, 
+            List<float> vectors2,
+            out float? score,
+            out float? distance,
+            out float? innerProduct)
+        {
+            score = null;
+            distance = null;
+            innerProduct = null;
+
+            if (searchType == VectorSearchTypeEnum.CosineDistance)
+                distance = VectorHelper.CalculateCosineDistance(vectors1, vectors2);
+            else if (searchType == VectorSearchTypeEnum.CosineSimilarity)
+                score = VectorHelper.CalculateCosineSimilarity(vectors1, vectors2);
+            else if (searchType == VectorSearchTypeEnum.DotProduct)
+                innerProduct = VectorHelper.CalculateInnerProduct(vectors1, vectors2);
+            else if (searchType == VectorSearchTypeEnum.EuclidianDistance)
+                distance = VectorHelper.CalculateEuclidianDistance(vectors1, vectors2);
+            else if (searchType == VectorSearchTypeEnum.EuclidianSimilarity)
+                score = VectorHelper.CalculateEuclidianSimilarity(vectors1, vectors2);
+            else
+            {
+                throw new ArgumentException("Unknown vector search type " + searchType.ToString() + ".");
+            }
         }
 
         #endregion

@@ -2,14 +2,14 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
-		<Version>3.1.0</Version>
+		<Version>3.1.1</Version>
 		<Description>SDK for LiteGraph, a simple graph database abstraction with a RESTful interface, JSON data query support, and GEXF output support.</Description>
 		<PackageReleaseNotes>Refactor, multitenancy, users, credentials, and tags, including tag based retrieval</PackageReleaseNotes>
 		<ApplicationIcon>assets\favicon.ico</ApplicationIcon>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Title>LiteGraph.Sdk</Title>
 		<Authors>Joel Christner</Authors>
-		<Copyright>(c)2024 Joel Christner</Copyright>
+		<Copyright>(c)2025 Joel Christner</Copyright>
 		<PackageProjectUrl>https://github.com/jchristn/litegraph</PackageProjectUrl>
 		<PackageIcon>favicon.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

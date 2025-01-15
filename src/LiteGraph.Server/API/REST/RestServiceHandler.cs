@@ -150,6 +150,18 @@
 
             #endregion
 
+            #region Vectors
+
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/vectors", VectorCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantGuid}/vectors", VectorSearchRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/vectors", VectorReadManyRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantGuid}/vectors/{vectorGuid}", VectorReadRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.HEAD, "/v1.0/tenants/{tenantGuid}/vectors/{vectorGuid}", VectorExistsRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/vectors/{vectorGuid}", VectorUpdateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantGuid}/vectors/{vectorGuid}", VectorDeleteRoute, ExceptionRoute);
+
+            #endregion
+
             #region Graphs
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantGuid}/graphs", GraphCreateRoute, ExceptionRoute);
@@ -804,6 +816,78 @@
         {
             RequestContext req = (RequestContext)ctx.Metadata;
             await WrappedRequestHandler(ctx, req, _ServiceHandler.TagDelete);
+        }
+
+        #endregion
+
+        #region Vector-Routes
+
+        private async Task VectorCreateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.Vector = _Serializer.DeserializeJson<VectorMetadata>(ctx.Request.DataAsString);
+            req.Vector.TenantGUID = req.TenantGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.VectorCreate);
+        }
+
+        private async Task VectorReadManyRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.VectorReadMany);
+        }
+
+        private async Task VectorReadRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.VectorRead);
+        }
+
+        private async Task VectorExistsRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.VectorExists);
+        }
+
+        private async Task VectorUpdateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.Vector = _Serializer.DeserializeJson<VectorMetadata>(ctx.Request.DataAsString);
+            req.Vector.TenantGUID = req.TenantGUID.Value;
+            req.Vector.GUID = req.VectorGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.VectorUpdate);
+        }
+
+        private async Task VectorDeleteRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.VectorDelete);
+        }
+
+        private async Task VectorSearchRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
+            if (String.IsNullOrEmpty(ctx.Request.DataAsString))
+            {
+                await NoRequestBody(ctx);
+                return;
+            }
+
+            req.VectorSearchRequest = _Serializer.DeserializeJson<VectorSearchRequest>(ctx.Request.DataAsString);
+            req.VectorSearchRequest.TenantGUID = req.TenantGUID.Value;
+            await WrappedRequestHandler(ctx, req, _ServiceHandler.VectorSearch);
         }
 
         #endregion
