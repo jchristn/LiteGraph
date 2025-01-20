@@ -2338,11 +2338,12 @@
             <param name="cred">Credential.</param>
             <returns>Credential.</returns>
         </member>
-        <member name="M:LiteGraph.LiteGraphClient.CreateCredential(System.Guid,System.Guid,System.String)">
+        <member name="M:LiteGraph.LiteGraphClient.CreateCredential(System.Guid,System.Guid,System.Guid,System.String)">
             <summary>
             Create a credential using a unique name.
             </summary>
             <param name="tenantGuid">Tenant GUID.</param>
+            <param name="userGuid">User GUID.</param>
             <param name="guid">GUID.</param>
             <param name="name">Name.</param>
             <returns>Credential.</returns>
