@@ -240,7 +240,13 @@
         /// <param name="email">Email.</param>
         /// <param name="password">Password.</param>
         /// <returns>User.</returns>
-        public UserMaster CreateUser(Guid tenantGuid, Guid guid, string firstName, string lastName, string email, string password)
+        public UserMaster CreateUser(
+            Guid tenantGuid, 
+            Guid guid, 
+            string firstName, 
+            string lastName, 
+            string email, 
+            string password)
         {
             if (String.IsNullOrEmpty(firstName)) throw new ArgumentNullException(nameof(firstName));
             if (String.IsNullOrEmpty(lastName)) throw new ArgumentNullException(nameof(lastName));
@@ -256,7 +262,10 @@
         /// <param name="email">Email.</param>
         /// <param name="order">Enumeration order.</param>
         /// <returns>Users.</returns>
-        public IEnumerable<UserMaster> ReadUsers(Guid tenantGuid, string email, EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        public IEnumerable<UserMaster> ReadUsers(
+            Guid tenantGuid, 
+            string email = null, 
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
             Logging.Log(SeverityEnum.Debug, "retrieving users");
 
@@ -344,13 +353,14 @@
         /// Create a credential using a unique name.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>
+        /// <param name="userGuid">User GUID.</param>
         /// <param name="guid">GUID.</param>
         /// <param name="name">Name.</param>
         /// <returns>Credential.</returns>
-        public Credential CreateCredential(Guid tenantGuid, Guid guid, string name)
+        public Credential CreateCredential(Guid tenantGuid, Guid userGuid, Guid guid, string name)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            return CreateCredential(new Credential { GUID = guid, TenantGUID = tenantGuid, Name = name });
+            return CreateCredential(new Credential { GUID = guid, TenantGUID = tenantGuid, UserGUID = userGuid, Name = name });
         }
 
         /// <summary>
@@ -361,7 +371,11 @@
         /// <param name="bearerToken">Bearer token.</param>
         /// <param name="order">Enumeration order.</param>
         /// <returns>Credentials.</returns>
-        public IEnumerable<Credential> ReadCredentials(Guid? tenantGuid, Guid? userGuid, string bearerToken, EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        public IEnumerable<Credential> ReadCredentials(
+            Guid? tenantGuid, 
+            Guid? userGuid = null, 
+            string bearerToken = null, 
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
             Logging.Log(SeverityEnum.Debug, "retrieving credentials");
 
@@ -594,7 +608,14 @@
         /// <param name="val">Value.</param>
         /// <param name="order">Enumeration order.</param>
         /// <returns>Tags.</returns>
-        public IEnumerable<TagMetadata> ReadTags(Guid tenantGuid, Guid? graphGuid, Guid? nodeGuid, Guid? edgeGuid, string key, string val, EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
+        public IEnumerable<TagMetadata> ReadTags(
+            Guid tenantGuid, 
+            Guid? graphGuid, 
+            Guid? nodeGuid, 
+            Guid? edgeGuid, 
+            string key, 
+            string val, 
+            EnumerationOrderEnum order = EnumerationOrderEnum.CreatedDescending)
         {
             Logging.Log(SeverityEnum.Debug, "retrieving tags");
 

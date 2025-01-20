@@ -53,6 +53,10 @@
                     {
                         if (parts[0].Equals("tenant")
                             || parts[0].Equals("graph")
+                            || parts[0].Equals("user")
+                            || parts[0].Equals("cred")
+                            || parts[0].Equals("label")
+                            || parts[0].Equals("tag")
                             || parts[0].Equals("node")
                             || parts[0].Equals("edge"))
                         {
@@ -102,7 +106,7 @@
             Console.WriteLine("");
             Console.WriteLine("  [type] [cmd]    execute a command against a given type");
             Console.WriteLine("  where:");
-            Console.WriteLine("    [type] : tenant graph node edge");
+            Console.WriteLine("    [type] : tenant graph node edge user cred");
             Console.WriteLine("    [cmd]  : create all read exists update delete search");
             Console.WriteLine("");
             Console.WriteLine("  For node operations, additional commands are available");
@@ -975,9 +979,30 @@
             {
                 obj = _Client.CreateTenant(Guid.NewGuid(), Inputty.GetString("Name:", null, false));
             }
+            else if (str.Equals("user"))
+            {
+                obj = _Client.CreateUser(
+                    Inputty.GetGuid("Tenant GUID:", _TenantGuid),
+                    Guid.NewGuid(),
+                    Inputty.GetString("First name:", null, false),
+                    Inputty.GetString("Last name:", null, false),
+                    Inputty.GetString("Email:", null, false),
+                    Inputty.GetString("Password:", null, false));
+            }
+            else if (str.Equals("cred"))
+            {
+                obj = _Client.CreateCredential(
+                    Inputty.GetGuid("Tenant GUID:", _TenantGuid),
+                    Inputty.GetGuid("User GUID:", default(Guid)),
+                    Guid.NewGuid(),
+                    Inputty.GetString("First name:", null, false));
+            }
             else if (str.Equals("graph"))
             {
-                obj = _Client.CreateGraph(Guid.NewGuid(), Guid.NewGuid(), Inputty.GetString("Name:", null, false));
+                obj = _Client.CreateGraph(
+                    Inputty.GetGuid("Tenant GUID:", _TenantGuid),
+                    Guid.NewGuid(),
+                    Inputty.GetString("Name:", null, false));
             }
             else if (str.Equals("node"))
             {
@@ -1000,6 +1025,16 @@
             if (str.Equals("tenant"))
             {
                 obj = _Client.ReadTenants();
+            }
+            else if (str.Equals("user"))
+            {
+                Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+                obj = _Client.ReadUsers(tenantGuid);
+            }
+            else if (str.Equals("cred"))
+            {
+                Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+                obj = _Client.ReadCredentials(tenantGuid);
             }
             else if (str.Equals("graph"))
             {
@@ -1031,6 +1066,18 @@
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
                 obj = _Client.ReadTenant(tenantGuid);
+            }
+            else if (str.Equals("user"))
+            {
+                Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+                Guid userGuid =   Inputty.GetGuid("GUID        :", default(Guid));
+                obj = _Client.ReadUser(tenantGuid, userGuid);
+            }
+            else if (str.Equals("cred"))
+            {
+                Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+                Guid credGuid = Inputty.GetGuid("GUID        :", default(Guid));
+                obj = _Client.ReadCredential(tenantGuid, credGuid);
             }
             else if (str.Equals("graph"))
             {
@@ -1065,6 +1112,18 @@
             {
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
                 exists = _Client.ExistsTenant(tenantGuid);
+            }
+            else if (str.Equals("user"))
+            {
+                Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+                Guid userGuid = Inputty.GetGuid("GUID        :", default(Guid));
+                exists = _Client.ExistsUser(tenantGuid, userGuid);
+            }
+            else if (str.Equals("cred"))
+            {
+                Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+                Guid credGuid = Inputty.GetGuid("GUID        :", default(Guid));
+                exists = _Client.ExistsCredential(tenantGuid, credGuid);
             }
             else if (str.Equals("graph"))
             {
@@ -1123,6 +1182,18 @@
                 Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
                 bool force = Inputty.GetBoolean("Force       :", true);
                 _Client.DeleteTenant(tenantGuid, force);
+            }
+            else if (str.Equals("user"))
+            {
+                Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+                Guid userGuid = Inputty.GetGuid("GUID        :", default(Guid));
+                _Client.DeleteUser(tenantGuid, userGuid);
+            }
+            else if (str.Equals("cred"))
+            {
+                Guid tenantGuid = Inputty.GetGuid("Tenant GUID :", _TenantGuid);
+                Guid credGuid = Inputty.GetGuid("GUID        :", default(Guid));
+                _Client.DeleteCredential(tenantGuid, credGuid);
             }
             else if (str.Equals("graph"))
             {
