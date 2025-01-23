@@ -4323,7 +4323,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/de13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors/de13ed50-eada-4acc-a7b7-486e51a6a10f",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4333,7 +4333,7 @@
 										"v1.0",
 										"tenants",
 										"{{tenant}}",
-										"tags",
+										"vectors",
 										"de13ed50-eada-4acc-a7b7-486e51a6a10f"
 									]
 								}
@@ -4346,7 +4346,7 @@
 								"method": "HEAD",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/be13ea50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors/be13ea50-eada-4acc-a7b7-486e51a6a10f",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4356,7 +4356,7 @@
 										"v1.0",
 										"tenants",
 										"{{tenant}}",
-										"tags",
+										"vectors",
 										"be13ea50-eada-4acc-a7b7-486e51a6a10f"
 									]
 								}
@@ -4384,7 +4384,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4394,7 +4394,7 @@
 										"v1.0",
 										"tenants",
 										"{{tenant}}",
-										"tags"
+										"vectors"
 									]
 								}
 							},
@@ -4421,7 +4421,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/ce13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors/ce13ed50-eada-4acc-a7b7-486e51a6a10f",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4431,7 +4431,7 @@
 										"v1.0",
 										"tenants",
 										"{{tenant}}",
-										"tags",
+										"vectors",
 										"ce13ed50-eada-4acc-a7b7-486e51a6a10f"
 									]
 								}
@@ -4459,7 +4459,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/00000000-0000-0000-0000-000000000000",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4469,7 +4469,7 @@
 										"v1.0",
 										"tenants",
 										"{{tenant}}",
-										"tags",
+										"vectors",
 										"00000000-0000-0000-0000-000000000000"
 									]
 								}
@@ -4599,7 +4599,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"Name\": \"Another new graph\",\r\n    \"Labels\": [\r\n        \"test\"\r\n    ],\r\n    \"Tags\": {\r\n        \"Foo\": \"Bar\"\r\n    },\r\n    \"Data\": {\r\n        \"Key\": \"Value\"\r\n    }\r\n}",
+									"raw": "{\r\n    \"Name\": \"Another new graph\",\r\n    \"Labels\": [\r\n        \"test\"\r\n    ],\r\n    \"Tags\": {\r\n        \"Foo\": \"Bar\"\r\n    },\r\n    \"Data\": {\r\n        \"Key\": \"Value\"\r\n    },\r\n    \"Vectors\": [\r\n        {\r\n            \"Model\": \"all-MiniLM-L6-v2\",\r\n            \"Dimensionality\": 384,\r\n            \"Content\": \"test\",\r\n            \"Vectors\": [ 0.1, 0.2, 0.3 ]\r\n        }\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4636,7 +4636,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"Name\": \"Updated graph\",\r\n    \"Labels\": [\r\n        \"test\",\r\n        \"updated\"\r\n    ],\r\n    \"Tags\": {\r\n        \"type\": \"graph\"\r\n    },\r\n    \"Data\": {\r\n        \"My-key\": \"My-value\"\r\n    }\r\n}",
+									"raw": "{\r\n    \"TenantGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"GUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"Name\": \"Default graph\",\r\n    \"CreatedUtc\": \"2025-01-23T19:36:55.209306Z\",\r\n    \"LastUpdateUtc\": \"2025-01-23T19:36:55.209219Z\",\r\n    \"Labels\": [\r\n        \"graph\"\r\n    ],\r\n    \"Tags\": {\r\n        \"type\": \"graph\"\r\n    },\r\n    \"Vectors\": [\r\n        {\r\n            \"Model\": \"all-MiniLM-L6-v2\",\r\n            \"Dimensionality\": 384,\r\n            \"Content\": \"test\",\r\n            \"Vectors\": [ 0.1, 0.2, 0.3 ]\r\n        }\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4644,7 +4644,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/3a272840-93d1-4092-a01f-802ef0fb84dc",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4655,7 +4655,7 @@
 										"tenants",
 										"{{tenant}}",
 										"graphs",
-										"3a272840-93d1-4092-a01f-802ef0fb84dc"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4985,7 +4985,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"Name\": \"My test node\",\r\n    \"Labels\": [\r\n        \"test\",\r\n        \"hello\"\r\n    ],\r\n    \"Tags\": {\r\n        \"Foo\": \"Bar\",\r\n        \"Bar\": \"Baz\"\r\n    },\r\n    \"Data\": {\r\n        \"Hello\": \"World\",\r\n        \"Foo\": {\r\n            \"Data\": \"hello\"\r\n        }\r\n    }\r\n}",
+									"raw": "{\r\n    \"Name\": \"My test node\",\r\n    \"Labels\": [\r\n        \"test\",\r\n        \"hello\"\r\n    ],\r\n    \"Tags\": {\r\n        \"Foo\": \"Bar\",\r\n        \"Bar\": \"Baz\"\r\n    },\r\n    \"Data\": {\r\n        \"Hello\": \"World\",\r\n        \"Foo\": {\r\n            \"Data\": \"hello\"\r\n        }\r\n    },\r\n    \"Vectors\": [\r\n        {\r\n            \"Model\": \"all-MiniLM-L6-v2\",\r\n            \"Dimensionality\": 384,\r\n            \"Content\": \"test\",\r\n            \"Vectors\": [ 0.1, 0.2, 0.3 ]\r\n        }\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5104,7 +5104,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Labels\": [\r\n    \"test\"\r\n  ],\r\n  \"Tags\": {\r\n    \"Type\": \"ActiveDirectory\"\r\n  },\r\n  \"Expr\": {\r\n    \"Left\": \"Name\",\r\n    \"Operator\": \"Equals\",\r\n    \"Right\": \"Active Directory\"\r\n  }\r\n}",
+									"raw": "{\r\n  \"Ordering\": \"CreatedDescending\",\r\n  \"Labels\": [\r\n    \"test\"\r\n  ],\r\n  \"Tags\": { },\r\n  \"Expr\": { }\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5380,7 +5380,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"5ad4b899-9b2b-430c-8ebb-8623a49959ae\",\r\n    \"To\": \"0b739acf-8e1d-40d9-86e7-5a4d18cb501d\",\r\n    \"Cost\": 10,\r\n    \"Labels\": [\r\n        \"test\"\r\n    ],\r\n    \"Tags\": {\r\n        \"type\": \"edge\",\r\n        \"test\": \"true\"\r\n    },\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    }\r\n}",
+									"raw": "{\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"5ad4b899-9b2b-430c-8ebb-8623a49959ae\",\r\n    \"To\": \"0b739acf-8e1d-40d9-86e7-5a4d18cb501d\",\r\n    \"Cost\": 10,\r\n    \"Labels\": [\r\n        \"test\"\r\n    ],\r\n    \"Tags\": {\r\n        \"type\": \"edge\",\r\n        \"test\": \"true\"\r\n    },\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    },\r\n    \"Vectors\": [\r\n        {\r\n            \"Model\": \"all-MiniLM-L6-v2\",\r\n            \"Dimensionality\": 384,\r\n            \"Content\": \"test\",\r\n            \"Vectors\": [ 0.1, 0.2, 0.3 ]\r\n        }\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
