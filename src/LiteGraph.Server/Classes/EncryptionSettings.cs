@@ -41,7 +41,7 @@
             set
             {
                 if (String.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(Iv));
-                if (value.Length != 64) throw new ArgumentException("Supplied initialization vector must be a hex string containing 32 characters representing 16 bytes.");
+                if (value.Length != 32) throw new ArgumentException("Supplied initialization vector must be a hex string containing 32 characters representing 16 bytes.");
                 _Iv = value;
             }
         }
