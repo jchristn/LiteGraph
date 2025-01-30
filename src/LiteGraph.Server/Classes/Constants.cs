@@ -113,6 +113,26 @@
         /// </summary>
         public static string AuthorizationHeader = "Authorization";
 
+        /// <summary>
+        /// Email header.
+        /// </summary>
+        public static string EmailHeader = "x-email";
+
+        /// <summary>
+        /// Password header.
+        /// </summary>
+        public static string PasswordHeader = "x-password";
+
+        /// <summary>
+        /// Tenant GUID header.
+        /// </summary>
+        public static string TenantGuidHeader = "x-tenant-guid";
+
+        /// <summary>
+        /// Token header.
+        /// </summary>
+        public static string TokenHeader = "x-token";
+
         #endregion
 
         #region Querystring

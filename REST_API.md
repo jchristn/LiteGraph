@@ -1,5 +1,56 @@
 # REST API for LiteGraph
 
+## Authentication
+
+Users can authenticate API requests in one of three ways.
+
+### Bearer Token
+
+A bearer token can be supplied in the `Authorization` header, i.e. `Authorization: Bearer {token}`.  This bearer token can either be from a `Credential` object mapped to a user by GUID, or, the administrator bearer token defined in `litegraph.json`.  
+
+### Credentials
+
+The user's email, password, and tenant GUID can be passed in as headers using `x-email`, `x-email`, and `x-tenant-guid`.  This method does not work for administrative API calls, as the administrator is only defined by bearer token in `litegraph.json`.
+
+### Security token
+
+Temporal security tokens can be generated for regular users (not for the administrator).  These security tokens expire after 24 hours, and can be used in the `x-token` header as an alternative to using bearer tokens or credentials.
+
+To generate a security token, set the `x-email`, `x-password`, and `x-tenant-guid` headers, and call `GET /v1.0/token`.  The result will look as follows:
+```
+{
+    "TimestampUtc": "2025-01-30T22:54:41.963425Z",
+    "ExpirationUtc": "2025-01-31T22:54:41.963426Z",
+    "IsExpired": false,
+    "TenantGUID": "00000000-0000-0000-0000-000000000000",
+    "UserGUID": "00000000-0000-0000-0000-000000000000",
+    "Token": "mXCNtMWDsW0/pr+IwRFUje2n5Z9/qDGprgAY26bz4KYoJOUyufkzkzfK+Kiq0iv/PsZkzwewIXsuCMkpqJbsMJFMd94fyt8LLHr4CL0NMn1etyK7AC+uLH/xUqVnP+Jdww8LhEV2ly3gx27h91fiXMT60ScKNM772o3zq1WUkD1yBL1MCcZsUkHXQw3ZiP4EsFoZ6oxqquwN+/cRZROKXAbPWvArwcDNIIz9vnBvcvjDJYVCz/LiPq5BXIHtzSP7QffBqiZtttEaql8LIu17c9ms02N2mB/nyF0FF6U97ay1Vbo0V/0/akiRnieOKGYCOjiJBuU1kZ28uiDj1pENpzS1GUqkt5HqK44Jl4LtIco=",
+    "Valid": true
+}
+```
+
+The value found in `Token` can then be used when making API requests to LiteGraph, by adding the `x-token` header with the value, i.e.
+```
+GET /v1.0/tenants/00000000-0000-0000-0000-000000000000/graphs
+x-token: mXCNtMWDsW0/pr+IwRFUje2...truncated...4Jl4LtIco=
+```
+
+To retrieve teh details of a token and to verify it has not expired, call `GET /v1.0/token/details` with the `x-token` header set.
+```
+GET /v1.0/token/details
+x-token: mXCNtMWDsW0/pr+IwRFUje2...truncated...4Jl4LtIco=
+
+Response:
+{
+    "TimestampUtc": "2025-01-30T14:54:41.963425Z",
+    "ExpirationUtc": "2025-01-31T14:54:41.963426Z",
+    "IsExpired": false,
+    "TenantGUID": "00000000-0000-0000-0000-000000000000",
+    "UserGUID": "00000000-0000-0000-0000-000000000000",
+    "Valid": true
+}
+```
+
 ## Data Structures
 
 ### Tenant

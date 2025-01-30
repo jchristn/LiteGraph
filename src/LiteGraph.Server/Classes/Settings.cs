@@ -64,6 +64,22 @@
         }
 
         /// <summary>
+        /// Encryption settings.
+        /// </summary>
+        public EncryptionSettings Encryption
+        {
+            get
+            {
+                return _Encryption;
+            }
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(EncryptionSettings));
+                _Encryption = value;
+            }
+        }
+        
+        /// <summary>
         /// Debug settings.
         /// </summary>
         public DebugSettings Debug
@@ -86,7 +102,9 @@
         private LoggingSettings _Logging = new LoggingSettings();
         private WebserverSettings _Rest = new WebserverSettings();
         private LiteGraphSettings _LiteGraph = new LiteGraphSettings();
+        private EncryptionSettings _Encryption = new EncryptionSettings();
         private DebugSettings _Debug = new DebugSettings();
+
         #endregion
 
         #region Constructors-and-Factories

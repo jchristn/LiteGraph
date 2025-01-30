@@ -95,6 +95,13 @@
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/", RootRoute, ExceptionRoute);
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/favicon.ico", FaviconRoute, ExceptionRoute);
 
+            #region Tokens
+
+            _Webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/token", TokenCreateRoute, ExceptionRoute);
+            _Webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/token/details", TokenDetailsRoute, ExceptionRoute);
+
+            #endregion
+
             #region Tenants
 
             _Webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants", TenantCreateRoute, ExceptionRoute);
@@ -372,6 +379,38 @@
         #endregion
 
         #region Private-Route-Implementations
+
+        #region Token
+
+        private async Task TokenCreateRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+
+            AuthenticationToken token = _Authentication.GenerateToken(req.Authentication.TenantGUID.Value, req.Authentication.UserGUID.Value);
+            ctx.Response.StatusCode = 200;
+            await ctx.Response.Send(_Serializer.SerializeJson(token, true));
+            return;
+        }
+
+        private async Task TokenDetailsRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            
+            if (String.IsNullOrEmpty(req.Authentication.SecurityToken))
+            {
+                _Logging.Warn(_Header + "no authentication token supplied from which to read details");
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "No authentication token supplied."), true));
+                return;
+            }
+
+            AuthenticationToken token = _Authentication.ReadToken(req.Authentication.SecurityToken);
+            ctx.Response.StatusCode = 200;
+            await ctx.Response.Send(_Serializer.SerializeJson(token, true));
+            return;
+        }
+
+        #endregion
 
         #region General
 

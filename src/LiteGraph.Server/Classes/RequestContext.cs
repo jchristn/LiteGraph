@@ -411,6 +411,18 @@
                 if (authHeader.ToLower().StartsWith("bearer "))
                     _Authentication.BearerToken = authHeader.Substring(7);
             }
+
+            if (_Http.Request.HeaderExists(Constants.EmailHeader))
+                _Authentication.Email = _Http.Request.RetrieveHeaderValue(Constants.EmailHeader);
+
+            if (_Http.Request.HeaderExists(Constants.PasswordHeader))
+                _Authentication.Password = _Http.Request.RetrieveHeaderValue(Constants.PasswordHeader);
+
+            if (_Http.Request.HeaderExists(Constants.TokenHeader))
+                _Authentication.SecurityToken = _Http.Request.RetrieveHeaderValue(Constants.TokenHeader);
+
+            if (_Http.Request.HeaderExists(Constants.TenantGuidHeader))
+                _Authentication.TenantGUID = Guid.Parse(_Http.Request.RetrieveHeaderValue(Constants.TenantGuidHeader));
         }
 
         private void SetRequestValues()

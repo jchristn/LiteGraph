@@ -30,6 +30,11 @@
         public string BearerToken { get; set; } = null;
 
         /// <summary>
+        /// Security token.
+        /// </summary>
+        public string SecurityToken { get; set; } = null;
+
+        /// <summary>
         /// Tenant GUID.
         /// </summary>
         public Guid? TenantGUID { get; set; } = null;

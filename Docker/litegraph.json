@@ -1,5 +1,5 @@
 {
-  "CreatedUtc": "2024-12-27T22:19:01.489573Z",
+  "CreatedUtc": "2025-01-27T22:19:01.489573Z",
   "Logging": {
     "Enable": true,
     "Servers": [
@@ -63,6 +63,10 @@
     "AdminBearerToken": "litegraphadmin",
     "GraphRepositoryFilename": "litegraph.db",
     "MaxConcurrentOperations": 4
+  },
+  "Encryption": {
+    "Key": "0000000000000000000000000000000000000000000000000000000000000000",
+    "Iv": "00000000000000000000000000000000"
   },
   "Debug": {
     "Authentication": false,

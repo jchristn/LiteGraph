@@ -3333,6 +3333,102 @@
 			"name": "v3.1",
 			"item": [
 				{
+					"name": "User Authentication",
+					"item": [
+						{
+							"name": "Create auth token",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-email",
+										"value": "default@user.com",
+										"type": "text"
+									},
+									{
+										"key": "x-password",
+										"value": "password",
+										"type": "text"
+									},
+									{
+										"key": "x-tenant-guid",
+										"value": "{{tenant}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/token",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read token details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-token",
+										"value": "mXCNtMWDsW0/pr+IwRFUje2n5Z9/qDGprgAY26bz4KYoJOUyufkzkzfK+Kiq0iv/PsZkzwewIXsuCMkpqJbsMJFMd94fyt8LLHr4CL0NMn1etyK7AC+uLH/xUqVnP+Jdww8LhEV2ly3gx27h91fiXMT60ScKNM772o3zq1WUkD1yBL1MCcZsUkHXQw3ZiP4EsFoZ6oxqquwN+/cRZROKXAbPWvArwcDNIIz9vnBvcvjDJYVCz/LiPq5BXIHtzSP7QffBqiZtttEaql8LIu17c9ms02N2mB/nyF0FF6U97ay1Vbo0V/0/akiRnieOKGYCOjiJBuU1kZ28uiDj1pENpzS1GUqkt5HqK44Jl4LtIco=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/token/details",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"token",
+										"details"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Example request using token",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-token",
+										"value": "mXCNtMWDsW0/pr+IwRFUje2n5Z9/qDGprgAY26bz4KYoJOUyufkzkzfK+Kiq0iv/PsZkzwewIXsuCMkpqJbsMJFMd94fyt8LLHr4CL0NMn1etyK7AC+uLH/xUqVnP+Jdww8LhEV2ly3gx27h91fiXMT60ScKNM772o3zq1WUkD1yBL1MCcZsUkHXQw3ZiP4EsFoZ6oxqquwN+/cRZROKXAbPWvArwcDNIIz9vnBvcvjDJYVCz/LiPq5BXIHtzSP7QffBqiZtttEaql8LIu17c9ms02N2mB/nyF0FF6U97ay1Vbo0V/0/akiRnieOKGYCOjiJBuU1kZ28uiDj1pENpzS1GUqkt5HqK44Jl4LtIco=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"tenants",
+										"{{tenant}}",
+										"graphs"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Tenants",
 					"item": [
 						{
@@ -3453,7 +3549,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/0b571bd7-d63f-4a8b-aa43-96ef3ad6364d",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -3462,7 +3558,7 @@
 									"path": [
 										"v1.0",
 										"tenants",
-										"0b571bd7-d63f-4a8b-aa43-96ef3ad6364d"
+										"{{tenant}}"
 									]
 								}
 							},
@@ -3489,7 +3585,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/0b571bd7-d63f-4a8b-aa43-96ef3ad6364d",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -3498,7 +3594,7 @@
 									"path": [
 										"v1.0",
 										"tenants",
-										"0b571bd7-d63f-4a8b-aa43-96ef3ad6364d"
+										"{{tenant}}"
 									]
 								}
 							},
@@ -3525,7 +3621,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/0b571bd7-d63f-4a8b-aa43-96ef3ad6364d?force",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}?force",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -3534,7 +3630,7 @@
 									"path": [
 										"v1.0",
 										"tenants",
-										"0b571bd7-d63f-4a8b-aa43-96ef3ad6364d"
+										"{{tenant}}"
 									],
 									"query": [
 										{
