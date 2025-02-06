@@ -94,12 +94,13 @@
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.HEAD, "/", LoopbackRoute, ExceptionRoute);
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/", RootRoute, ExceptionRoute);
             _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/favicon.ico", FaviconRoute, ExceptionRoute);
+            _Webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/v1.0/token/tenants", TokenTenantsRoute, ExceptionRoute);
 
             #region Tokens
 
             _Webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/token", TokenCreateRoute, ExceptionRoute);
             _Webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/token/details", TokenDetailsRoute, ExceptionRoute);
-
+            
             #endregion
 
             #region Tenants
@@ -408,6 +409,31 @@
             ctx.Response.StatusCode = 200;
             await ctx.Response.Send(_Serializer.SerializeJson(token, true));
             return;
+        }
+
+        private async Task TokenTenantsRoute(HttpContextBase ctx)
+        {
+            RequestContext req = (RequestContext)ctx.Metadata;
+            if (String.IsNullOrEmpty(req.Authentication.Email))
+            {
+                _Logging.Warn(_Header + "no email supplied in headers for tenant retrieval");
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, "No email supplied in the request headers."), true));
+                return;
+            }
+
+            ResponseContext resp = await _ServiceHandler.UserTenants(req);
+            if (resp.Success)
+            {
+                ctx.Response.StatusCode = 200;
+                await ctx.Response.Send(_Serializer.SerializeJson(resp.Data, true));
+                return;
+            }
+            else
+            {
+                ctx.Response.StatusCode = 404;
+                await ctx.Response.Send(_Serializer.SerializeJson(resp.Error, true));
+            }
         }
 
         #endregion

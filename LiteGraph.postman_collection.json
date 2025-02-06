@@ -3336,6 +3336,33 @@
 					"name": "User Authentication",
 					"item": [
 						{
+							"name": "Retrieve tenants for email",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-email",
+										"value": "default@user.com",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/token/tenants",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"v1.0",
+										"token",
+										"tenants"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Create auth token",
 							"request": {
 								"method": "GET",
@@ -3378,7 +3405,7 @@
 								"header": [
 									{
 										"key": "x-token",
-										"value": "mXCNtMWDsW0/pr+IwRFUje2n5Z9/qDGprgAY26bz4KYoJOUyufkzkzfK+Kiq0iv/PsZkzwewIXsuCMkpqJbsMJFMd94fyt8LLHr4CL0NMn1etyK7AC+uLH/xUqVnP+Jdww8LhEV2ly3gx27h91fiXMT60ScKNM772o3zq1WUkD1yBL1MCcZsUkHXQw3ZiP4EsFoZ6oxqquwN+/cRZROKXAbPWvArwcDNIIz9vnBvcvjDJYVCz/LiPq5BXIHtzSP7QffBqiZtttEaql8LIu17c9ms02N2mB/nyF0FF6U97ay1Vbo0V/0/akiRnieOKGYCOjiJBuU1kZ28uiDj1pENpzS1GUqkt5HqK44Jl4LtIco=",
+										"value": "mXCNtMWDsW0/pr+IwRFUjZYDoWLdu5ikKlbZr907gYrfE1YYCDFfFTleuYAW0mY1rkrhpPOgDf3Fbtk0iiy8JBF2WlWMw0MttbH0mDgNf1ZSJHGR5nQDG9oRHFe0q9SaIMCVyRGIdsgewLr7YPM46nsrHcLTA7RPKKOPA/mYZG6/kOGQV3FnT7F3u293+NBgWMXRYzNhmTwqEA021/gc9r1rVXjZcWXgv1apW/xyqCkF4aOriuyThcV55zibCugyDuj7MTSjke7Wp8LyJiBFUxz+745NyEbLACSkJ1wp8nxuRUDD+YhlfgavUHEzFot0mWYuJDU3JeyyDNSHS3VvKOih+51K0H0ucEKhbKUA+zo=",
 										"type": "text"
 									}
 								],
@@ -6085,7 +6112,7 @@
 		},
 		{
 			"key": "hostname",
-			"value": "localhost",
+			"value": "ec2-18-217-169-161.us-east-2.compute.amazonaws.com",
 			"type": "string"
 		},
 		{

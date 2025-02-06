@@ -70,6 +70,16 @@
             return ret;
         }
 
+        internal static string SelectUserTenantsQuery(string email)
+        {
+            string ret =
+                "SELECT * FROM 'tenants' WHERE " +
+                "guid IN (" +
+                "SELECT tenantguid FROM users WHERE email = '" + Sanitizer.Sanitize(email) + "'" +
+                ");";
+            return ret;
+        }
+
         internal static string UpdateUserQuery(UserMaster user)
         {
             return

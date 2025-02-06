@@ -770,6 +770,13 @@
             <param name="guid">GUID.</param>
             <returns>User.</returns>
         </member>
+        <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadUserTenants(System.String)">
+            <summary>
+            Read tenants associated with a given email address.
+            </summary>
+            <param name="email">Email address.</param>
+            <returns>List of tenants.</returns>
+        </member>
         <member name="M:LiteGraph.GraphRepositories.GraphRepositoryBase.ReadUserByEmail(System.Guid,System.String)">
             <summary>
             Read a user by email.
@@ -1766,6 +1773,9 @@
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadUser(System.Guid,System.Guid)">
             <inheritdoc />
         </member>
+        <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadUserTenants(System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:LiteGraph.GraphRepositories.SqliteGraphRepository.ReadUserByEmail(System.Guid,System.String)">
             <inheritdoc />
         </member>
@@ -2308,6 +2318,13 @@
             <param name="tenantGuid">Tenant GUID.</param>
             <param name="guid">GUID.</param>
             <returns>User.</returns>
+        </member>
+        <member name="M:LiteGraph.LiteGraphClient.ReadUserTenants(System.String)">
+            <summary>
+            Read tenants associated with a given email.
+            </summary>
+            <param name="email">Email.</param>
+            <returns>List of tenants.</returns>
         </member>
         <member name="M:LiteGraph.LiteGraphClient.UpdateUser(LiteGraph.UserMaster)">
             <summary>

@@ -172,6 +172,13 @@
         public abstract UserMaster ReadUser(Guid tenantGuid, Guid guid);
 
         /// <summary>
+        /// Read tenants associated with a given email address.
+        /// </summary>
+        /// <param name="email">Email address.</param>
+        /// <returns>List of tenants.</returns>
+        public abstract List<TenantMetadata> ReadUserTenants(string email);
+
+        /// <summary>
         /// Read a user by email.
         /// </summary>
         /// <param name="tenantGuid">Tenant GUID.</param>

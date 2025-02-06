@@ -35,7 +35,7 @@ GET /v1.0/tenants/00000000-0000-0000-0000-000000000000/graphs
 x-token: mXCNtMWDsW0/pr+IwRFUje2...truncated...4Jl4LtIco=
 ```
 
-To retrieve teh details of a token and to verify it has not expired, call `GET /v1.0/token/details` with the `x-token` header set.
+To retrieve the details of a token and to verify it has not expired, call `GET /v1.0/token/details` with the `x-token` header set.
 ```
 GET /v1.0/token/details
 x-token: mXCNtMWDsW0/pr+IwRFUje2...truncated...4Jl4LtIco=
@@ -49,6 +49,23 @@ Response:
     "UserGUID": "00000000-0000-0000-0000-000000000000",
     "Valid": true
 }
+```
+
+If you do not know the tenant GUID ahead of time, use the API to retrieve tenants for a given email by calling `GET /v1.0/token/tenants` with the `x-email` header set.  It will return the list of tenants associated with the supplied email address.
+```
+GET /v1.0/token/tenants
+x-email: default@user.com
+
+Response:
+[
+    {
+        "GUID": "00000000-0000-0000-0000-000000000000",
+        "Name": "Default tenant",
+        "Active": true,
+        "CreatedUtc": "2025-02-06T18:22:56.789353Z",
+        "LastUpdateUtc": "2025-02-06T18:22:56.788994Z"
+    }
+]
 ```
 
 ## Data Structures

@@ -289,6 +289,18 @@
         }
 
         /// <summary>
+        /// Read tenants associated with a given email.
+        /// </summary>
+        /// <param name="email">Email.</param>
+        /// <returns>List of tenants.</returns>
+        public List<TenantMetadata> ReadUserTenants(string email)
+        {
+            if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
+            Logging.Log(SeverityEnum.Debug, "retrieving tenants associated with user " + email);
+            return _Repository.ReadUserTenants(email);
+        }
+
+        /// <summary>
         /// Update a user.
         /// </summary>
         /// <param name="user">User.</param>

@@ -354,6 +354,16 @@
         }
 
         /// <inheritdoc />
+        public override List<TenantMetadata> ReadUserTenants(string email)
+        {
+            DataTable result = Query(Users.SelectUserTenantsQuery(email));
+            List<TenantMetadata> tenants = new List<TenantMetadata>();
+            if (result != null && result.Rows.Count > 0)
+                foreach (DataRow row in result.Rows) tenants.Add(Converters.TenantFromDataRow(row));
+            return tenants;
+        }
+
+        /// <inheritdoc />
         public override UserMaster ReadUserByEmail(Guid tenantGuid, string email)
         {
             DataTable result = Query(Users.SelectUserQuery(tenantGuid, email));

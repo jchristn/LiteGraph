@@ -96,6 +96,11 @@
         [EnumMember(Value = "UserReadMany")]
         UserReadMany,
         /// <summary>
+        /// UserReadTenants
+        /// </summary>
+        [EnumMember(Value = "UserReadTenants")]
+        UserReadTenants,
+        /// <summary>
         /// UserUpdate
         /// </summary>
         [EnumMember(Value = "UserUpdate")]

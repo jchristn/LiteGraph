@@ -170,6 +170,14 @@
             return new ResponseContext(req);
         }
 
+        internal async Task<ResponseContext> UserTenants(RequestContext req)
+        {
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            List<TenantMetadata> tenants = _LiteGraph.ReadUserTenants(req.Authentication.Email);
+            if (tenants != null && tenants.Count > 0) return new ResponseContext(req, tenants);
+            else return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
+        }
+
         #endregion
 
         #region Credential-Routes
