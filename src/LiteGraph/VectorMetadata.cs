@@ -27,7 +27,7 @@
         /// <summary>
         /// Graph GUID.
         /// </summary>
-        public Guid? GraphGUID { get; set; } = null;
+        public Guid GraphGUID { get; set; } = default(Guid);
 
         /// <summary>
         /// Node GUID.

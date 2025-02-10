@@ -24,7 +24,7 @@
                 + "VALUES ("
                 + "'" + label.GUID + "',"
                 + "'" + label.TenantGUID + "',"
-                + (label.GraphGUID != null ? "'" + label.GraphGUID.Value + "'" : "NULL") + ","
+                + "'" + label.GraphGUID + "',"
                 + (label.NodeGUID != null ? "'" + label.NodeGUID.Value + "'" : "NULL") + ","
                 + (label.EdgeGUID != null ? "'" + label.EdgeGUID.Value + "'" : "NULL") + ","
                 + "'" + Sanitizer.Sanitize(label.Label) + "',"

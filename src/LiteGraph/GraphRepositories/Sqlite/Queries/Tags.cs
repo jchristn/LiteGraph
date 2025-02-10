@@ -24,7 +24,7 @@
                 + "VALUES ("
                 + "'" + tag.GUID + "',"
                 + "'" + tag.TenantGUID + "',"
-                + (tag.GraphGUID != null ? "'" + tag.GraphGUID.Value + "'" : "NULL") + ","
+                + "'" + tag.GraphGUID + "',"
                 + (tag.NodeGUID != null ? "'" + tag.NodeGUID.Value + "'" : "NULL") + ","
                 + (tag.EdgeGUID != null ? "'" + tag.EdgeGUID.Value + "'" : "NULL") + ","
                 + "'" + Sanitizer.Sanitize(tag.Key) + "',"

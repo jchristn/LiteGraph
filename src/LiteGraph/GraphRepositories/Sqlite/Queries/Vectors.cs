@@ -24,7 +24,7 @@
                 + "VALUES ("
                 + "'" + vector.GUID + "',"
                 + "'" + vector.TenantGUID + "',"
-                + (vector.GraphGUID != null ? "'" + vector.GraphGUID.Value + "'" : "NULL") + ","
+                + "'" + vector.GraphGUID + "',"
                 + (vector.NodeGUID != null ? "'" + vector.NodeGUID.Value + "'" : "NULL") + ","
                 + (vector.EdgeGUID != null ? "'" + vector.EdgeGUID.Value + "'" : "NULL") + ","
                 + "'" + Sanitizer.Sanitize(vector.Model) + "',"

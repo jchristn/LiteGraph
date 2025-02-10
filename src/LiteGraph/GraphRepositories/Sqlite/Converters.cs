@@ -591,7 +591,7 @@
             {
                 GUID = Guid.Parse(row["guid"].ToString()),
                 TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
-                GraphGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "graphguid")) ? Guid.Parse(row["graphguid"].ToString()) : null),
+                GraphGUID = Guid.Parse(row["graphguid"].ToString()),
                 NodeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "nodeguid")) ? Guid.Parse(row["nodeguid"].ToString()) : null),
                 EdgeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "edgeguid")) ? Guid.Parse(row["edgeguid"].ToString()) : null),
                 Key = GetDataRowStringValue(row, "tagkey"),
@@ -621,7 +621,7 @@
             {
                 GUID = Guid.Parse(row["guid"].ToString()),
                 TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
-                GraphGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "graphguid")) ? Guid.Parse(row["graphguid"].ToString()) : null),
+                GraphGUID = Guid.Parse(row["graphguid"].ToString()),
                 NodeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "nodeguid")) ? Guid.Parse(row["nodeguid"].ToString()) : null),
                 EdgeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "edgeguid")) ? Guid.Parse(row["edgeguid"].ToString()) : null),
                 Label = GetDataRowStringValue(row, "label"),
@@ -650,7 +650,7 @@
             {
                 GUID = Guid.Parse(row["guid"].ToString()),
                 TenantGUID = Guid.Parse(row["tenantguid"].ToString()),
-                GraphGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "graphguid")) ? Guid.Parse(row["graphguid"].ToString()) : null),
+                GraphGUID = Guid.Parse(row["graphguid"].ToString()),
                 NodeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "nodeguid")) ? Guid.Parse(row["nodeguid"].ToString()) : null),
                 EdgeGUID = (!String.IsNullOrEmpty(GetDataRowStringValue(row, "edgeguid")) ? Guid.Parse(row["edgeguid"].ToString()) : null),
                 Model = GetDataRowStringValue(row, "model"),

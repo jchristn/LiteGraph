@@ -9,7 +9,7 @@
 
     /// <summary>
     /// Label metadata.
-    /// </summary>
+    /// </summary>we
     public class LabelMetadata
     {
         #region Public-Members
@@ -27,7 +27,7 @@
         /// <summary>
         /// Graph GUID.
         /// </summary>
-        public Guid? GraphGUID { get; set; } = null;
+        public Guid GraphGUID { get; set; } = default(Guid);
 
         /// <summary>
         /// Node GUID.
