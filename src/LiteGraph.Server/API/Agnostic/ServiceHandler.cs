@@ -245,6 +245,7 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Label == null) throw new ArgumentNullException(nameof(req.Label));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             req.Label.TenantGUID = req.TenantGUID.Value;
             LabelMetadata obj = _LiteGraph.CreateLabel(req.Label);
             return new ResponseContext(req, obj);
@@ -253,6 +254,7 @@
         internal async Task<ResponseContext> LabelReadMany(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             List<LabelMetadata> objs = _LiteGraph.ReadLabels(req.TenantGUID.Value, req.GraphGUID, req.NodeGUID, req.EdgeGUID, null).ToList();
             if (objs == null) objs = new List<LabelMetadata>();
             return new ResponseContext(req, objs);
@@ -270,6 +272,7 @@
         internal async Task<ResponseContext> LabelExists(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             if (_LiteGraph.ExistsLabelMetadata(req.TenantGUID.Value, req.LabelGUID.Value)) return new ResponseContext(req);
             else return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
         }
@@ -278,6 +281,7 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Label == null) throw new ArgumentNullException(nameof(req.Label));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             req.Label.TenantGUID = req.TenantGUID.Value;
             LabelMetadata obj = _LiteGraph.UpdateLabel(req.Label);
             if (obj == null) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
@@ -287,6 +291,7 @@
         internal async Task<ResponseContext> LabelDelete(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             _LiteGraph.DeleteLabel(req.TenantGUID.Value, req.LabelGUID.Value);
             return new ResponseContext(req);
         }
@@ -299,6 +304,7 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Tag == null) throw new ArgumentNullException(nameof(req.Tag));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             req.Tag.TenantGUID = req.TenantGUID.Value;
             TagMetadata obj = _LiteGraph.CreateTag(req.Tag);
             return new ResponseContext(req, obj);
@@ -307,6 +313,7 @@
         internal async Task<ResponseContext> TagReadMany(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             List<TagMetadata> objs = _LiteGraph.ReadTags(req.TenantGUID.Value, null, null, null, null, null).ToList();
             if (objs == null) objs = new List<TagMetadata>();
             return new ResponseContext(req, objs);
@@ -324,6 +331,7 @@
         internal async Task<ResponseContext> TagExists(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             if (_LiteGraph.ExistsTagMetadata(req.TenantGUID.Value, req.TagGUID.Value)) return new ResponseContext(req);
             else return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
         }
@@ -332,6 +340,7 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Tag == null) throw new ArgumentNullException(nameof(req.Tag));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             req.Tag.TenantGUID = req.TenantGUID.Value;
             TagMetadata obj = _LiteGraph.UpdateTag(req.Tag);
             if (obj == null) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
@@ -341,6 +350,7 @@
         internal async Task<ResponseContext> TagDelete(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             _LiteGraph.DeleteTag(req.TenantGUID.Value, req.TagGUID.Value);
             return new ResponseContext(req);
         }
@@ -353,6 +363,7 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Vector == null) throw new ArgumentNullException(nameof(req.Vector));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             req.Vector.TenantGUID = req.TenantGUID.Value;
             VectorMetadata obj = _LiteGraph.CreateVector(req.Vector);
             return new ResponseContext(req, obj);
@@ -361,6 +372,7 @@
         internal async Task<ResponseContext> VectorReadMany(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             List<VectorMetadata> objs = _LiteGraph.ReadVectors(req.TenantGUID.Value, null, null, null).ToList();
             if (objs == null) objs = new List<VectorMetadata>();
             return new ResponseContext(req, objs);
@@ -378,6 +390,7 @@
         internal async Task<ResponseContext> VectorExists(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             if (_LiteGraph.ExistsVectorMetadata(req.TenantGUID.Value, req.VectorGUID.Value)) return new ResponseContext(req);
             else return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
         }
@@ -386,6 +399,7 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.Vector == null) throw new ArgumentNullException(nameof(req.Vector));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             req.Vector.TenantGUID = req.TenantGUID.Value;
             VectorMetadata obj = _LiteGraph.UpdateVector(req.Vector);
             if (obj == null) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
@@ -395,6 +409,7 @@
         internal async Task<ResponseContext> VectorDelete(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             _LiteGraph.DeleteVector(req.TenantGUID.Value, req.VectorGUID.Value);
             return new ResponseContext(req);
         }
@@ -403,6 +418,7 @@
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (req.VectorSearchRequest == null) throw new ArgumentNullException(nameof(req.VectorSearchRequest));
+            if (!req.Authentication.IsAdmin) return ResponseContext.FromError(req, ApiErrorEnum.AuthorizationFailed);
             if (req.GraphGUID != null && !_LiteGraph.ExistsGraph(req.TenantGUID.Value, req.GraphGUID.Value)) return ResponseContext.FromError(req, ApiErrorEnum.NotFound);
             IEnumerable<VectorSearchResult> sresp = _LiteGraph.SearchVectors(
                 req.VectorSearchRequest.Domain,

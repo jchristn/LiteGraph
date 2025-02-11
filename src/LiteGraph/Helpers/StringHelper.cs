@@ -27,5 +27,28 @@
             ret.AddRange(list2);
             return ret;
         }
+
+        /// <summary>
+        /// Redact a string.
+        /// </summary>
+        /// <param name="str">String.</param>
+        /// <param name="replacementChar">Replacement character.</param>
+        /// <param name="charsToRetain">Number of characters to retain.</param>
+        /// <returns>Redacted string.</returns>
+        public static string RedactTail(string str, string replacementChar = "*", int charsToRetain = 4)
+        {
+            if (String.IsNullOrEmpty(str)) return str;
+            if (String.IsNullOrEmpty(replacementChar)) throw new ArgumentNullException(nameof(replacementChar));
+            if (charsToRetain < 0) throw new ArgumentOutOfRangeException(nameof(charsToRetain));
+
+            if (str.Length < charsToRetain)
+            {
+                return new string(replacementChar[0], str.Length);
+            }
+            else
+            {
+                return str.Substring(0, charsToRetain) + new string(replacementChar[0], str.Length - charsToRetain);
+            }
+        }
     }
 }

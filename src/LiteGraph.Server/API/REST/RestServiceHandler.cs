@@ -1391,12 +1391,23 @@
                     return;
                 }
             }
+            catch (JsonException je)
+            {
+                _Logging.Warn(_Header + "JSON exception: " + Environment.NewLine + je.ToString());
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.DeserializationError, null, je.Message), true));
+            }
+            catch (FormatException fe)
+            {
+                _Logging.Warn(_Header + "format exception: " + Environment.NewLine + fe.ToString());
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, fe.Message), true));
+            }
             catch (InvalidOperationException ioe)
             {
                 _Logging.Warn(_Header + "invalid operation exception: " + Environment.NewLine + ioe.ToString());
                 ctx.Response.StatusCode = 409;
                 await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.Conflict, null, ioe.Message), true));
-                return;
             }
             catch (KeyNotFoundException knfe)
             {
@@ -1405,9 +1416,16 @@
                 await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.NotFound, null, knfe.Message), true));
                 return;
             }
-            catch (ArgumentException e)
+            catch (ArgumentException ae)
             {
-                _Logging.Warn(_Header + "invalid operation exception: " + Environment.NewLine + e.ToString());
+                _Logging.Warn(_Header + "argument exception: " + Environment.NewLine + ae.ToString());
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, ae.Message), true));
+                return;
+            }
+            catch (Exception e)
+            {
+                _Logging.Warn(_Header + "exception: " + Environment.NewLine + e.ToString());
                 ctx.Response.StatusCode = 400;
                 await ctx.Response.Send(_Serializer.SerializeJson(new ApiErrorResponse(ApiErrorEnum.BadRequest, null, e.Message), true));
                 return;

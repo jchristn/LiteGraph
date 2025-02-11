@@ -185,7 +185,7 @@
                 + "lastupdateutc = '" + DateTime.UtcNow.ToString(TimestampFormat) + "',"
                 + "nodeguid = " + (label.NodeGUID != null ? ("'" + label.NodeGUID.Value + "'") : "NULL") + ","
                 + "edgeguid = " + (label.EdgeGUID != null ? ("'" + label.EdgeGUID.Value + "'") : "NULL") + ","
-                + "label = '" + Sanitizer.Sanitize(label.Label) + "',"
+                + "label = '" + Sanitizer.Sanitize(label.Label) + "' "
                 + "WHERE guid = '" + label.GUID + "' "
                 + "RETURNING *;";
         }

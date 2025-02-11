@@ -3800,7 +3800,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/users/ef91fea1-30b2-4226-869d-ebf975b40392",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/users/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -3811,7 +3811,7 @@
 										"tenants",
 										"{{tenant}}",
 										"users",
-										"ef91fea1-30b2-4226-869d-ebf975b40392"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -3838,7 +3838,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/users/f534a33d-4617-4f03-b468-8080f2a1f4f2",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/users/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -3849,7 +3849,7 @@
 										"tenants",
 										"{{tenant}}",
 										"users",
-										"f534a33d-4617-4f03-b468-8080f2a1f4f2"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4024,7 +4024,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/credentials/44da0a8a-5fad-488b-aeb5-affaa1b43a25",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/credentials/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4035,7 +4035,7 @@
 										"tenants",
 										"{{tenant}}",
 										"credentials",
-										"44da0a8a-5fad-488b-aeb5-affaa1b43a25"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4074,7 +4074,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/labels/de13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/labels/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4085,7 +4085,7 @@
 										"tenants",
 										"{{tenant}}",
 										"labels",
-										"de13ed50-eada-4acc-a7b7-486e51a6a10f"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4097,7 +4097,7 @@
 								"method": "HEAD",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/labels/be13ea50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/labels/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4108,7 +4108,7 @@
 										"tenants",
 										"{{tenant}}",
 										"labels",
-										"be13ea50-eada-4acc-a7b7-486e51a6a10f"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4127,7 +4127,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"GraphGUID\": null,\r\n    \"NodeGUID\": null,\r\n    \"EdgeGUID\": null,\r\n    \"Key\": \"mykey\",\r\n    \"Value\": \"myvalue\"\r\n}",
+									"raw": "{\r\n    \"GraphGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"NodeGUID\": null,\r\n    \"EdgeGUID\": null,\r\n    \"Label\": \"label\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4164,7 +4164,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"Key\": \"updatedkey\",\r\n    \"Value\": \"myvalue\",\r\n    \"CreatedUtc\": \"2024-12-27T18:12:38.653402Z\",\r\n    \"LastUpdateUtc\": \"2024-12-27T18:12:38.653402Z\"\r\n}",
+									"raw": "{\r\n    \"Label\": \"updatedlabel\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4172,7 +4172,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/labels/ce13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/labels/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4183,7 +4183,7 @@
 										"tenants",
 										"{{tenant}}",
 										"labels",
-										"ce13ed50-eada-4acc-a7b7-486e51a6a10f"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4260,7 +4260,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/de13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4271,7 +4271,7 @@
 										"tenants",
 										"{{tenant}}",
 										"tags",
-										"de13ed50-eada-4acc-a7b7-486e51a6a10f"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4283,7 +4283,7 @@
 								"method": "HEAD",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/be13ea50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4294,7 +4294,7 @@
 										"tenants",
 										"{{tenant}}",
 										"tags",
-										"be13ea50-eada-4acc-a7b7-486e51a6a10f"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4313,7 +4313,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"GraphGUID\": null,\r\n    \"NodeGUID\": null,\r\n    \"EdgeGUID\": null,\r\n    \"Key\": \"mykey\",\r\n    \"Value\": \"myvalue\"\r\n}",
+									"raw": "{\r\n    \"GraphGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"NodeGUID\": null,\r\n    \"EdgeGUID\": null,\r\n    \"Key\": \"mykey\",\r\n    \"Value\": \"myvalue\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4350,7 +4350,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"Key\": \"updatedkey\",\r\n    \"Value\": \"myvalue\",\r\n    \"CreatedUtc\": \"2024-12-27T18:12:38.653402Z\",\r\n    \"LastUpdateUtc\": \"2024-12-27T18:12:38.653402Z\"\r\n}",
+									"raw": "{\r\n    \"Key\": \"updatedkey\",\r\n    \"Value\": \"myvalue\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4358,7 +4358,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/ce13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/tags/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4369,7 +4369,7 @@
 										"tenants",
 										"{{tenant}}",
 										"tags",
-										"ce13ed50-eada-4acc-a7b7-486e51a6a10f"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4446,7 +4446,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors/de13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4457,7 +4457,7 @@
 										"tenants",
 										"{{tenant}}",
 										"vectors",
-										"de13ed50-eada-4acc-a7b7-486e51a6a10f"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4469,7 +4469,7 @@
 								"method": "HEAD",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors/be13ea50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4480,7 +4480,7 @@
 										"tenants",
 										"{{tenant}}",
 										"vectors",
-										"be13ea50-eada-4acc-a7b7-486e51a6a10f"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4499,7 +4499,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"GraphGUID\": null,\r\n    \"NodeGUID\": null,\r\n    \"EdgeGUID\": null,\r\n    \"Key\": \"mykey\",\r\n    \"Value\": \"myvalue\"\r\n}",
+									"raw": "{\r\n    \"GraphGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"NodeGUID\": null,\r\n    \"EdgeGUID\": null,\r\n    \"Model\": \"all-MiniLM-L6-v2\",\r\n    \"Dimensionality\": 384,\r\n    \"Content\": \"test\",\r\n    \"Vectors\": [\r\n        0.1,\r\n        0.2,\r\n        0.3\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4536,7 +4536,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"Key\": \"updatedkey\",\r\n    \"Value\": \"myvalue\",\r\n    \"CreatedUtc\": \"2024-12-27T18:12:38.653402Z\",\r\n    \"LastUpdateUtc\": \"2024-12-27T18:12:38.653402Z\"\r\n}",
+									"raw": "{\r\n    \"GraphGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"NodeGUID\": null,\r\n    \"EdgeGUID\": null,\r\n    \"Model\": \"all-MiniLM-L6-v2\",\r\n    \"Dimensionality\": 384,\r\n    \"Content\": \"test\",\r\n    \"Vectors\": [\r\n        0.1,\r\n        0.2,\r\n        0.3\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4544,7 +4544,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors/ce13ed50-eada-4acc-a7b7-486e51a6a10f",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/vectors/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4555,7 +4555,7 @@
 										"tenants",
 										"{{tenant}}",
 										"vectors",
-										"ce13ed50-eada-4acc-a7b7-486e51a6a10f"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4612,7 +4612,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"GraphGUID\": \"025876cb-2676-4dc5-996c-5af22f8a9155\",\r\n    \"Domain\": \"Node\",\r\n    \"SearchType\": \"CosineSimilarity\",\r\n    \"Labels\": [],\r\n    \"Tags\": {},\r\n    \"Expr\": null,\r\n    \"Embeddings\": [ 0.1, 0.2, 0.3 ]\r\n}",
+									"raw": "{\r\n    \"GraphGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"Domain\": \"Node\",\r\n    \"SearchType\": \"CosineSimilarity\",\r\n    \"Labels\": [],\r\n    \"Tags\": {},\r\n    \"Expr\": null,\r\n    \"Embeddings\": [ 0.1, 0.2, 0.3 ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4759,7 +4759,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"TenantGUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"GUID\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"Name\": \"Default graph\",\r\n    \"CreatedUtc\": \"2025-01-23T19:36:55.209306Z\",\r\n    \"LastUpdateUtc\": \"2025-01-23T19:36:55.209219Z\",\r\n    \"Labels\": [\r\n        \"graph\"\r\n    ],\r\n    \"Tags\": {\r\n        \"type\": \"graph\"\r\n    },\r\n    \"Vectors\": [\r\n        {\r\n            \"Model\": \"all-MiniLM-L6-v2\",\r\n            \"Dimensionality\": 384,\r\n            \"Content\": \"test\",\r\n            \"Vectors\": [ 0.1, 0.2, 0.3 ]\r\n        }\r\n    ]\r\n}",
+									"raw": "{\r\n    \"Name\": \"Default graph\",\r\n    \"CreatedUtc\": \"2025-01-23T19:36:55.209306Z\",\r\n    \"LastUpdateUtc\": \"2025-01-23T19:36:55.209219Z\",\r\n    \"Labels\": [\r\n        \"graph\"\r\n    ],\r\n    \"Tags\": {\r\n        \"type\": \"graph\"\r\n    },\r\n    \"Vectors\": [\r\n        {\r\n            \"Model\": \"all-MiniLM-L6-v2\",\r\n            \"Dimensionality\": 384,\r\n            \"Content\": \"test\",\r\n            \"Vectors\": [ 0.1, 0.2, 0.3 ]\r\n        }\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4880,7 +4880,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/71199f05-2e8e-4064-b9ca-6400b86ebbd3",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4891,7 +4891,7 @@
 										"tenants",
 										"{{tenant}}",
 										"graphs",
-										"71199f05-2e8e-4064-b9ca-6400b86ebbd3"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -4918,7 +4918,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/97826e1a-d0c1-4884-820a-bfda74b3be33?force",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/00000000-0000-0000-0000-000000000000?force",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -4929,7 +4929,7 @@
 										"tenants",
 										"{{tenant}}",
 										"graphs",
-										"97826e1a-d0c1-4884-820a-bfda74b3be33"
+										"00000000-0000-0000-0000-000000000000"
 									],
 									"query": [
 										{
@@ -4990,7 +4990,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"Nodes\": [\r\n        \"ddbab487-ea6a-4ee4-8884-3ef55220e230\",\r\n        \"0c8c4f91-ae17-4f13-be5c-4d24a11ff703\",\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"Edges\": [\r\n        \"16edcc3a-7924-4334-bdeb-da1a31bc55ad\",\r\n        \"4057704f-37a3-4bea-8568-0384eeebcc71\",\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"EdgesBetween\": [\r\n        { \"From\": \"ddbab487-ea6a-4ee4-8884-3ef55220e230\", \"To\": \"1933a861-a86c-493b-809b-e1a15c577954\" },\r\n        { \"From\": \"d176c9f7-7584-408c-8b02-ea0db9e13d60\", \"To\": \"1933a861-a86c-493b-809b-e1a15c577954\" },\r\n        { \"From\": \"00000000-0000-0000-0000-000000000000\", \"To\": \"00000000-0000-0000-0000-000000000000\" }\r\n    ]\r\n}",
+									"raw": "{\r\n    \"Nodes\": [\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"Edges\": [\r\n        \"00000000-0000-0000-0000-000000000000\"\r\n    ],\r\n    \"EdgesBetween\": [\r\n        { \"From\": \"00000000-0000-0000-0000-000000000000\", \"To\": \"00000000-0000-0000-0000-000000000000\" }\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5051,7 +5051,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/0b739acf-8e1d-40d9-86e7-5a4d18cb501d",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5064,7 +5064,7 @@
 										"graphs",
 										"{{graph}}",
 										"nodes",
-										"0b739acf-8e1d-40d9-86e7-5a4d18cb501d"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -5076,7 +5076,7 @@
 								"method": "HEAD",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/ff652cd1-8192-40d3-b9e9-d954130bc073",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5089,7 +5089,7 @@
 										"graphs",
 										"{{graph}}",
 										"nodes",
-										"ff652cd1-8192-40d3-b9e9-d954130bc073"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -5195,7 +5195,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/ff652cd1-8192-40d3-b9e9-d954130bc073",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5208,7 +5208,7 @@
 										"graphs",
 										"{{graph}}",
 										"nodes",
-										"ff652cd1-8192-40d3-b9e9-d954130bc073"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -5312,7 +5312,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/ff652cd1-8192-40d3-b9e9-d954130bc073",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5325,7 +5325,7 @@
 										"graphs",
 										"{{graph}}",
 										"nodes",
-										"ff652cd1-8192-40d3-b9e9-d954130bc073"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -5384,7 +5384,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "[\r\n    \"fcde5431-3350-4334-9807-93f1c83c0afd\",\r\n    \"08a1f4f3-7aaf-47d5-9c7d-cb427f983ed7\",\r\n    \"116e9790-b61e-4866-8f99-a60188c7c42c\",\r\n    \"f96dfbbd-ae0f-43fc-a8e4-ae1ce891d1a7\",\r\n    \"4d4f2160-040a-4f6d-9833-b4172d560d5c\",\r\n    \"868bf873-aceb-450d-be8f-07a392e0fa3f\",\r\n    \"11946503-2f48-487c-a2ba-18aaf3b1cd9a\",\r\n    \"371eb366-f93e-40d8-81dd-d1389979026d\",\r\n    \"8acbddd7-070c-4adb-900b-2291d225cf9f\",\r\n    \"5f93f58b-f785-4cc5-84a2-5707ffa7d04f\"\r\n]",
+									"raw": "[\r\n    \"00000000-0000-0000-0000-000000000000\"\r\n]",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5446,7 +5446,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/edges/971da046-8234-4627-8ae8-e062311874c8",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/edges/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5459,7 +5459,7 @@
 										"graphs",
 										"{{graph}}",
 										"edges",
-										"971da046-8234-4627-8ae8-e062311874c8"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -5471,7 +5471,7 @@
 								"method": "HEAD",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/edges/971da046-8234-4627-8ae8-e062311874c8",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/edges/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5484,7 +5484,7 @@
 										"graphs",
 										"{{graph}}",
 										"edges",
-										"971da046-8234-4627-8ae8-e062311874c8"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -5503,7 +5503,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"5ad4b899-9b2b-430c-8ebb-8623a49959ae\",\r\n    \"To\": \"0b739acf-8e1d-40d9-86e7-5a4d18cb501d\",\r\n    \"Cost\": 10,\r\n    \"Labels\": [\r\n        \"test\"\r\n    ],\r\n    \"Tags\": {\r\n        \"type\": \"edge\",\r\n        \"test\": \"true\"\r\n    },\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    },\r\n    \"Vectors\": [\r\n        {\r\n            \"Model\": \"all-MiniLM-L6-v2\",\r\n            \"Dimensionality\": 384,\r\n            \"Content\": \"test\",\r\n            \"Vectors\": [ 0.1, 0.2, 0.3 ]\r\n        }\r\n    ]\r\n}",
+									"raw": "{\r\n    \"Name\": \"My test edge\",\r\n    \"From\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"To\": \"00000000-0000-0000-0000-000000000001\",\r\n    \"Cost\": 10,\r\n    \"Labels\": [\r\n        \"test\"\r\n    ],\r\n    \"Tags\": {\r\n        \"type\": \"edge\",\r\n        \"test\": \"true\"\r\n    },\r\n    \"Data\": {\r\n        \"Hello\": \"World\"\r\n    },\r\n    \"Vectors\": [\r\n        {\r\n            \"Model\": \"all-MiniLM-L6-v2\",\r\n            \"Dimensionality\": 384,\r\n            \"Content\": \"test\",\r\n            \"Vectors\": [ 0.1, 0.2, 0.3 ]\r\n        }\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5542,7 +5542,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "[\r\n    {\r\n        \"Name\": \"DigitalOcean to Control Plane\",\r\n        \"From\": \"5ad4b899-9b2b-430c-8ebb-8623a49959ae\",\r\n        \"To\": \"0b739acf-8e1d-40d9-86e7-5a4d18cb501d\",\r\n        \"Cost\": 100,\r\n        \"Labels\": [\r\n            \"test\"\r\n        ],\r\n        \"Tags\": {\r\n            \"type\": \"edge\",\r\n            \"test\": \"true\"\r\n        },\r\n        \"Data\": {\r\n            \"hello\": \"world\"\r\n        }\r\n    },\r\n    {\r\n        \"Name\": \"Azure to Active Directory\",\r\n        \"From\": \"5ad4b899-9b2b-430c-8ebb-8623a49959ae\",\r\n        \"To\": \"0b739acf-8e1d-40d9-86e7-5a4d18cb501d\",\r\n        \"Cost\": 100,\r\n        \"Labels\": [\r\n            \"test\"\r\n        ],\r\n        \"Tags\": {\r\n            \"type\": \"edge\",\r\n            \"test\": \"true\"\r\n        },\r\n        \"Data\": {\r\n            \"hello\": \"world\"\r\n        }\r\n    }\r\n]",
+									"raw": "[\r\n    {\r\n        \"Name\": \"DigitalOcean to Control Plane\",\r\n        \"From\": \"00000000-0000-0000-0000-000000000000\",\r\n        \"To\": \"00000000-0000-0000-0000-000000000001\",\r\n        \"Cost\": 100,\r\n        \"Labels\": [\r\n            \"test\"\r\n        ],\r\n        \"Tags\": {\r\n            \"type\": \"edge\",\r\n            \"test\": \"true\"\r\n        },\r\n        \"Data\": {\r\n            \"hello\": \"world\"\r\n        }\r\n    }\r\n]",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5590,7 +5590,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/edges/599147fe-c11a-49aa-8912-8a3e526e1e23",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/edges/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5603,7 +5603,7 @@
 										"graphs",
 										"{{graph}}",
 										"edges",
-										"599147fe-c11a-49aa-8912-8a3e526e1e23"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -5707,7 +5707,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/edges/599147fe-c11a-49aa-8912-8a3e526e1e23",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/edges/00000000-0000-0000-0000-000000000000",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5720,7 +5720,7 @@
 										"graphs",
 										"{{graph}}",
 										"edges",
-										"599147fe-c11a-49aa-8912-8a3e526e1e23"
+										"00000000-0000-0000-0000-000000000000"
 									]
 								}
 							},
@@ -5779,7 +5779,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "[\r\n    \"00000000-0000-0000-0000-000000000000\"\r\n]",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5824,7 +5824,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"From\": \"d7e9203b-5412-4bfc-885a-6fb520a03e65\",\r\n    \"To\": \"0b739acf-8e1d-40d9-86e7-5a4d18cb501d\"\r\n}",
+									"raw": "{\r\n    \"From\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"To\": \"00000000-0000-0000-0000-000000000001\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5856,7 +5856,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/d7e9203b-5412-4bfc-885a-6fb520a03e65/edges/from",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/00000000-0000-0000-0000-000000000000/edges/from",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5869,7 +5869,7 @@
 										"graphs",
 										"{{graph}}",
 										"nodes",
-										"d7e9203b-5412-4bfc-885a-6fb520a03e65",
+										"00000000-0000-0000-0000-000000000000",
 										"edges",
 										"from"
 									]
@@ -5883,7 +5883,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/d7e9203b-5412-4bfc-885a-6fb520a03e65/edges/to",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/00000000-0000-0000-0000-000000000000/edges/to",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5896,7 +5896,7 @@
 										"graphs",
 										"{{graph}}",
 										"nodes",
-										"d7e9203b-5412-4bfc-885a-6fb520a03e65",
+										"00000000-0000-0000-0000-000000000000",
 										"edges",
 										"to"
 									]
@@ -5910,7 +5910,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/edges/between?from=d7e9203b-5412-4bfc-885a-6fb520a03e65&to=26ef5395-fc9f-4e83-836b-48d537ca6f43",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/edges/between?from=00000000-0000-0000-0000-000000000000&to=00000000-0000-0000-0000-000000000001",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5928,11 +5928,11 @@
 									"query": [
 										{
 											"key": "from",
-											"value": "d7e9203b-5412-4bfc-885a-6fb520a03e65"
+											"value": "00000000-0000-0000-0000-000000000000"
 										},
 										{
 											"key": "to",
-											"value": "26ef5395-fc9f-4e83-836b-48d537ca6f43"
+											"value": "00000000-0000-0000-0000-000000000001"
 										}
 									]
 								}
@@ -5945,7 +5945,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/26ef5395-fc9f-4e83-836b-48d537ca6f43/edges",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/00000000-0000-0000-0000-000000000000/edges",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5958,7 +5958,7 @@
 										"graphs",
 										"{{graph}}",
 										"nodes",
-										"26ef5395-fc9f-4e83-836b-48d537ca6f43",
+										"00000000-0000-0000-0000-000000000000",
 										"edges"
 									]
 								}
@@ -5971,7 +5971,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/26ef5395-fc9f-4e83-836b-48d537ca6f43/neighbors",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/00000000-0000-0000-0000-000000000000/neighbors",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -5984,7 +5984,7 @@
 										"graphs",
 										"{{graph}}",
 										"nodes",
-										"26ef5395-fc9f-4e83-836b-48d537ca6f43",
+										"00000000-0000-0000-0000-000000000000",
 										"neighbors"
 									]
 								}
@@ -5997,7 +5997,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/26ef5395-fc9f-4e83-836b-48d537ca6f43/parents",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/00000000-0000-0000-0000-000000000000/parents",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -6010,7 +6010,7 @@
 										"graphs",
 										"{{graph}}",
 										"nodes",
-										"26ef5395-fc9f-4e83-836b-48d537ca6f43",
+										"00000000-0000-0000-0000-000000000000",
 										"parents"
 									]
 								}
@@ -6023,7 +6023,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/26ef5395-fc9f-4e83-836b-48d537ca6f43/children",
+									"raw": "{{protocol}}://{{hostname}}:{{port}}/v1.0/tenants/{{tenant}}/graphs/{{graph}}/nodes/00000000-0000-0000-0000-000000000000/children",
 									"protocol": "{{protocol}}",
 									"host": [
 										"{{hostname}}"
@@ -6036,7 +6036,7 @@
 										"graphs",
 										"{{graph}}",
 										"nodes",
-										"26ef5395-fc9f-4e83-836b-48d537ca6f43",
+										"00000000-0000-0000-0000-000000000000",
 										"children"
 									]
 								}
@@ -6106,6 +6106,11 @@
 			"type": "string"
 		},
 		{
+			"key": "hostname",
+			"value": "localhost",
+			"type": "string"
+		},
+		{
 			"key": "port",
 			"value": "8701",
 			"type": "string"
@@ -6113,11 +6118,6 @@
 		{
 			"key": "hostname",
 			"value": "ec2-18-217-169-161.us-east-2.compute.amazonaws.com",
-			"type": "string"
-		},
-		{
-			"key": "bearertoken",
-			"value": "litegraphadmin",
 			"type": "string",
 			"disabled": true
 		},
@@ -6135,6 +6135,12 @@
 			"key": "bearertoken",
 			"value": "litegraphadmin",
 			"type": "string"
+		},
+		{
+			"key": "bearertoken",
+			"value": "default",
+			"type": "string",
+			"disabled": true
 		}
 	]
 }

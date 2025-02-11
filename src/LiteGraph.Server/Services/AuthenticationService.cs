@@ -61,15 +61,38 @@
         internal void AuthenticateAndAuthorize(RequestContext req)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
-            
-            if (_Settings.Debug.Authentication)
-                _Logging.Debug(_Header + "authentication request:" + Environment.NewLine + _Serializer.SerializeJson(req, false));
 
-            Authenticate(req);
-            Authorize(req);
+            try
+            {
+                if (_Settings.Debug.Authentication)
+                {
+                    _Logging.Info(
+                        _Header + "authenticating and authorizing using the following materials:" + Environment.NewLine +
+                        "| Tenant GUID    : " + req.Authentication.TenantGUID + Environment.NewLine +
+                        "| Email          : " + req.Authentication.Email + Environment.NewLine +
+                        "| Password       : " + Helpers.StringHelpers.RedactTail(req.Authentication.Password, "*", 4) + Environment.NewLine +
+                        "| Bearer token   : " + Helpers.StringHelpers.RedactTail(req.Authentication.BearerToken, "*", 4) + Environment.NewLine +
+                        "| Security token : " + Helpers.StringHelpers.RedactTail(req.Authentication.SecurityToken, "*", 4));
+                }
 
-            if (_Settings.Debug.Authentication)
-                _Logging.Debug(_Header + "authentication result:" + Environment.NewLine + _Serializer.SerializeJson(req, false));
+                Authenticate(req);
+                Authorize(req);
+
+                if (_Settings.Debug.Authentication)
+                {
+                    _Logging.Info(
+                        _Header + "authentication and authorization result:" + Environment.NewLine +
+                        "| Authentication : " + req.Authentication.Result + Environment.NewLine +
+                        "| Authorization  : " + req.Authorization.Result);
+                }
+            }
+            catch (Exception e)
+            {
+                _Logging.Warn(_Header + "exception:" + Environment.NewLine + e.ToString());
+                req.Authentication.Result = AuthenticationResultEnum.Invalid;
+                req.Authorization.Result = AuthorizationResultEnum.Denied;
+                return;
+            }
         }
 
         /// <summary>

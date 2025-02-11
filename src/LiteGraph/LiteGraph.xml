@@ -2090,6 +2090,15 @@
             <param name="list2">String list 2.</param>
             <returns>String list.</returns>
         </member>
+        <member name="M:LiteGraph.Helpers.StringHelpers.RedactTail(System.String,System.String,System.Int32)">
+            <summary>
+            Redact a string.
+            </summary>
+            <param name="str">String.</param>
+            <param name="replacementChar">Replacement character.</param>
+            <param name="charsToRetain">Number of characters to retain.</param>
+            <returns>Redacted string.</returns>
+        </member>
         <member name="T:LiteGraph.Helpers.VectorHelper">
             <summary>
             Vector helper.
