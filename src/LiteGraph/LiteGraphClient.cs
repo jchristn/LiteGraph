@@ -462,7 +462,7 @@
         public LabelMetadata CreateLabel(LabelMetadata label)
         {
             if (label == null) throw new ArgumentNullException(nameof(label));
-
+            
             LabelMetadata existing = _Repository.ReadLabel(label.TenantGUID, label.GUID);
             if (existing != null) return existing;
 

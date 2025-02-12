@@ -557,6 +557,7 @@
         public override LabelMetadata CreateLabel(LabelMetadata label)
         {
             if (label == null) throw new ArgumentNullException(nameof(label));
+            if (String.IsNullOrEmpty(label.Label)) throw new ArgumentException("The supplied label is null or empty.");
 
             ValidateTenantExists(label.TenantGUID);
             ValidateGraphExists(label.TenantGUID, label.GraphGUID);
@@ -593,6 +594,8 @@
 
             foreach (LabelMetadata label in labels)
             {
+                if (String.IsNullOrEmpty(label.Label)) throw new ArgumentException("The supplied label is null or empty.");
+
                 label.TenantGUID = tenantGuid;
                 label.GraphGUID = graphGuid;
                 if (label.NodeGUID != null) ValidateNodeExists(label.TenantGUID, label.GraphGUID, label.NodeGUID.Value);
@@ -687,6 +690,7 @@
         public override LabelMetadata UpdateLabel(LabelMetadata label)
         {
             if (label == null) throw new ArgumentNullException(nameof(label));
+            if (String.IsNullOrEmpty(label.Label)) throw new ArgumentException("The supplied label is null or empty.");
 
             ValidateTenantExists(label.TenantGUID);
             ValidateGraphExists(label.TenantGUID, label.GraphGUID);
@@ -714,6 +718,7 @@
         public override TagMetadata CreateTag(TagMetadata tag)
         {
             if (tag == null) throw new ArgumentNullException(nameof(tag));
+            if (String.IsNullOrEmpty(tag.Key)) throw new ArgumentException("The supplied tag key is null or empty.");
 
             ValidateTenantExists(tag.TenantGUID);
             ValidateGraphExists(tag.TenantGUID, tag.GraphGUID);
@@ -750,6 +755,8 @@
 
             foreach (TagMetadata tag in tags)
             {
+                if (String.IsNullOrEmpty(tag.Key)) throw new ArgumentException("The supplied tag key is null or empty.");
+
                 tag.TenantGUID = tenantGuid;
                 tag.GraphGUID = graphGuid;
             }
@@ -843,6 +850,7 @@
         public override TagMetadata UpdateTag(TagMetadata tag)
         {
             if (tag == null) throw new ArgumentNullException(nameof(tag));
+            if (String.IsNullOrEmpty(tag.Key)) throw new ArgumentException("The supplied tag key is null or empty.");
 
             ValidateTenantExists(tag.TenantGUID);
             ValidateGraphExists(tag.TenantGUID, tag.GraphGUID);
@@ -870,6 +878,9 @@
         public override VectorMetadata CreateVector(VectorMetadata vector)
         {
             if (vector == null) throw new ArgumentNullException(nameof(vector));
+            if (String.IsNullOrEmpty(vector.Model)) throw new ArgumentException("The supplied vector model is null or empty.");
+            if (vector.Dimensionality <= 0) throw new ArgumentException("The vector dimensionality must be greater than zero.");
+            if (vector.Vectors == null || vector.Vectors.Count < 1) throw new ArgumentException("The supplied vector object must contain one or more vectors.");
 
             ValidateTenantExists(vector.TenantGUID);
             ValidateGraphExists(vector.TenantGUID, vector.GraphGUID);
@@ -927,6 +938,10 @@
 
             foreach (VectorMetadata vector in vectors)
             {
+                if (String.IsNullOrEmpty(vector.Model)) throw new ArgumentException("The supplied vector model is null or empty.");
+                if (vector.Dimensionality <= 0) throw new ArgumentException("The vector dimensionality must be greater than zero.");
+                if (vector.Vectors == null || vector.Vectors.Count < 1) throw new ArgumentException("The supplied vector object must contain one or more vectors.");
+
                 vector.TenantGUID = tenantGuid;
                 vector.GraphGUID = graphGuid;
                 if (vector.NodeGUID != null) ValidateNodeExists(vector.TenantGUID, vector.GraphGUID, vector.NodeGUID.Value);
@@ -1087,6 +1102,9 @@
         public override VectorMetadata UpdateVector(VectorMetadata vector)
         {
             if (vector == null) throw new ArgumentNullException(nameof(vector));
+            if (String.IsNullOrEmpty(vector.Model)) throw new ArgumentException("The supplied vector model is null or empty.");
+            if (vector.Dimensionality <= 0) throw new ArgumentException("The vector dimensionality must be greater than zero.");
+            if (vector.Vectors == null || vector.Vectors.Count < 1) throw new ArgumentException("The supplied vector object must contain one or more vectors.");
 
             ValidateTenantExists(vector.TenantGUID);
             ValidateGraphExists(vector.TenantGUID, vector.GraphGUID);
