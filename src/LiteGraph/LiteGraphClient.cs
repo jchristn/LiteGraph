@@ -887,7 +887,7 @@
             Graph existing = _Repository.ReadGraph(tenantGuid, guid);
             if (existing != null) return existing;
 
-            Graph graph = _Repository.CreateGraph(tenantGuid, guid, name, data, labels, tags);
+            Graph graph = _Repository.CreateGraph(tenantGuid, guid, name, data, labels, tags, vectors);
             Logging.Log(SeverityEnum.Info, "created graph name " + name + " GUID " + graph.GUID);
             return graph;
         }

@@ -1233,6 +1233,7 @@
             if (graph == null) throw new ArgumentNullException(nameof(graph));
             ValidateLabels(graph.Labels);
             ValidateTags(graph.Tags);
+            ValidateVectors(graph.Vectors);
             ValidateTenantExists(graph.TenantGUID);
 
             string createQuery = Graphs.InsertGraphQuery(graph);
@@ -1295,6 +1296,7 @@
 
             created.Labels = graph.Labels;
             created.Tags = graph.Tags;
+            created.Vectors = graph.Vectors;
             return created;
         }
 
@@ -1383,7 +1385,9 @@
         public override Graph UpdateGraph(Graph graph)
         {
             if (graph == null) throw new ArgumentNullException(nameof(graph));
+            ValidateLabels(graph.Labels);
             ValidateTags(graph.Tags);
+            ValidateVectors(graph.Vectors);
             ValidateTenantExists(graph.TenantGUID);
             ValidateGraphExists(graph.TenantGUID, graph.GUID);
             Graph updated = Converters.GraphFromDataRow(Query(Graphs.UpdateGraphQuery(graph), true).Rows[0]);
@@ -1517,6 +1521,8 @@
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             ValidateTags(node.Tags);
+            ValidateLabels(node.Labels);
+            ValidateVectors(node.Vectors);
             ValidateTenantExists(node.TenantGUID);
             ValidateGraphExists(node.TenantGUID, node.GraphGUID);
 
@@ -1690,7 +1696,9 @@
         public override Node UpdateNode(Node node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
+            ValidateLabels(node.Labels);
             ValidateTags(node.Tags);
+            ValidateVectors(node.Vectors);
             ValidateTenantExists(node.TenantGUID);
             ValidateGraphExists(node.TenantGUID, node.GraphGUID);
             Node updated = Converters.NodeFromDataRow(Query(Nodes.UpdateNodeQuery(node), true).Rows[0]);
@@ -2256,7 +2264,9 @@
         public override Edge CreateEdge(Edge edge)
         {
             if (edge == null) throw new ArgumentNullException(nameof(edge));
+            ValidateLabels(edge.Labels);
             ValidateTags(edge.Tags);
+            ValidateVectors(edge.Vectors);
             ValidateTenantExists(edge.TenantGUID);
             ValidateGraphExists(edge.TenantGUID, edge.GraphGUID);
 
@@ -2413,7 +2423,9 @@
         public override Edge UpdateEdge(Edge edge)
         {
             if (edge == null) throw new ArgumentNullException(nameof(edge));
+            ValidateLabels(edge.Labels);
             ValidateTags(edge.Tags);
+            ValidateVectors(edge.Vectors);
             ValidateTenantExists(edge.TenantGUID);
             ValidateGraphExists(edge.TenantGUID, edge.GraphGUID);
             Edge updated = Converters.EdgeFromDataRow(Query(Edges.UpdateEdgeQuery(edge), true).Rows[0]);
@@ -2683,6 +2695,18 @@
             if (tags == null) return;
             foreach (string key in tags.AllKeys)
                 if (String.IsNullOrEmpty(key)) throw new ArgumentException("The supplied tags contains a null or empty key.");
+        }
+
+        private void ValidateVectors(List<VectorMetadata> vectors)
+        {
+            if (vectors == null || vectors.Count < 1) return;
+            foreach (VectorMetadata vector in vectors)
+            {
+                if (String.IsNullOrEmpty(vector.Model)) throw new ArgumentException("The supplied vector object does not include a model.");
+                if (vector.Dimensionality <= 0) throw new ArgumentException("The supplied vector object dimensionality must be greater than zero.");
+                if (vector.Vectors == null || vector.Vectors.Count < 1) throw new ArgumentException("The supplied vector object does not include any vectors.");
+                if (String.IsNullOrEmpty(vector.Content)) throw new ArgumentException("The supplied vector object does not contain any content.");
+            }
         }
 
         private void ValidateTenantExists(Guid tenantGuid)
